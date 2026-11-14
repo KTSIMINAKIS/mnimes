@@ -1,0 +1,1277 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- Ασφάλεια: η σελίδα επιτρέπεται να μιλήσει ΜΟΝΟ με αυτές τις διευθύνσεις (τίποτα άλλο δεν μπορεί να φορτωθεί ή να σταλεί αλλού) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://server.arcgisonline.com https://cdnjs.cloudflare.com; media-src 'self' blob:; connect-src 'self' blob: data: https://api.bigdatacloud.net https://nominatim.openstreetmap.org; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Μνήμες</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<!-- Κάθε εξωτερική βιβλιοθήκη έχει «σφραγίδα» (integrity): αν κάποιος την αλλάξει στο ίντερνετ, ο browser ΔΕΝ την τρέχει -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha384-c6Rcwz4e4CITMbu/NBmnNS8yN2sC3cUElMEMfP3vqqKFp7GOYaaBBCqmaWBjmkjb" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js" integrity="sha384-KrOocIA+lZcNUz2MDavnT/FuX+CbTREJihUi0bp8QUSwhE2AkGTNpv2b7yMbBkx5" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha384-NElt3Op+9NBMCYaef5HxeJmU4Xeard/Lku8ek6hoPTvYkQPh3zLIrJP7KiRocsxO" crossorigin="anonymous"></script>
+<style>
+/* ---- Μνήμες · μοντέρνα, καθαρή εμφάνιση ---- */
+:root{
+  --bg:#f4f5f7;--card:#ffffff;--ink:#0e1014;--muted:#6b7280;--line:#e5e7eb;--soft:#eef0f4;--glass:rgba(255,255,255,.72);
+  --accent:#5b5bf0;--accent-ink:#fff;--ok:#15935a;--warn:#c27012;--bad:#dc2f3a;
+  --grad:linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#ec4899 100%);
+  --shadow:0 1px 2px rgba(16,18,24,.04),0 8px 24px rgba(16,18,24,.06);--shadow-lg:0 20px 50px rgba(16,18,24,.16);
+  --r:22px;--font:"Inter","Segoe UI Variable","Segoe UI",system-ui,-apple-system,Roboto,"Noto Sans",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0a0b0f;--card:#14161c;--ink:#f3f4f6;--muted:#9aa1ad;--line:#252832;--soft:#1b1e26;--glass:rgba(20,22,28,.72);
+  --accent:#8b8cff;--accent-ink:#0a0b0f;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--shadow:0 1px 0 rgba(255,255,255,.03);--shadow-lg:0 20px 50px rgba(0,0,0,.5)}}
+:root[data-theme="dark"]{--bg:#0a0b0f;--card:#14161c;--ink:#f3f4f6;--muted:#9aa1ad;--line:#252832;--soft:#1b1e26;--glass:rgba(20,22,28,.72);
+  --accent:#8b8cff;--accent-ink:#0a0b0f;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--shadow:0 1px 0 rgba(255,255,255,.03);--shadow-lg:0 20px 50px rgba(0,0,0,.5)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:16px/1.55 var(--font);-webkit-font-smoothing:antialiased;padding-bottom:140px;overflow-x:hidden;font-feature-settings:"cv11","ss01"}
+button,input,select{font:inherit;color:inherit}
+button{-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:2px}
+.ico{display:inline-grid;place-items:center;flex:none;width:20px;height:20px}
+.ico svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* κεφαλίδα */
+header{position:sticky;top:0;z-index:40;display:flex;gap:8px;align-items:center;padding:10px max(16px,env(safe-area-inset-left));
+  background:var(--glass);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.logo{width:34px;height:34px;border-radius:11px;background:var(--grad);display:grid;place-items:center;color:#fff;flex:none;box-shadow:0 6px 16px rgba(139,92,246,.35)}
+.logo .ico{width:19px;height:19px}
+header h1{font-size:18px;font-weight:700;letter-spacing:-.02em;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#searchForm{flex:0 1 340px;min-width:0;position:relative}
+#searchForm .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);width:18px;height:18px;pointer-events:none}
+#q{width:100%;padding:10px 14px 10px 40px;border-radius:999px;border:1px solid var(--line);background:var(--card);outline:none;transition:border-color .15s,box-shadow .15s}
+#q:focus{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent)}
+.hbtn{border:1px solid var(--line);background:var(--card);border-radius:12px;width:42px;height:42px;display:grid;place-items:center;cursor:pointer;flex:none;transition:background .15s,transform .1s}
+.hbtn:hover{background:var(--soft)}
+.hbtn:active{transform:scale(.95)}
+.hbtn.on{background:var(--bad);border-color:var(--bad);color:#fff}
+
+main{max-width:1200px;margin:0 auto;padding:20px 16px}
+h2{font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.035em;line-height:1.1;margin:.1em 0 .25em}
+h3{margin:.3em 0 .5em;font-weight:700;letter-spacing:-.015em}
+.sec{margin:30px 0 12px;font-size:13px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.sech{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin:0 0 14px;box-shadow:var(--shadow)}
+.card.warn{border-color:color-mix(in srgb,var(--warn) 55%,var(--line));background:color-mix(in srgb,var(--warn) 6%,var(--card))}
+.card.bad{border-color:color-mix(in srgb,var(--bad) 55%,var(--line));background:color-mix(in srgb,var(--bad) 6%,var(--card))}
+.card.ok{border-color:color-mix(in srgb,var(--ok) 55%,var(--line))}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+/* κουμπιά */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:11px 20px;cursor:pointer;font-weight:600;letter-spacing:-.005em;transition:background .15s,border-color .15s,transform .1s,box-shadow .15s}
+.btn:hover{background:var(--soft)}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn.primary:hover{box-shadow:0 8px 22px rgba(16,18,24,.22)}
+.btn.big{font-size:17px;padding:15px 28px}
+.btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn .ico{width:18px;height:18px}
+.link{background:none;border:0;color:var(--accent);cursor:pointer;padding:0;font-weight:600}
+
+/* αρχική */
+.hello{margin:6px 0 18px}
+.hello p{margin:0;font-size:17px}
+.bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:170px;gap:14px}
+.btile{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:26px;padding:18px;text-align:left;cursor:pointer;
+  background:var(--card);box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:space-between;isolation:isolate;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.btile:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.btile:active{transform:scale(.98)}
+.btile .bic{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c)}
+.btile .bic .ico{width:24px;height:24px}
+.btile .btxt{display:flex;flex-direction:column;gap:2px}
+.btile .btxt b{font-size:21px;letter-spacing:-.025em;line-height:1.15}
+.btile .btxt small{color:var(--muted);font-size:14px}
+.btile .barr{position:absolute;right:16px;top:16px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--muted);transition:transform .25s}
+.btile .barr .ico{width:17px;height:17px}
+.btile:hover .barr{transform:rotate(45deg)}
+.btile .cimg{position:absolute;inset:0;z-index:-2}
+.btile .cimg img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.btile:hover .cimg img{transform:scale(1.05)}
+.btile.photo{color:#fff;border:0;background:#1b1e26}
+.btile.photo::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(0,0,0,.05) 30%,rgba(0,0,0,.65))}
+.btile.photo .bic{background:rgba(255,255,255,.18);color:#fff;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.btile.photo .btxt small{color:rgba(255,255,255,.85)}
+.btile.photo .barr{background:rgba(255,255,255,.18);color:#fff;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.b-org{grid-column:span 2;grid-row:span 2;background:var(--grad);color:#fff;border:0;padding:26px}
+.b-org .bic{width:58px;height:58px;border-radius:18px;background:rgba(255,255,255,.2);color:#fff}
+.b-org .bic .ico{width:30px;height:30px}
+.b-org .btxt b{font-size:clamp(26px,3.2vw,36px);letter-spacing:-.035em}
+.b-org .btxt small{color:rgba(255,255,255,.88);font-size:16px;max-width:34ch}
+.b-org .barr{background:rgba(255,255,255,.2);color:#fff;width:44px;height:44px;right:22px;top:22px}
+.b-org::before{content:"";position:absolute;inset:auto -20% -45% 30%;height:90%;z-index:-1;background:radial-gradient(closest-side,rgba(255,255,255,.28),transparent);filter:blur(10px)}
+.b-photos{grid-column:span 2}
+.b-map,.b-more{grid-column:span 2}
+@media (max-width:760px){
+  .bento{grid-template-columns:repeat(2,1fr);grid-auto-rows:150px;gap:10px}
+  .b-org{grid-row:span 1}
+  .b-org,.b-photos{grid-column:span 2}
+  .b-map,.b-more{grid-column:span 1}
+  .btile{padding:14px;border-radius:22px}
+  .btile .btxt b{font-size:18px}
+  .b-org{padding:18px}.b-org .btxt small{font-size:14px}
+}
+
+/* κάρτες «Προχωρημένες» */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.tile{display:flex;align-items:center;gap:14px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 16px;cursor:pointer;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s,border-color .2s}
+.tile:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:color-mix(in srgb,var(--c,var(--accent)) 40%,var(--line))}
+.tile .ic{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--c,var(--accent)) 14%,transparent);color:var(--c,var(--accent))}
+.tile .ic .ico{width:24px;height:24px}
+.tile .tt{flex:1;min-width:0;display:flex;flex-direction:column}
+.tile .tt b{font-size:16px;letter-spacing:-.01em}
+.tile .tt small{color:var(--muted);font-size:13.5px}
+.tile .chev{color:var(--muted)}
+
+/* εξώφυλλα (ημερολόγιο, μέρη) */
+.tiles.cover{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.ctile{position:relative;border:0;padding:0;border-radius:20px;overflow:hidden;cursor:pointer;aspect-ratio:4/3;background:var(--soft);text-align:left;box-shadow:var(--shadow);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.ctile:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.ctile.off{opacity:.35;cursor:default;transform:none;box-shadow:none}
+.ctile .cimg{position:absolute;inset:0}
+.ctile .cimg img{width:100%;height:100%;object-fit:cover}
+.ctile .cap{position:absolute;left:0;right:0;bottom:0;padding:30px 14px 12px;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;display:flex;flex-direction:column}
+.ctile .cap b{font-size:20px;letter-spacing:-.02em}
+.ctile .cap small{opacity:.88}
+
+/* πλέγμα φωτογραφιών */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:4px}
+.thumb{position:relative;aspect-ratio:1;background:var(--soft);border-radius:10px;overflow:hidden;cursor:pointer}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
+.thumb:hover img{transform:scale(1.04)}
+.thumb.noimg{background:linear-gradient(135deg,var(--soft),color-mix(in srgb,var(--soft) 70%,var(--line)))}
+.badge{position:absolute;right:6px;top:6px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:#fff;border-radius:999px;font-size:12px;padding:2px 8px;font-weight:700;display:inline-flex;align-items:center;gap:3px}
+.badge .ico{width:12px;height:12px}
+.badge .ico svg{fill:currentColor}
+.thumb.sel{outline:4px solid var(--bad);outline-offset:-4px}
+.thumb.sel::before{content:"✓";position:absolute;left:6px;top:6px;z-index:2;width:26px;height:26px;border-radius:50%;background:var(--bad);color:#fff;display:grid;place-items:center;font-weight:800}
+body.selecting .thumb{cursor:copy}
+
+.stepper{display:flex;align-items:center;justify-content:center;gap:12px;margin:4px 0 18px}
+.stepper b{font-size:24px;min-width:200px;text-align:center;letter-spacing:-.025em}
+.stepper .btn{width:46px;height:46px;padding:0}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:820px;margin:0 auto}
+.cal .wd{text-align:center;color:var(--muted);font-size:13px;font-weight:600}
+.day{position:relative;aspect-ratio:1;border-radius:14px;background:var(--card);border:1px solid var(--line);overflow:hidden;padding:0;cursor:default}
+.day.has{cursor:pointer;border-color:transparent}
+.day .n{position:absolute;left:7px;top:5px;font-weight:700;font-size:15px;z-index:2}
+.day.has .n{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+.day .cimg{position:absolute;inset:0}
+.day .cimg img{width:100%;height:100%;object-fit:cover}
+.day .badge{z-index:2}
+.day.today{outline:3px solid var(--accent);outline-offset:-1px}
+
+input[type=text],input[type=date],input[type=number],select{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card)}
+label.chk{display:flex;gap:12px;align-items:flex-start;padding:8px 0;cursor:pointer}
+label.chk input{width:20px;height:20px;margin-top:3px;flex:none;accent-color:var(--accent)}
+.locks{list-style:none;padding:0;margin:0}
+.locks li{padding:9px 0;border-bottom:1px solid var(--line);display:flex;gap:12px}
+.locks li:last-child{border:0}
+.locks .ic{flex:none;width:28px;text-align:center}
+pre,code{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:13.5px}
+pre{background:var(--soft);padding:14px;border-radius:14px;overflow:auto;white-space:pre}
+.tree{line-height:1.4}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+td,th{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:13px}
+.ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;box-shadow:var(--shadow)}
+.kpi b{display:block;font-size:28px;letter-spacing:-.03em;font-weight:800}
+.kpi span{color:var(--muted);font-size:13.5px}
+.list .item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.list .item .thumb{width:90px;flex:none}
+.path{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:12.5px;word-break:break-all;color:var(--muted)}
+details summary{cursor:pointer;font-weight:600;padding:6px 0}
+
+/* χάρτης */
+#map{height:min(62vh,560px);border-radius:var(--r);margin-bottom:18px;border:1px solid var(--line);z-index:0;box-shadow:var(--shadow);background:var(--soft)}
+.pmk{background:none;border:0}
+.pmk-in{position:relative;box-sizing:border-box;border-radius:50%;border:3px solid #fff;box-shadow:0 6px 16px rgba(0,0,0,.35);background:#8b5cf6 center/cover no-repeat;transition:transform .15s}
+.pmk-in:hover{transform:scale(1.12)}
+.pmk-in b{position:absolute;right:-2px;bottom:-2px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#111;color:#fff;font:700 12px/22px var(--font);text-align:center;border:2px solid #fff}
+.leaflet-container{font-family:var(--font)}
+
+/* προβολή φωτογραφίας */
+#lb{position:fixed;inset:0;z-index:100;background:rgba(6,7,10,.97);color:#f3f4f6;display:flex;flex-direction:column}
+#lb[hidden]{display:none}
+.lbtop{display:flex;justify-content:space-between;align-items:center;padding:10px 16px}
+.lbtop .hbtn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.1);color:#fff}
+.lbtop .hbtn:hover{background:rgba(255,255,255,.16)}
+.lbstage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:0}
+#lbMedia{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+#lbMedia img,#lbMedia video{max-width:100%;max-height:100%;object-fit:contain}
+.lbnav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;background:rgba(255,255,255,.1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);color:#fff;width:52px;height:52px;border-radius:50%;cursor:pointer;display:grid;place-items:center}
+.lbnav:hover{background:rgba(255,255,255,.2)}
+.lbnav .ico{width:26px;height:26px}
+#lbPrev{left:14px} #lbNext{right:14px}
+#lbInfo{padding:12px 16px 18px;max-height:34vh;overflow:auto;font-size:15px;border-top:1px solid rgba(255,255,255,.08)}
+#lbInfo .path{color:#a3a9b5}
+#lbInfo .link{color:#a5a6ff}
+
+/* πρόοδος */
+#prog{position:fixed;left:0;right:0;bottom:0;z-index:90;padding:0 12px 12px;pointer-events:none}
+#prog[hidden]{display:none}
+#prog .pin{pointer-events:auto;max-width:900px;margin:0 auto;background:var(--glass);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);border:1px solid var(--line);border-radius:22px;padding:16px 18px;box-shadow:var(--shadow-lg)}
+.bar{height:10px;background:var(--soft);border-radius:999px;overflow:hidden;margin:10px 0}
+.bar i{display:block;height:100%;width:0;background:var(--grad);border-radius:999px;transition:width .3s}
+#progNote{font-weight:700;color:var(--warn);margin:4px 0}
+#toast{position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:120;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:16px;max-width:min(92vw,560px);display:none;font-weight:600;box-shadow:var(--shadow-lg)}
+#banner .card{margin:14px auto 0;max-width:1168px}
+#banner{padding:0 16px}
+#selbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:95;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;
+  background:var(--glass);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);border:1px solid var(--line);border-radius:22px;padding:10px 14px;box-shadow:var(--shadow-lg);max-width:calc(100vw - 24px)}
+#selbar[hidden]{display:none}
+#selCount{font-weight:700;padding:0 6px}
+
+@media (max-width:600px){
+  body{font-size:15.5px}
+  header h1{display:none}
+  .brand{flex:0 0 auto}
+  #searchForm{flex:1 1 auto}
+  .tiles.cover{grid-template-columns:repeat(2,1fr);gap:10px}
+  .grid{grid-template-columns:repeat(3,1fr);gap:3px}
+  .stepper b{min-width:0;font-size:19px}
+  .cal{gap:3px}
+  .day{border-radius:10px}
+  .day .n{font-size:12px}
+  .lbnav{width:42px;height:42px}
+}
+</style>
+</head>
+<body>
+<header>
+  <button id="backBtn" class="hbtn" aria-label="Πίσω" title="Πίσω" data-ic="arrow-left"></button>
+  <div class="brand"><button id="homeBtn" class="logo" aria-label="Αρχική" title="Αρχική" style="border:0;cursor:pointer" data-ic="images"></button><h1 id="title">Μνήμες</h1></div>
+  <form id="searchForm"><span data-ic="search"></span><input id="q" type="search" placeholder="Μέρος, χρονιά, μήνας…" autocomplete="off"></form>
+  <button id="selBtn" class="hbtn" aria-label="Επιλογή για σβήσιμο" title="Επιλογή φωτογραφιών/βίντεο για σβήσιμο" hidden data-ic="square-check"></button>
+</header>
+<div id="selbar" hidden><span id="selCount"></span><button id="selAct" class="btn danger"></button><button id="selAll" class="btn">Όλα εδώ</button><button id="selCancel" class="btn ghost">Άκυρο</button></div>
+<div id="banner"></div>
+<main id="main"></main>
+
+<div id="lb" hidden>
+  <div class="lbtop"><span id="lbCount"></span><span class="row"><button class="hbtn" id="lbTrash" aria-label="Σβήσιμο" title="Σβήσιμο από παντού (πάει στον Κάδο)" data-ic="trash-2"></button><button class="hbtn" id="lbClose" aria-label="Κλείσιμο" data-ic="x"></button></span></div>
+  <div class="lbstage">
+    <button class="lbnav" id="lbPrev" aria-label="Προηγούμενη" data-ic="chevron-left"></button>
+    <div id="lbMedia"></div>
+    <button class="lbnav" id="lbNext" aria-label="Επόμενη" data-ic="chevron-right"></button>
+  </div>
+  <div id="lbInfo"></div>
+</div>
+
+<div id="prog" hidden><div class="pin">
+  <b id="progTitle"></b>
+  <div class="bar"><i id="progBar"></i></div>
+  <div id="progText" class="small"></div>
+  <div id="progNote"></div>
+  <div class="row"><button id="progPause" class="btn">Παύση</button><button id="progStop" class="btn ghost">Διακοπή</button></div>
+</div></div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   ΜΝΗΜΕΣ — όλες οι φωτογραφίες σου, τακτοποιημένες, με ασφάλεια.
+   Όλη η επεξεργασία γίνεται τοπικά στον browser. Τίποτα δεν ανεβαίνει.
+   ===================================================================== */
+const LIB_DIR='Μνήμες', META='_PhotoApp';
+const MONTHS=['Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος','Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
+const MONTHS_GEN=['Ιανουαρίου','Φεβρουαρίου','Μαρτίου','Απριλίου','Μαΐου','Ιουνίου','Ιουλίου','Αυγούστου','Σεπτεμβρίου','Οκτωβρίου','Νοεμβρίου','Δεκεμβρίου'];
+const MONTHS_SHORT=['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοέ','Δεκ'];
+const WEEKDAYS=['Δευ','Τρί','Τετ','Πέμ','Παρ','Σάβ','Κυρ'];
+const IMG_EXT=new Set(['jpg','jpeg','jpe','png','heic','heif','webp','avif','tif','tiff','bmp','gif','dng','cr2','cr3','nef','nrw','arw','orf','rw2','raf','srw','pef']);
+const VID_EXT=new Set(['mp4','mov','m4v','3gp','avi','mkv','mts','webm','wmv','mpg','mpeg']);
+const SIDE_EXT=new Set(['xmp','aae']);
+const DECODE_EXT=new Set(['jpg','jpeg','jpe','png','webp','gif','bmp','avif']);
+const RANK={jpg:0,jpeg:0,jpe:0,heic:1,heif:1,png:2,webp:2,avif:2,tif:3,tiff:3,bmp:3,gif:4};
+const SKIP_DIRS=new Set(['windows','windows.old','$windows.~bt','$windows.~ws','program files','program files (x86)','programdata','appdata','$recycle.bin','recycler','system volume information','recovery','msocache','perflogs','node_modules','cache','caches','temp','tmp','thumbnails','thumbs','library','_photoapp','lost+found','proc','sys','dev','snap','steamapps','windowsapps']);
+const CLOUD_RE=/onedrive|google ?drive|icloud|dropbox|\bmega\b|pcloud|box ?sync|nextcloud/i;
+const FS_OK=typeof window.showDirectoryPicker==='function';
+const ICONS={'image':'<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>','folder-down':'<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><path d="M12 10v6"/><path d="m15 13-3 3-3-3"/>','layout-grid':'<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>','map':'<path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/>','calendar-days':'<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>','copy':'<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>','file-chart-column':'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 18v-1"/><path d="M12 18v-6"/><path d="M16 18v-3"/>','film':'<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/>','folder-open':'<path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/>','hard-drive':'<line x1="22" x2="2" y1="12" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" x2="6.01" y1="16" y2="16"/><line x1="10" x2="10.01" y1="16" y2="16"/>','images':'<path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/>','map-pinned':'<path d="M18 8c0 3.613-3.869 7.429-5.393 8.795a1 1 0 0 1-1.214 0C9.87 15.429 6 11.613 6 8a6 6 0 0 1 12 0"/><circle cx="12" cy="8" r="2"/><path d="M8.714 14h-3.71a1 1 0 0 0-.948.683l-2.004 6A1 1 0 0 0 3 22h18a1 1 0 0 0 .948-1.316l-2-6a1 1 0 0 0-.949-.684h-3.712"/>','settings':'<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>','shield-check':'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>','arrow-left':'<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>','arrow-up-right':'<path d="M7 7h10v10"/><path d="M7 17 17 7"/>','search':'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>','square-check':'<rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/>','x':'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>','chevron-left':'<path d="m15 18-6-6 6-6"/>','chevron-right':'<path d="m9 18 6-6-6-6"/>','play':'<polygon points="6 3 20 12 6 21 6 3"/>','undo-2':'<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/>','eraser':'<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>','trash-2':'<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',};
+
+const S={photos:new Map(),faces:new Map(),persons:new Map(),sources:[],dests:[],geo:{},log:[],deletions:[],
+  settings:{minKB:30,videos:true,fileDate:true,geocode:true,requireBackup:false},
+  mem:new Map(),srcIndex:new Set(),run:null,ver:0,fver:0};
+
+/* ---------------- βοηθητικά ---------------- */
+const $=(s,r=document)=>r.querySelector(s);
+function el(tag,props,...kids){const e=document.createElement(tag);
+  for(const [k,v] of Object.entries(props||{})){ if(v==null||v===false) continue;
+    if(k==='class') e.className=v; else if(k==='style') e.style.cssText=v;
+    else if(k==='value'||k==='checked') e[k]=v;
+    else if(k.startsWith('on')&&typeof v==='function') e.addEventListener(k.slice(2),v);
+    else e.setAttribute(k,v===true?'':v);}
+  for(const c of kids.flat(Infinity)){ if(c==null||c===false) continue; e.append(c instanceof Node?c:document.createTextNode(String(c)));}
+  return e;}
+const card=(...k)=>el('div',{class:'card'},...k);
+const fmtN=n=>(n||0).toLocaleString('el-GR');
+function fmtSize(b){const u=['B','KB','MB','GB','TB'];let i=0;b=b||0;while(b>=1024&&i<4){b/=1024;i++;}return (i?b.toFixed(1):b)+' '+u[i];}
+function fmtDur(s){s=Math.round(s);if(s<60)return s+' δευτ.';if(s<3600)return Math.round(s/60)+' λεπτά';return (s/3600).toFixed(1)+' ώρες';}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const pad=n=>String(n).padStart(2,'0');
+const rid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+function extOf(n){const i=n.lastIndexOf('.');return i>0?n.slice(i+1).toLowerCase():'';}
+function baseOf(n){const i=n.lastIndexOf('.');return i>0?n.slice(0,i):n;}
+function safeName(s){let n=String(s).replace(/[\/\\:*?"<>|\x00-\x1f‪-‮⁦-⁩]/g,' ').replace(/\s+/g,' ').trim().replace(/^[. ]+|[. ]+$/g,'').slice(0,60).trim()||'Άγνωστο';
+  if(/^(con|prn|aux|nul|com\d|lpt\d)$/i.test(n))n+='_';return n;} // απαγορευμένα ονόματα των Windows
+function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmtDate(iso,withTime){if(!iso)return 'Χωρίς ημερομηνία';const [y,m,d]=iso.slice(0,10).split('-').map(Number);
+  let s=`${d} ${MONTHS_GEN[m-1]} ${y}`;if(withTime&&iso.length>10)s+=' · '+iso.slice(11,16);return s;}
+function cmpDate(a,b){if(!a.date)return b.date?1:0;if(!b.date)return -1;return a.date<b.date?-1:a.date>b.date?1:0;}
+function dayDiff(a,b){return Math.round((Date.UTC(+b.slice(0,4),+b.slice(5,7)-1,+b.slice(8,10))-Date.UTC(+a.slice(0,4),+a.slice(5,7)-1,+a.slice(8,10)))/864e5);}
+async function sha256(buf){const d=await crypto.subtle.digest('SHA-256',buf);return Array.from(new Uint8Array(d),b=>b.toString(16).padStart(2,'0')).join('');}
+/* SHA-256 «σε κομμάτια», για μεγάλα αρχεία (βίντεο πολλών GB) που δεν χωράνε ολόκληρα στη μνήμη */
+const SHA_K=new Uint32Array([0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+ 0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+ 0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+ 0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+class Sha256{constructor(){this.H=new Uint32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]);this.buf=new Uint8Array(64);this.bl=0;this.len=0;this.w=new Uint32Array(64);}
+  update(d){let i=0;this.len+=d.length;
+    if(this.bl){const n=Math.min(64-this.bl,d.length);this.buf.set(d.subarray(0,n),this.bl);this.bl+=n;i=n;if(this.bl===64){this.block(this.buf,0);this.bl=0;}}
+    for(;i+64<=d.length;i+=64)this.block(d,i);if(i<d.length){this.buf.set(d.subarray(i),0);this.bl=d.length-i;}}
+  block(b,o){const w=this.w,K=SHA_K;for(let t=0;t<16;t++)w[t]=(b[o+4*t]<<24)|(b[o+4*t+1]<<16)|(b[o+4*t+2]<<8)|b[o+4*t+3];
+    for(let t=16;t<64;t++){const x=w[t-15],y=w[t-2];const s0=((x>>>7)|(x<<25))^((x>>>18)|(x<<14))^(x>>>3);const s1=((y>>>17)|(y<<15))^((y>>>19)|(y<<13))^(y>>>10);w[t]=(w[t-16]+s0+w[t-7]+s1)|0;}
+    let a=this.H[0],bb=this.H[1],c=this.H[2],d=this.H[3],e=this.H[4],f=this.H[5],g=this.H[6],h=this.H[7];
+    for(let t=0;t<64;t++){const S1=((e>>>6)|(e<<26))^((e>>>11)|(e<<21))^((e>>>25)|(e<<7));const ch=(e&f)^(~e&g);const t1=(h+S1+ch+K[t]+w[t])|0;
+      const S0=((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10));const mj=(a&bb)^(a&c)^(bb&c);const t2=(S0+mj)|0;h=g;g=f;f=e;e=(d+t1)|0;d=c;c=bb;bb=a;a=(t1+t2)|0;}
+    const H=this.H;H[0]+=a;H[1]+=bb;H[2]+=c;H[3]+=d;H[4]+=e;H[5]+=f;H[6]+=g;H[7]+=h;}
+  hex(){const L=this.len,bits=L*8,p=new Uint8Array((this.bl<56?56:120)-this.bl+8),n=p.length;p[0]=0x80;const hi=Math.floor(bits/4294967296),lo=bits>>>0;
+    p[n-8]=hi>>>24;p[n-7]=hi>>>16&255;p[n-6]=hi>>>8&255;p[n-5]=hi&255;p[n-4]=lo>>>24;p[n-3]=lo>>>16&255;p[n-2]=lo>>>8&255;p[n-1]=lo&255;
+    this.update(p);this.len=L;return Array.from(this.H,x=>(x>>>0).toString(16).padStart(8,'0')).join('');}}
+let BIG=256*1024*1024; // πάνω από αυτό: διάβασμα σε κομμάτια
+async function hashFile(f){if(f.size<BIG)return sha256(await f.arrayBuffer());const hs=new Sha256(),r=f.stream().getReader();for(;;){const {done,value}=await r.read();if(done)break;hs.update(value);}return hs.hex();}
+async function selfTestSha(){try{for(const n of [0,3,55,56,63,64,65,1000,200003]){const d=new Uint8Array(n);for(let i=0;i<n;i+=65536)crypto.getRandomValues(d.subarray(i,Math.min(n,i+65536)));
+  const hs=new Sha256();hs.update(d.subarray(0,Math.floor(n/3)));hs.update(d.subarray(Math.floor(n/3)));if(hs.hex()!==await sha256(d))throw 0;}return true;}catch{BIG=Infinity;return false;}}
+let toastT;function toast(msg,ms=4200){const t=$('#toast');t.textContent=msg;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',ms);}
+function setTitle(t){$('#title').textContent=t;document.title=t==='Μνήμες'?'Μνήμες':t+' · Μνήμες';}
+function logErr(msg,e){S.log.push({t:Date.now(),msg,e:e?String(e.message||e):''});if(S.log.length>3000)S.log.splice(0,S.log.length-3000);clearTimeout(logErr.t);logErr.t=setTimeout(()=>dbPut('kv','log',S.log),2000);}
+function loadScript(src,integrity){return new Promise((res,rej)=>{const s=document.createElement('script');if(integrity){s.integrity=integrity;s.crossOrigin='anonymous';}s.src=src;s.onload=res;s.onerror=()=>rej(new Error('Δεν φορτώθηκε: '+src));document.head.append(s);});}
+function loadImg(u){return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=u;});}
+function download(blob,name){const a=el('a',{href:URL.createObjectURL(blob),download:name});document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);}
+
+/* ---------------- IndexedDB (μνήμη εφαρμογής) ---------------- */
+let _db=null;
+function idb(){if(_db)return _db;_db=new Promise((res,rej)=>{const r=indexedDB.open('mnimes',1);
+  r.onupgradeneeded=()=>{const d=r.result;for(const s of ['kv','photos','thumbs','faces','chips','persons'])if(!d.objectStoreNames.contains(s))d.createObjectStore(s);};
+  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});return _db;}
+async function tx(store,mode,fn){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction(store,mode);const req=fn(t.objectStore(store));
+  t.oncomplete=()=>res(req&&req.result);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error);});}
+const dbGet=(s,k)=>tx(s,'readonly',o=>o.get(k)).catch(()=>undefined);
+const dbPut=(s,k,v)=>tx(s,'readwrite',o=>o.put(v,k)).catch(e=>console.warn('idb',e));
+const dbDel=(s,k)=>tx(s,'readwrite',o=>o.delete(k)).catch(()=>{});
+const dbAll=s=>tx(s,'readonly',o=>o.getAll()).catch(()=>[]);
+const savePhoto=p=>dbPut('photos',p.h,p);
+const saveSources=()=>dbPut('kv','sources',S.sources);
+const saveDests=()=>dbPut('kv','dests',S.dests);
+async function loadAll(){
+  try{
+    Object.assign(S.settings,(await dbGet('kv','settings'))||{});
+    S.sources=(await dbGet('kv','sources'))||[];
+    S.dests=(await dbGet('kv','dests'))||[];
+    S.geo=(await dbGet('kv','geo'))||{};
+    S.log=(await dbGet('kv','log'))||[];
+    S.deletions=(await dbGet('kv','deletions'))||[];
+    for(const p of await dbAll('photos'))S.photos.set(p.h,p);
+    for(const f of await dbAll('faces'))S.faces.set(f.id,f);
+    for(const p of await dbAll('persons'))S.persons.set(p.id,p);
+  }catch(e){console.warn(e);}
+  rebuildSrcIndex();S.ver++;S.fver++;
+}
+function rebuildSrcIndex(){S.srcIndex.clear();for(const p of S.photos.values())for(const fl of p.files||[])for(const s of fl.srcs||[])S.srcIndex.add(s.s+'|'+s.p.join('/'));}
+
+/* ---------------- Αρχεία (File System Access API) ---------------- */
+async function permState(h,mode='read'){if(!h)return 'denied';try{return await h.queryPermission({mode});}catch{return 'denied';}}
+async function ensurePerm(h,mode='read'){if(!h)return false;if(await permState(h,mode)==='granted')return true;try{return (await h.requestPermission({mode}))==='granted';}catch{return false;}}
+async function dirAt(root,segs,create=false){let d=root;for(const s of segs)d=await d.getDirectoryHandle(s,{create});return d;}
+async function fileHandleAt(root,segs,create=false){const d=await dirAt(root,segs.slice(0,-1),create);return d.getFileHandle(segs[segs.length-1],{create});}
+async function writeRel(root,rel,blob){const fh=await fileHandleAt(root,rel.split('/'),true);const w=await fh.createWritable();
+  try{await w.write(blob);await w.close();}catch(e){try{await w.abort();}catch{}throw e;}}
+async function readRel(root,rel){return (await fileHandleAt(root,rel.split('/'))).getFile();}
+async function relExists(root,rel){try{await fileHandleAt(root,rel.split('/'));return true;}catch{return false;}}
+async function hasDir(dir,name){try{await dir.getDirectoryHandle(name);return true;}catch{return false;}}
+/* Διάβασε + αποτύπωμα, με 3 προσπάθειες. Μικρά αρχεία: μία ανάγνωση στη μνήμη. Μεγάλα (βίντεο): σε κομμάτια, χωρίς να γεμίσει η μνήμη. */
+async function readHashed(getFile,tries=3){let last;for(let i=0;i<tries;i++){try{const f=await getFile();
+  if(f.size>=BIG)return {f,buf:null,h:await hashFile(f)};const buf=await f.arrayBuffer();return {f,buf,h:await sha256(buf)};}
+  catch(e){last=e;if(e&&e.name==='NotFoundError')break;await sleep(400*(i+1));}}throw last;}
+/* Πραγματικός έλεγχος χώρου: «κλείνει» προσωρινά αρχείο όσο ο χώρος που χρειάζεται και μετά το σβήνει */
+async function checkSpace(d,bytes){const name='.xoros-'+Date.now()+'.tmp';let res=null;
+  try{const fh=await fileHandleAt(d.handle,[META,name],true);const w=await fh.createWritable();
+    try{await w.truncate(Math.ceil(bytes));await w.close();res=true;}catch(e){try{await w.abort();}catch{}throw e;}}
+  catch(e){res=isFull(e)?false:null;if(res===null)logErr('Ο έλεγχος χώρου δεν ολοκληρώθηκε',e);}
+  try{await (await d.handle.getDirectoryHandle(META)).removeEntry(name);}catch{}
+  return res;}
+function isFull(e){return e&&(e.name==='QuotaExceededError'||/no space|disk full|quota|not enough space/i.test(e.message||''));}
+
+/* ---------------- Μεταδεδομένα: ημερομηνία & τοποθεσία ---------------- */
+function dateToIso(d){
+  if(typeof d==='string'){const m=d.match(/^(\d{4})[:-](\d\d)[:-](\d\d)[ T](\d\d):(\d\d):(\d\d)/);if(!m)return null;d=new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5],+m[6]);}
+  if(!(d instanceof Date)||isNaN(d))return null;const y=d.getFullYear();if(y<1971||y>new Date().getFullYear()+1)return null;
+  return `${y}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;}
+function dateFromName(name){
+  const m=name.match(/(19[89]\d|20[0-4]\d)[-_.]?(0[1-9]|1[0-2])[-_.]?(0[1-9]|[12]\d|3[01])(?:[-_ T]?([01]\d|2[0-3])[-_.:]?([0-5]\d)[-_.:]?([0-5]\d))?/);
+  if(!m)return null;const d=new Date(+m[1],m[2]-1,+m[3],+(m[4]||12),+(m[5]||0),+(m[6]||0));
+  if(d.getMonth()!==m[2]-1)return null;return dateToIso(d);}
+async function readMeta(buf,name,lastMod,isVideo){
+  let date=null,ds=null,lat=null,lon=null;
+  if(!isVideo&&window.exifr){try{
+    const x=await exifr.parse(buf,{tiff:true,exif:true,gps:true,xmp:false,icc:false,iptc:false,jfif:false,ihdr:false,ifd1:false,mergeOutput:true,reviveValues:true});
+    if(x){const iso=dateToIso(x.DateTimeOriginal||x.CreateDate||x.DateTimeDigitized||x.ModifyDate);if(iso){date=iso;ds='exif';}
+      if(typeof x.latitude==='number'&&typeof x.longitude==='number'&&isFinite(x.latitude)&&isFinite(x.longitude)&&!(x.latitude===0&&x.longitude===0)){lat=+x.latitude.toFixed(6);lon=+x.longitude.toFixed(6);}}
+  }catch(e){}}
+  if(!date){const iso=dateFromName(name);if(iso){date=iso;ds='name';}}
+  if(!date&&S.settings.fileDate&&lastMod){const iso=dateToIso(new Date(lastMod));if(iso){date=iso;ds='file';}}
+  return {date,ds,lat,lon};}
+let geoLast=0;
+function cleanPlace(n){return n?String(n).replace(/^(Δήμος|Δημοτική Ενότητα|Περιφερειακή Ενότητα|Municipality of|Municipal Unit of)\s+/i,'').trim():null;}
+async function placeName(lat,lon){
+  const key=lat.toFixed(2)+','+lon.toFixed(2);
+  if(key in S.geo)return S.geo[key];
+  if(!S.settings.geocode||!navigator.onLine)return null;
+  const wait=geoLast+700-Date.now();if(wait>0)await sleep(wait);geoLast=Date.now();
+  let name=null;lat=lat.toFixed(2);lon=lon.toFixed(2); // ιδιωτικότητα: στέλνεται μόνο η περιοχή (~1 χλμ), όχι το ακριβές σημείο
+  try{const r=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=el`,{referrerPolicy:'no-referrer',credentials:'omit'});
+    if(r.ok){const j=await r.json();name=cleanPlace(j.city||j.locality||j.principalSubdivision||j.countryName);}}catch(e){}
+  if(!name){try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&accept-language=el&lat=${lat}&lon=${lon}`,{referrerPolicy:'no-referrer',credentials:'omit'});
+    if(r.ok){const a=(await r.json()).address||{};name=cleanPlace(a.village||a.town||a.city||a.municipality||a.island||a.county||a.state||a.country);}await sleep(1000);}catch(e){}}
+  if(name){S.geo[key]=name;clearTimeout(placeName.t);placeName.t=setTimeout(()=>dbPut('kv','geo',S.geo),1500);}
+  return name;}
+function placeKey(p){return p.place?'n:'+p.place:(p.lat!=null?'c:'+p.lat.toFixed(1)+','+p.lon.toFixed(1):null);}
+function placeLabel(p){return p.place||(p.lat!=null?`📍 ${p.lat.toFixed(1)}, ${p.lon.toFixed(1)}`:'');}
+function folderFor(p){if(!p.date)return 'Χωρίς ημερομηνία';const y=p.date.slice(0,4),m=+p.date.slice(5,7);let f=`${y}/${pad(m)}-${MONTHS[m-1]}`;if(p.place)f+='/'+safeName(p.place);return f;}
+
+/* ---------------- Μικρογραφίες ---------------- */
+async function decodeImage(blob,buf){
+  try{return {bmp:await createImageBitmap(blob),full:true};}catch(e){}
+  if(window.exifr&&buf){try{const t=await exifr.thumbnail(buf);if(t)return {bmp:await createImageBitmap(new Blob([t],{type:'image/jpeg'})),full:false};}catch(e){}}
+  return null;}
+/* Καμβάς → JPEG με ασφάλεια: toBlob, κι αν δεν απαντήσει σε 4" , εναλλακτικά toDataURL */
+function canvasJpeg(c,q){return new Promise(res=>{let done=false;const fin=b=>{if(!done){done=true;res(b);}};
+  try{c.toBlob(b=>fin(b),'image/jpeg',q);}catch{}
+  setTimeout(()=>{if(done)return;try{const u=c.toDataURL('image/jpeg',q),s=atob(u.split(',')[1]),a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i);fin(new Blob([a],{type:'image/jpeg'}));}catch{fin(null);}},4000);});}
+function toJpeg(src,w,h,max,q=0.82){const sc=Math.min(1,max/Math.max(w,h));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*sc));c.height=Math.max(1,Math.round(h*sc));
+  c.getContext('2d').drawImage(src,0,0,c.width,c.height);return canvasJpeg(c,q);}
+async function makeThumb(file,buf){const d=await decodeImage(file,buf);if(!d)return null;const blob=await toJpeg(d.bmp,d.bmp.width,d.bmp.height,420);
+  const r={blob,w:d.bmp.width,h:d.bmp.height,dec:d.full};d.bmp.close&&d.bmp.close();return blob?r:null;}
+function videoThumb(file){return new Promise(res=>{const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='metadata';
+  const url=URL.createObjectURL(file);let done=false;const fin=r=>{if(done)return;done=true;URL.revokeObjectURL(url);res(r);};
+  v.onloadeddata=()=>{try{v.currentTime=Math.min(1,(v.duration||2)/2);}catch{fin(null);}};
+  v.onseeked=async()=>{try{const b=await toJpeg(v,v.videoWidth,v.videoHeight,420);fin(b?{blob:b,w:v.videoWidth,h:v.videoHeight,dec:true}:null);}catch{fin(null);}};
+  v.onerror=()=>fin(null);setTimeout(()=>fin(null),8000);v.src=url;});}
+const thumbURLs=new Map(),chipURLs=new Map();
+/* Οι εικόνες μπαίνουν στη μνήμη του browser ως σκέτα bytes (πιο αξιόπιστο από Blob, ειδικά όταν η σελίδα ανοίγει ως αρχείο) */
+async function putBin(store,key,blob){try{await dbPut(store,key,{t:blob.type||'image/jpeg',b:await blob.arrayBuffer()});}catch(e){console.warn(e);}}
+async function getBin(store,key){const v=await dbGet(store,key);if(!v)return null;if(v instanceof Blob)return v;return v.b?new Blob([v.b],{type:v.t||'image/jpeg'}):null;}
+async function storeThumb(h,blob){await putBin('thumbs',h,blob);if(thumbURLs.has(h))URL.revokeObjectURL(thumbURLs.get(h));thumbURLs.set(h,URL.createObjectURL(blob));}
+async function cachedBlobURL(map,store,key,rel){
+  if(map.has(key))return map.get(key);
+  let b=await getBin(store,key);
+  if(!b){for(const d of S.dests){if(d.handle&&await permState(d.handle)==='granted'){try{b=await readRel(d.handle,rel);putBin(store,key,b);break;}catch{}}}}
+  if(!b)return null;const u=URL.createObjectURL(b);map.set(key,u);return u;}
+const thumbURL=h=>cachedBlobURL(thumbURLs,'thumbs',h,`${META}/thumbs/${h}.jpg`);
+const chipURL=id=>cachedBlobURL(chipURLs,'chips',id,`${META}/faces/${id}.jpg`);
+const io=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){io.unobserve(e.target);fillImg(e.target);}},{rootMargin:'500px'});
+async function fillImg(div){const u=div.dataset.chip?await chipURL(div.dataset.chip):await thumbURL(div.dataset.h);
+  if(u)div.prepend(el('img',{src:u,alt:'',decoding:'async'}));else div.classList.add('noimg');}
+function lazy(div,{h,chip}){if(h)div.dataset.h=h;if(chip)div.dataset.chip=chip;io.observe(div);return div;}
+
+/* Πλήρης εικόνα: από μνήμη → βιβλιοθήκη → αρχική θέση */
+async function photoBlob(p){
+  if(S.mem.has(p.h))return S.mem.get(p.h);
+  const mf=p.files[0];
+  if(mf.rel)for(const d of S.dests){if(d.handle&&await permState(d.handle)==='granted'){try{return await readRel(d.handle,(p.trashed?TRASH+'/':'')+mf.rel);}catch{}}}
+  for(const src of mf.srcs||[]){if(src.deleted)continue;const s=S.sources[src.s];if(s&&s.handle&&await permState(s.handle)==='granted'){try{return await (await fileHandleAt(s.handle,src.p)).getFile();}catch{}}}
+  return null;}
+
+/* ---------------- ΚΑΔΟΣ: σβήσιμο φωτογραφίας/βίντεο ΑΠΟ ΠΑΝΤΟΥ, με επαναφορά ----------------
+   1) Ένα επαληθευμένο αντίγραφο μπαίνει στον Κάδο (μέσα στη βιβλιοθήκη, σε κάθε δίσκο της).
+   2) ΜΟΝΟ αφού επαληθευτεί, σβήνεται από τη βιβλιοθήκη, το 2ο αντίγραφο και ΟΛΕΣ τις αρχικές θέσεις.
+   3) Οριστικά χάνεται μόνο όταν αδειάσεις τον Κάδο. */
+const TRASH=META+'/Κάδος';
+async function removeRel(root,segs){const dir=await dirAt(root,segs.slice(0,-1));await dir.removeEntry(segs[segs.length-1]);}
+async function goodCopy(p,fl,fromTrash){ // βρες ένα αντίγραφο με ΣΩΣΤΟ αποτύπωμα
+  for(const d of S.dests){try{const f=await readRel(d.handle,(fromTrash?TRASH+'/':'')+fl.rel);if(f.size===fl.size&&await hashFile(f)===fl.h)return f;}catch{}}
+  for(const src of fl.srcs){if(src.deleted)continue;const s=S.sources[src.s];if(!s||!s.handle)continue;try{const f=await (await fileHandleAt(s.handle,src.p)).getFile();if(f.size===fl.size&&await hashFile(f)===fl.h)return f;}catch{}}
+  return null;}
+async function trashPhotos(list){
+  list=list.filter(p=>p&&!p.trashed&&!p.viewOnly);if(!list.length)return;
+  for(const d of S.dests)if(!await ensurePerm(d.handle,'readwrite'))return toast('Χρειάζεται άδεια για τη βιβλιοθήκη «'+d.name+'».');
+  const srcIds=new Set();for(const p of list)for(const fl of p.files)for(const s of fl.srcs)if(!s.deleted&&!s.prot)srcIds.add(s.s);
+  const missing=[];for(const i of srcIds){const s=S.sources[i];if(!s||!s.handle||s.removed||!await ensurePerm(s.handle,'readwrite'))missing.push(s?s.name:'?');}
+  const nv=list.filter(p=>p.video).length,what=`${list.length-nv?fmtN(list.length-nv)+' φωτογραφί'+(list.length-nv===1?'α':'ες'):''}${list.length-nv&&nv?' και ':''}${nv?fmtN(nv)+' βίντεο':''}`;
+  if(!confirm(`🗑️ Να σβηστ${list.length===1?'εί':'ούν'} ${what} ΑΠΟ ΠΑΝΤΟΥ;\n\n• από τη βιβλιοθήκη «Μνήμες» (και το 2ο αντίγραφο)\n• από ΟΛΕΣ τις αρχικές θέσεις (και OneDrive/cloud → σβήνεται και από τις άλλες συσκευές)\n\nΠάνε στον 🗑️ Κάδο: μπορείς να τα επαναφέρεις, μέχρι να τον αδειάσεις.`+
+    (missing.length?`\n\n⚠️ Δεν έχω πρόσβαση σε: ${missing.join(', ')} (ίσως αποσυνδεδεμένος δίσκος). Από εκεί ΔΕΝ θα σβηστούν.`:'')))return;
+  const run=newRun('🗑️ Στον Κάδο');if(!run)return;run.total=list.length;run.lines={'Στον Κάδο':0,'Αρχικά σβήστηκαν':0,'Παραλείφθηκαν (για ασφάλεια)':0};
+  for(const p of list){await run.wait();if(run.stop)break;
+    try{ // Βήμα 1: επαληθευμένο αντίγραφο στον Κάδο για ΚΑΘΕ αρχείο (RAW, Live, XMP μαζί)
+      for(const fl of p.files){if(!fl.rel)throw new Error('δεν έχει αντιγραφεί ακόμα στη βιβλιοθήκη');
+        const good=await goodCopy(p,fl,false);if(!good)throw new Error('δεν βρέθηκε σωστό αντίγραφο: '+fl.rel);let saved=0;
+        for(const d of S.dests){try{const tr=`${TRASH}/${fl.rel}`;if(!(await relExists(d.handle,tr))||await hashFile(await readRel(d.handle,tr))!==fl.h)await writeRel(d.handle,tr,new Blob([good]));
+          const back=await readRel(d.handle,tr);if(back.size===fl.size&&await hashFile(back)===fl.h)saved++;}catch(e){if(isFull(e))throw new Error('γέμισε ο δίσκος');}}
+        if(!saved)throw new Error('δεν επαληθεύτηκε το αντίγραφο στον Κάδο: '+fl.rel);}
+      // Βήμα 2: σβήσιμο από βιβλιοθήκη + αρχικές θέσεις
+      const srcDel=[];
+      for(const fl of p.files){for(const d of S.dests){try{await removeRel(d.handle,fl.rel.split('/'));}catch{}}
+        for(const src of fl.srcs){if(src.deleted||src.prot)continue;const s=S.sources[src.s];if(!s||!s.handle||await permState(s.handle,'readwrite')!=='granted')continue;
+          try{const fh=await fileHandleAt(s.handle,src.p);const f=await fh.getFile();
+            if(f.size!==fl.size||await hashFile(f)!==fl.h){logErr('Δεν σβήστηκε (άλλαξε το αρχικό): '+srcLabel(src));continue;}
+            let same=false;for(const d of S.dests){try{if(await fh.isSameEntry(await fileHandleAt(d.handle,`${TRASH}/${fl.rel}`.split('/'))))same=true;}catch{}}if(same)continue;
+            await removeRel(s.handle,src.p);src.deleted=Date.now();src.trashed=true;srcDel.push({s:src.s,p:src.p,h:fl.h,rel:fl.rel});run.lines['Αρχικά σβήστηκαν']++;}
+          catch(e){if(e.name!=='NotFoundError')logErr('Δεν σβήστηκε: '+srcLabel(src),e);}}}
+      p.trashed=Date.now();p.trashSrc=srcDel;await savePhoto(p);run.lines['Στον Κάδο']++;}
+    catch(e){run.lines['Παραλείφθηκαν (για ασφάλεια)']++;logErr('Δεν πήγε στον Κάδο: '+p.name,e);}
+    run.i++;updProg();}
+  rebuildSrcIndex();S.ver++;S.fver++;await saveIndex();
+  endRun(run,`✅ ${fmtN(run.lines['Στον Κάδο'])} πήγαν στον 🗑️ Κάδο (σβήστηκαν και ${fmtN(run.lines['Αρχικά σβήστηκαν'])} αρχικά). Αν το μετάνιωσες: Αρχική → Κάδος → Επαναφορά.`);}
+async function restorePhotos(list){
+  list=list.filter(p=>p&&p.trashed&&!p.purged);if(!list.length)return;
+  for(const d of S.dests)if(!await ensurePerm(d.handle,'readwrite'))return toast('Χρειάζεται άδεια για τη βιβλιοθήκη «'+d.name+'».');
+  const sIds=new Set(list.flatMap(p=>(p.trashSrc||[]).map(e=>e.s)));for(const i of sIds){const s=S.sources[i];if(s&&s.handle&&!s.removed)await ensurePerm(s.handle,'readwrite');}
+  const run=newRun('↩️ Επαναφορά από τον Κάδο');if(!run)return;run.total=list.length;run.lines={'Επαναφέρθηκαν':0,'Αρχικά ξαναμπήκαν στη θέση τους':0,'Προβλήματα':0};
+  for(const p of list){await run.wait();if(run.stop)break;
+    try{for(const fl of p.files){const good=await goodCopy(p,fl,true);if(!good)throw new Error('δεν βρέθηκε στον Κάδο: '+fl.rel);
+        for(const d of S.dests){if(await relExists(d.handle,fl.rel)){if(await hashFile(await readRel(d.handle,fl.rel))!==fl.h)throw new Error('υπάρχει ήδη άλλο αρχείο: '+fl.rel);}
+          else await writeRel(d.handle,fl.rel,new Blob([good]));if(await hashFile(await readRel(d.handle,fl.rel))!==fl.h)throw new Error('η επαναφορά δεν επαληθεύτηκε');}
+        for(const e of (p.trashSrc||[]).filter(e=>e.h===fl.h)){const s=S.sources[e.s];if(!s||!s.handle||await permState(s.handle,'readwrite')!=='granted'){logErr('Το αρχικό δεν ξαναμπήκε (χωρίς άδεια): '+(s?s.name:'?')+'/'+e.p.join('/'));continue;}
+          try{let exists=false;try{await fileHandleAt(s.handle,e.p);exists=true;}catch{}
+            if(!exists){await writeRel(s.handle,e.p.join('/'),new Blob([good]));}
+            if(await hashFile(await (await fileHandleAt(s.handle,e.p)).getFile())===fl.h){const src=fl.srcs.find(x=>x.s===e.s&&x.p.join('/')===e.p.join('/'));if(src){delete src.deleted;delete src.trashed;src.ok=true;}e.done=true;run.lines['Αρχικά ξαναμπήκαν στη θέση τους']++;}}
+          catch(x){logErr('Το αρχικό δεν ξαναμπήκε: '+s.name+'/'+e.p.join('/'),x);}}}
+      for(const fl of p.files)for(const d of S.dests){try{await removeRel(d.handle,`${TRASH}/${fl.rel}`.split('/'));}catch{}}
+      p.trashSrc=(p.trashSrc||[]).filter(e=>!e.done);delete p.trashed;await savePhoto(p);run.lines['Επαναφέρθηκαν']++;}
+    catch(e){run.lines['Προβλήματα']++;logErr('Επαναφορά απέτυχε: '+p.name,e);}
+    run.i++;updProg();}
+  rebuildSrcIndex();S.ver++;S.fver++;await saveIndex();
+  endRun(run,`✅ Επαναφέρθηκαν ${fmtN(run.lines['Επαναφέρθηκαν'])} (και ${fmtN(run.lines['Αρχικά ξαναμπήκαν στη θέση τους'])} αρχικά στη θέση τους).`);}
+async function emptyTrash(){const list=[...S.photos.values()].filter(p=>p.trashed&&!p.purged);if(!list.length)return;
+  if(prompt(`⚠️ ΟΡΙΣΤΙΚΟ σβήσιμο ${fmtN(list.length)} αρχείων από τον Κάδο. Δεν γυρίζουν πίσω ΠΟΤΕ.\nΓράψε: ΑΔΕΙΑΣΜΑ`)!=='ΑΔΕΙΑΣΜΑ')return;
+  for(const d of S.dests)if(!await ensurePerm(d.handle,'readwrite'))return toast('Χρειάζεται άδεια για τη βιβλιοθήκη «'+d.name+'».');
+  const run=newRun('🗑️ Άδειασμα Κάδου');if(!run)return;run.total=list.length;run.lines={'Σβήστηκαν οριστικά':0};
+  for(const p of list){for(const fl of p.files)for(const d of S.dests){try{await removeRel(d.handle,`${TRASH}/${fl.rel}`.split('/'));}catch{}}
+    // και η μικρογραφία και τα πρόσωπα — να μη μείνει ίχνος
+    dbDel('thumbs',p.h);if(thumbURLs.has(p.h)){URL.revokeObjectURL(thumbURLs.get(p.h));thumbURLs.delete(p.h);}
+    for(const d of S.dests){try{await removeRel(d.handle,[META,'thumbs',p.h+'.jpg']);}catch{}}
+    for(const f of [...S.faces.values()].filter(f=>f.h===p.h)){S.faces.delete(f.id);dbDel('faces',f.id);dbDel('chips',f.id);for(const d of S.dests){try{await removeRel(d.handle,[META,'faces',f.id+'.jpg']);}catch{}}
+      const pr=S.persons.get(f.person);if(pr){recomputePerson(pr);if(!pr.count){S.persons.delete(pr.id);dbDel('persons',pr.id);}else dbPut('persons',pr.id,pr);}}
+    S.fver++;p.purged=Date.now();await savePhoto(p);run.lines['Σβήστηκαν οριστικά']++;run.i++;updProg();}
+  S.ver++;await saveIndex();endRun(run,`✅ Ο Κάδος άδειασε (${fmtN(run.lines['Σβήστηκαν οριστικά'])}).`);}
+
+/* ---------------- Ευρετήρια ---------------- */
+let IDX=null,IDXV=-1,FIDX=null,FIDXV=-1;
+function getIdx(){if(IDX&&IDXV===S.ver)return IDX;
+  const all=[...S.photos.values()].filter(p=>!p.trashed).sort(cmpDate);const days=new Map(),months=new Map(),years=new Map(),places=new Map(),nodate=[];
+  const push=(m,k,v)=>{let a=m.get(k);if(!a)m.set(k,a=[]);a.push(v);};
+  for(const p of all){
+    if(!p.date)nodate.push(p);else{push(days,p.date.slice(0,10),p);push(months,p.date.slice(0,7),p);const y=+p.date.slice(0,4);years.set(y,(years.get(y)||0)+1);}
+    const k=placeKey(p);if(k){let pl=places.get(k);if(!pl)places.set(k,pl={key:k,name:placeLabel(p),list:[],lat:0,lon:0,n:0});pl.list.push(p);if(p.lat!=null){pl.lat+=p.lat;pl.lon+=p.lon;pl.n++;}}}
+  for(const pl of places.values())if(pl.n){pl.lat/=pl.n;pl.lon/=pl.n;}
+  const ys=[...years.keys()].sort((a,b)=>a-b);
+  IDX={all,days,months,years,places,nodate,dayKeys:[...days.keys()].sort(),minYear:ys[0],maxYear:ys[ys.length-1]};IDXV=S.ver;return IDX;}
+function getFaceIdx(){if(FIDX&&FIDXV===S.fver)return FIDX;const byPhoto=new Map(),byPerson=new Map();
+  for(const f of S.faces.values()){const fp=S.photos.get(f.h);if(fp&&fp.trashed)continue;let a=byPhoto.get(f.h);if(!a)byPhoto.set(f.h,a=[]);a.push(f);if(f.person){let b=byPerson.get(f.person);if(!b)byPerson.set(f.person,b=[]);b.push(f);}}
+  FIDX={byPhoto,byPerson};FIDXV=S.fver;return FIDX;}
+const mid=l=>l[Math.floor(l.length/2)];
+
+/* ---------------- Εργασίες σε εξέλιξη (πρόοδος, παύση, μπαταρία) ---------------- */
+let wake=null;
+async function keepAwake(on){try{if(on&&navigator.wakeLock)wake=await navigator.wakeLock.request('screen');else if(wake){await wake.release();wake=null;}}catch{}}
+function newRun(title){
+  if(S.run&&!S.run.done){toast('Τρέχει ήδη μια εργασία. Περίμενε να τελειώσει.');return null;}
+  const run={title,paused:false,stop:false,done:false,t0:Date.now(),total:0,i:0,note:'',phase:'',lines:{},consecErr:0};
+  run.wait=async()=>{while(run.paused&&!run.stop)await sleep(250);};
+  S.run=run;$('#prog').hidden=false;$('#progTitle').textContent=title;$('#progPause').hidden=false;$('#progStop').textContent='Διακοπή';
+  keepAwake(true);watchBattery(run);updProg(true);return run;}
+function endRun(run,msg){run.done=true;keepAwake(false);$('#progPause').hidden=true;$('#progStop').textContent='Κλείσιμο';run.note=msg||'';run.i=run.total;updProg(true);S.ver++;S.fver++;}
+let progT=0;
+function updProg(force){const now=Date.now();if(!force&&now-progT<250)return;progT=now;const r=S.run;if(!r)return;
+  $('#progBar').style.width=(r.total?Math.min(100,r.i/r.total*100):(r.done?100:3))+'%';
+  let eta='';if(r.total&&r.i>5&&!r.done&&!r.paused){const sec=(now-r.t0)/1000;eta=' · απομένουν ~'+fmtDur(sec/r.i*(r.total-r.i));}
+  $('#progText').innerHTML=(r.phase?`<b>${esc(r.phase)}</b> · `:'')+(r.total?`${fmtN(r.i)} / ${fmtN(r.total)}`:'')+eta+'<br>'+
+    Object.entries(r.lines).map(([k,v])=>`${esc(k)}: <b>${esc(typeof v==='number'?fmtN(v):v)}</b>`).join(' · ');
+  $('#progNote').textContent=r.note||'';$('#progPause').textContent=r.paused?'Συνέχεια':'Παύση';}
+function watchBattery(run){if(!navigator.getBattery)return;navigator.getBattery().then(b=>{const chk=()=>{if(run.done)return;
+  if(!b.charging&&b.level<0.2&&!run.paused){run.paused=true;run.autoPaused=true;run.note='🔋 Χαμηλή μπαταρία — έγινε παύση για ασφάλεια. Σύνδεσε τον φορτιστή.';updProg(true);}
+  else if(b.charging&&run.autoPaused){run.paused=false;run.autoPaused=false;run.note='';updProg(true);}};
+  b.addEventListener('levelchange',chk);b.addEventListener('chargingchange',chk);chk();}).catch(()=>{});}
+$('#progPause').onclick=()=>{const r=S.run;if(!r||r.done)return;r.paused=!r.paused;r.autoPaused=false;if(!r.paused)r.note='';updProg(true);};
+$('#progStop').onclick=()=>{const r=S.run;if(!r)return;if(r.done){$('#prog').hidden=true;S.run=null;render();return;}
+  if(confirm('Να σταματήσει η εργασία;\nΌ,τι έγινε μένει αποθηκευμένο και μπορείς να συνεχίσεις αργότερα από εκεί που έμεινε.')){r.stop=true;r.paused=false;}};
+window.addEventListener('beforeunload',e=>{if(S.run&&!S.run.done){e.preventDefault();e.returnValue='';}});
+function readError(src,path,e,run){
+  if(e&&e.name==='NotFoundError'){logErr(`Δεν βρέθηκε: ${src.name}/${path.join('/')}`,e);return;}
+  src.errors=(src.errors||0)+1;src.suspicious=true;logErr(`Σφάλμα ανάγνωσης: ${src.name}/${path.join('/')}`,e);
+  if(run){run.lines['Σφάλματα']=(run.lines['Σφάλματα']||0)+1;run.consecErr++;
+    if(run.consecErr>=5&&!run.paused){run.paused=true;run.consecErr=0;run.note='⚠️ Πολλά σφάλματα ανάγνωσης στη σειρά. Μήπως αποσυνδέθηκε ο δίσκος ή έχει χαλασμένους τομείς; Έλεγξέ τον και πάτα «Συνέχεια».';}}
+  clearTimeout(readError.t);readError.t=setTimeout(saveSources,1000);}
+
+/* ---------------- Προορισμοί & πηγές ---------------- */
+async function testDest(d){
+  try{const data=new Uint8Array(1024*1024);for(let i=0;i<data.length;i+=65536)crypto.getRandomValues(data.subarray(i,i+65536));
+    const name='.dokimi-'+Date.now()+'.bin';await writeRel(d.handle,`${META}/${name}`,new Blob([data]));
+    const back=new Uint8Array(await (await readRel(d.handle,`${META}/${name}`)).arrayBuffer());
+    let ok=back.length===data.length;for(let i=0;ok&&i<data.length;i++)if(back[i]!==data[i])ok=false;
+    await (await d.handle.getDirectoryHandle(META)).removeEntry(name);d.test=ok?'ok':'bad';d.testErr=ok?'':'Τα δεδομένα που διαβάστηκαν δεν ήταν ίδια με αυτά που γράφτηκαν!';
+  }catch(e){d.test='bad';d.testErr=String(e.message||e);}
+  d.tested=Date.now();await saveDests();return d.test==='ok';}
+async function pickDest(role){
+  let h;try{h=await showDirectoryPicker({id:role==='backup'?'mnimesdest2':'mnimesdest',mode:'readwrite',startIn:role==='primary'?'pictures':'desktop'});}
+  catch(e){if(e.name!=='AbortError')toast('Δεν επιτρέπεται αυτός ο φάκελος: '+e.message);return;}
+  const isLib=h.name===LIB_DIR||await hasDir(h,META);
+  const lib=isLib?h:await h.getDirectoryHandle(LIB_DIR,{create:true});
+  for(const d of S.dests)if(await d.handle.isSameEntry(lib))return toast('Αυτός ο φάκελος είναι ήδη επιλεγμένος.');
+  for(const s of S.sources)if(s.handle&&await lib.resolve(s.handle))return toast('Ο φάκελος «'+s.name+'» είναι ήδη μέσα σε αυτόν τον προορισμό. Αφαίρεσέ τον πρώτα από τις πηγές.');
+  const d={id:rid(),name:isLib?h.name:h.name+' › '+LIB_DIR,handle:lib,role,test:null,added:Date.now()};
+  toast('Δοκιμή εγγραφής & ανάγνωσης…');
+  const ok=await testDest(d);S.dests.push(d);await saveDests();
+  if(!ok)toast('⚠️ Η δοκιμή εγγραφής απέτυχε! Μην τον χρησιμοποιήσεις. Διάλεξε άλλον δίσκο.',8000);
+  else toast(role==='backup'?'✅ Το 2ο αντίγραφο ετοιμάστηκε. Ο «Διπλός έλεγχος» θα το γεμίσει με όσες έχουν ήδη αντιγραφεί.':'✅ Ο προορισμός δοκιμάστηκε και είναι εντάξει.',6000);
+  if(isLib)await importIndex(d);
+  render();}
+async function pickSource(){
+  let h;try{h=await showDirectoryPicker({id:'mnimessrc',mode:'read'});}
+  catch(e){if(e.name==='AbortError')return;toast('Ο Chrome δεν επιτρέπει αυτόν τον φάκελο (π.χ. ολόκληρο τον C:\\ ή τον φάκελο χρήστη). Διάλεξε τους υποφακέλους του: Εικόνες, Επιφάνεια εργασίας, Έγγραφα, Λήψεις.',9000);return;}
+  for(const d of S.dests){if(await d.handle.isSameEntry(h))return toast('Αυτός είναι ο φάκελος της βιβλιοθήκης!');if(await d.handle.resolve(h))return toast('Αυτός ο φάκελος είναι μέσα στη βιβλιοθήκη «Μνήμες» — είναι ήδη τακτοποιημένος.');}
+  for(const s of S.sources){if(!s.handle)continue;if(await s.handle.isSameEntry(h))return toast('Υπάρχει ήδη στη λίστα.');
+    if(await s.handle.resolve(h))return toast('Καλύπτεται ήδη από τον φάκελο «'+s.name+'».');}
+  for(const s of S.sources){if(s.handle&&await h.resolve(s.handle)){s.handle=null;s.removed=true;s.note='Καλύπτεται από «'+h.name+'»';}}
+  S.sources.push({id:S.sources.length,name:h.name,handle:h,errors:0,suspicious:false,added:Date.now()});
+  await saveSources();render();}
+
+/* ---------------- ΜΑΖΕΜΑ: σκανάρισμα → αντιγραφή → 1ος έλεγχος ---------------- */
+async function scanSource(s,run,groups){
+  const stack=[{h:s.handle,p:[]}];
+  const addGroup=async g=>{const key=g.s+'|'+[...g.p,g.main.name].join('/');
+    if(S.srcIndex.has(key)){run.lines['Ήδη έτοιμες']=(run.lines['Ήδη έτοιμες']||0)+1;return;}
+    try{const f=await g.main.fh.getFile();g.size=f.size;if(!g.video&&f.size<S.settings.minKB*1024){run.lines['Μικρές/εικονίδια']=(run.lines['Μικρές/εικονίδια']||0)+1;return;}
+      for(const c of g.comps){try{g.size+=(await c.fh.getFile()).size;}catch{}}}
+    catch(e){readError(s,[...g.p,g.main.name],e,run);return;}
+    groups.push(g);run.lines['Βρέθηκαν']++;};
+  while(stack.length){
+    await run.wait();if(run.stop)return;
+    const {h,p}=stack.pop();const files=[];
+    const inPhotosLib=p.length&&/\.photoslibrary$/i.test(p[p.length-1]);
+    try{for await(const [name,child] of h.entries()){
+      if(child.kind==='directory'){const low=name.toLowerCase();
+        if(inPhotosLib){if(low==='originals'||low==='masters')stack.push({h:child,p:[...p,name]});continue;}
+        if(SKIP_DIRS.has(low)||low.startsWith('.')||low.startsWith('$')||low.endsWith('.app'))continue;
+        if(name===LIB_DIR||await hasDir(child,META)){logErr(`Παραλείφθηκε «${[...p,name].join('/')}»: είναι βιβλιοθήκη Μνήμες.`);continue;} // ποτέ η βιβλιοθήκη ως πηγή
+        const cp=[...p,name];if(s.excl&&s.excl.includes(cp.join('/')))continue;stack.push({h:child,p:cp});
+      }else files.push([name,child]);}}
+    catch(e){readError(s,p,e,run);continue;}
+    run.lines['Φάκελοι']++;
+    const byBase=new Map();
+    for(const [name,fh] of files){const ext=extOf(name);if(!IMG_EXT.has(ext)&&!VID_EXT.has(ext)&&!SIDE_EXT.has(ext))continue;if(name.startsWith('._'))continue;
+      const k=baseOf(name).toLowerCase();if(!byBase.has(k))byBase.set(k,[]);byBase.get(k).push({name,ext,fh});}
+    for(const list of byBase.values()){
+      const imgs=list.filter(x=>IMG_EXT.has(x.ext)).sort((a,b)=>(RANK[a.ext]??5)-(RANK[b.ext]??5));
+      const vids=list.filter(x=>VID_EXT.has(x.ext)),side=list.filter(x=>SIDE_EXT.has(x.ext));
+      if(imgs.length)await addGroup({s:s.id,p,main:imgs[0],comps:[...imgs.slice(1),...vids,...side],video:false});
+      else if(S.settings.videos&&vids.length){await addGroup({s:s.id,p,main:vids[0],comps:side,video:true});for(const v of vids.slice(1))await addGroup({s:s.id,p,main:v,comps:[],video:true});}
+    }
+    updProg();}
+}
+async function clashAt(d,rel,fl){if(!await relExists(d.handle,rel))return false;
+  try{const ex=await readRel(d.handle,rel);if(ex.size===fl.size&&await hashFile(ex)===fl.h)return false;}catch{}return true;}
+const reserved=new Set();
+async function uniqueBase(p){
+  const dir=folderFor(p);
+  const stem=p.date?(p.date.slice(0,10)+(p.ds==='exif'||p.date.slice(11)!=='12:00:00'?'_'+p.date.slice(11,19).replace(/:/g,'-'):'')):safeName(baseOf(p.name));
+  const inTrash=new Set([...S.photos.values()].filter(q=>q.trashed&&!q.purged).flatMap(q=>q.files.map(fl=>(fl.rel||'').replace(/\.[^./]+$/,'').toLowerCase())));
+  for(let n=1;n<100000;n++){const b=dir+'/'+stem+(n>1?'_'+n:'');if(reserved.has(b.toLowerCase())||inTrash.has(b.toLowerCase()))continue;
+    let clash=false;for(const d of S.dests){for(const fl of p.files)if(await clashAt(d,b+'.'+fl.ext,fl)){clash=true;break;}if(clash)break;}
+    if(!clash){reserved.add(b.toLowerCase());return b;}}
+  throw new Error('Δεν βρέθηκε ελεύθερο όνομα');}
+async function copyFileToDests(p,fl,data,run){
+  fl.v1=fl.v1||{};
+  for(const d of S.dests){
+    try{
+      if(await relExists(d.handle,fl.rel)){const ex=await readRel(d.handle,fl.rel);if(await hashFile(ex)===fl.h){fl.v1[d.id]=true;continue;}throw new Error('Υπάρχει ήδη άλλο αρχείο με αυτό το όνομα');}
+      await writeRel(d.handle,fl.rel,new Blob([data]));
+      const back=await readRel(d.handle,fl.rel);                 // 1ος έλεγχος: ξαναδιάβασμα από τον δίσκο
+      const ok=back.size===fl.size&&await hashFile(back)===fl.h;fl.v1[d.id]=ok;
+      if(!ok){run.lines['Σφάλματα']=(run.lines['Σφάλματα']||0)+1;logErr(`❌ Το αντίγραφο ΔΕΝ ταιριάζει: ${d.name}/${fl.rel}`);}
+    }catch(e){fl.v1[d.id]=false;run.lines['Σφάλματα']=(run.lines['Σφάλματα']||0)+1;logErr(`Αποτυχία αντιγραφής σε ${d.name}: ${fl.rel}`,e);
+      if(isFull(e)){run.stop=true;run.note='💽 Γέμισε ο δίσκος προορισμού! Η αντιγραφή σταμάτησε με ασφάλεια.';}}}}
+async function processGroup(g,run){
+  const src=S.sources[g.s];const mainPath=[...g.p,g.main.name];const key=g.s+'|'+mainPath.join('/');
+  if(S.srcIndex.has(key))return;
+  let r;try{r=await readHashed(()=>g.main.fh.getFile());}catch(e){readError(src,mainPath,e,run);return;}
+  run.consecErr=0;
+  const {f,buf,h}=r;
+  const prot=mainPath.some(x=>/\.photoslibrary$/i.test(x))||undefined;
+  let p=S.photos.get(h);
+  if(p){ // διπλότυπο: αντιγράφεται ΜΙΑ φορά, αλλά καταγράφεται κάθε θέση
+    const mf=p.files[0];if(!mf.srcs.some(x=>x.s===g.s&&x.p.join('/')===mainPath.join('/')))mf.srcs.push({s:g.s,p:mainPath,ok:null,prot});
+    for(const c of g.comps){const cf=p.files.find(x=>x.role==='comp'&&x.ext===c.ext);if(!cf)continue;
+      try{const cr=await readHashed(()=>c.fh.getFile());if(cr.h===cf.h){const cp=[...g.p,c.name];if(!cf.srcs.some(x=>x.s===g.s&&x.p.join('/')===cp.join('/')))cf.srcs.push({s:g.s,p:cp,ok:null,prot});S.srcIndex.add(g.s+'|'+cp.join('/'));}}
+      catch(e){readError(src,[...g.p,c.name],e,run);}}
+    S.srcIndex.add(key);run.lines['Διπλότυπα']++;await savePhoto(p);return;}
+  const meta=await readMeta(buf||f,g.main.name,f.lastModified,g.video);
+  const place=meta.lat!=null?await placeName(meta.lat,meta.lon):null;
+  p={h,name:g.main.name,ext:g.main.ext,size:f.size,date:meta.date,ds:meta.ds,lat:meta.lat,lon:meta.lon,place,video:g.video,added:Date.now(),fa:false,
+     files:[{role:'main',ext:g.main.ext,h,size:f.size,srcs:[{s:g.s,p:mainPath,ok:null,prot}],rel:null,v1:{},v2:null}]};
+  // Τα δεδομένα γράφονται ΑΥΤΟΥΣΙΑ (byte προς byte): ίδια ανάλυση, ίδια ποιότητα, ίδια EXIF — καμία συμπίεση/αλλαγή.
+  const datas=[buf||f];
+  for(const c of g.comps){try{const cr=await readHashed(()=>c.fh.getFile());const ch=cr.h;const cp=[...g.p,c.name];
+      p.files.push({role:'comp',ext:c.ext,h:ch,size:cr.f.size,srcs:[{s:g.s,p:cp,ok:null,prot}],rel:null,v1:{},v2:null});datas.push(cr.buf||cr.f);S.srcIndex.add(g.s+'|'+cp.join('/'));}
+    catch(e){readError(src,[...g.p,c.name],e,run);}}
+  const th=g.video?await videoThumb(f):await makeThumb(f,buf);
+  if(th){p.w=th.w;p.hgt=th.h;p.dec=th.dec;await storeThumb(h,th.blob);}
+  const base=await uniqueBase(p);
+  p.files.forEach(fl=>fl.rel=base+'.'+fl.ext);
+  for(let i=0;i<p.files.length;i++){if(run.stop&&run.note.startsWith('💽'))break;await copyFileToDests(p,p.files[i],datas[i],run);}
+  if(th&&S.dests[0])writeRel(S.dests[0].handle,`${META}/thumbs/${h}.jpg`,th.blob).catch(()=>{});
+  S.photos.set(h,p);S.srcIndex.add(key);await savePhoto(p);run.lines['Νέες']++;scheduleIndexSave();}
+async function runOrganize(){
+  if(!S.dests.length)return toast('Διάλεξε πρώτα πού θα μπουν οι φωτογραφίες (βήμα ①).');
+  const srcs=S.sources.filter(s=>s.handle&&!s.removed);if(!srcs.length)return toast('Πρόσθεσε τουλάχιστον έναν φάκελο ή δίσκο (βήμα ②).');
+  for(const d of S.dests){if(d.test!=='ok')return toast('Ο προορισμός «'+d.name+'» απέτυχε στη δοκιμή εγγραφής. Αφαίρεσέ τον ή ξαναδοκίμασέ τον.');
+    if(await permState(d.handle,'readwrite')!=='granted')return toast('Χρειάζεται άδεια για «'+d.name+'». Πάτα το κουμπί «Σύνδεση» πάνω.');}
+  for(const s of srcs)if(await permState(s.handle)!=='granted')return toast('Χρειάζεται άδεια για «'+s.name+'». Πάτα το κουμπί «Σύνδεση» πάνω.');
+  for(const d of S.dests)if(!await testDest(d))return toast('⚠️ Ο προορισμός «'+d.name+'» απέτυχε στη δοκιμή εγγραφής τώρα! Σταματάω για ασφάλεια.',8000);
+  const run=newRun('📥 Μάζεμα φωτογραφιών');if(!run)return;
+  run.phase='① Σκανάρισμα';run.lines={'Φάκελοι':0,'Βρέθηκαν':0};
+  const groups=[];
+  for(const s of srcs){if(run.stop)break;s.excl=[];let skip=false;
+    for(const d of S.dests){try{if(await s.handle.isSameEntry(d.handle)||await d.handle.resolve(s.handle)){skip=true;break;}const r=await s.handle.resolve(d.handle);if(r)s.excl.push(r.join('/'));}catch{}}
+    if(skip){logErr(`Παραλείφθηκε «${s.name}»: είναι μέσα στη βιβλιοθήκη.`);continue;}
+    run.note='Σκανάρω: '+s.name;await scanSource(s,run,groups);}
+  if(run.stop)return endRun(run,'Διακόπηκε στο σκανάρισμα — δεν αντιγράφηκε τίποτα.');
+  if(!groups.length)return endRun(run,'✅ Δεν βρέθηκαν νέες φωτογραφίες. Όλα είναι ήδη τακτοποιημένα!');
+  const bytes=groups.reduce((a,g)=>a+(g.size||0),0),need=bytes*1.05+512*1024*1024;
+  const nv=groups.filter(g=>g.video).length;
+  run.phase='Έλεγχος χώρου';run.note='💽 Ελέγχω αν χωράνε…';updProg(true);
+  const space=[];
+  for(const d of S.dests){const ok=await checkSpace(d,need);space.push(ok);
+    if(ok===false){logErr(`Δεν χωράνε στο «${d.name}»: χρειάζονται ${fmtSize(need)}`);
+      return endRun(run,`💽 ΔΕΝ ΧΩΡΑΝΕ στο «${d.name}»! Χρειάζονται περίπου ${fmtSize(need)} ελεύθερα. Δεν αντιγράφηκε τίποτα. Ελευθέρωσε χώρο ή διάλεξε μεγαλύτερο δίσκο (π.χ. εξωτερικό).`);}}
+  run.phase='Έτοιμο για αντιγραφή';run.paused=true;
+  run.note=`Βρέθηκαν ${fmtN(groups.length-nv)} φωτογραφίες και ${fmtN(nv)} βίντεο (${fmtSize(bytes)}). `+
+    (space.every(x=>x===true)?`✅ Ο χώρος ελέγχθηκε: χωράνε (χρειάζονται ~${fmtSize(need)}). `:`⚠️ Δεν μπόρεσα να ελέγξω τον χώρο — βεβαιώσου ότι υπάρχουν τουλάχιστον ${fmtSize(need)} ελεύθερα. `)+
+    'Πάτα «▶ Συνέχεια» για αντιγραφή.';
+  updProg(true);await run.wait();
+  if(run.stop)return endRun(run,'Ακυρώθηκε πριν την αντιγραφή — δεν αντιγράφηκε τίποτα.');
+  run.note='';run.phase='② Αντιγραφή & 1ος έλεγχος';run.total=groups.length;run.i=0;run.t0=Date.now();
+  run.lines={'Νέες':0,'Διπλότυπα':0,'Σφάλματα':run.lines['Σφάλματα']||0};
+  for(const g of groups){await run.wait();if(run.stop)break;
+    try{await processGroup(g,run);}catch(e){logErr('Σφάλμα στο '+g.main.name,e);run.lines['Σφάλματα']++;if(isFull(e)){run.stop=true;run.note='💽 Γέμισε ο δίσκος προορισμού!';}}
+    run.i++;updProg();}
+  await saveSources();await saveIndex();
+  const note=run.note;
+  if(!run.stop&&run.lines['Νέες']>0)setTimeout(()=>{if(S.run&&S.run.done){$('#prog').hidden=true;S.run=null;}runVerify(true);},1500); // αυτόματος 2ος έλεγχος για τις νέες
+  endRun(run,run.stop?(note||'Σταμάτησε. Πάτα ξανά «Ξεκίνα» όποτε θέλεις — συνεχίζει από εκεί που έμεινε.')
+    :`✅ Έτοιμο! ${fmtN(run.lines["Νέες"])} νέες φωτογραφίες/βίντεο, ${fmtN(run.lines['Διπλότυπα'])} διπλότυπα. Επόμενο βήμα: «✅ Διπλός έλεγχος».`);}
+
+/* ---------------- Ευρετήριο μέσα στη βιβλιοθήκη (για άλλους υπολογιστές) ---------------- */
+let idxTimer=null;
+function scheduleIndexSave(){clearTimeout(idxTimer);idxTimer=setTimeout(saveIndex,15000);}
+async function saveIndex(){clearTimeout(idxTimer);
+  const data={app:'Mnimes',version:1,saved:new Date().toISOString(),photos:[...S.photos.values()].filter(p=>!p.viewOnly),faces:[...S.faces.values()],
+    persons:[...S.persons.values()],geo:S.geo,deletions:S.deletions,sources:S.sources.map(s=>({name:s.name,errors:s.errors||0}))};
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+  for(const d of S.dests){if(!d.handle||await permState(d.handle,'readwrite')!=='granted')continue;try{await writeRel(d.handle,`${META}/index.json`,blob);}catch(e){console.warn(e);}}}
+async function importIndex(d){let data;try{data=JSON.parse(await (await readRel(d.handle,`${META}/index.json`)).text());}catch{return;}
+  let n=0;
+  for(const p of data.photos||[]){if(S.photos.has(p.h))continue;
+    for(const fl of p.files){fl.origins=(fl.srcs||[]).map(s=>((data.sources||[])[s.s]||{}).name+'/'+s.p.join('/'));fl.srcs=[];fl.v1={};fl.v2=null;}
+    p.imported=true;S.photos.set(p.h,p);await savePhoto(p);n++;}
+  for(const f of data.faces||[])if(!S.faces.has(f.id)){S.faces.set(f.id,f);dbPut('faces',f.id,f);}
+  for(const pr of data.persons||[])if(!S.persons.has(pr.id)){S.persons.set(pr.id,pr);dbPut('persons',pr.id,pr);}
+  Object.assign(S.geo,data.geo||{});dbPut('kv','geo',S.geo);
+  rebuildSrcIndex();S.ver++;S.fver++;toast(`📂 Φορτώθηκαν ${fmtN(n)} φωτογραφίες από τη βιβλιοθήκη.`);}
+
+/* ---------------- 2ος ΕΛΕΓΧΟΣ ---------------- */
+async function runVerify(onlyNew){onlyNew=onlyNew===true;
+  for(const d of S.dests)if(await permState(d.handle,'readwrite')!=='granted')return toast('Χρειάζεται άδεια για «'+d.name+'». Πάτα «Σύνδεση» πάνω.');
+  const list=[...S.photos.values()].filter(p=>!p.viewOnly&&!p.trashed&&p.files[0].rel&&(!onlyNew||p.files.some(fl=>!fl.v2)));
+  if(!list.length)return toast('Δεν υπάρχουν ακόμα αντιγραμμένες φωτογραφίες.');
+  const usedSrc=new Set();for(const p of list)for(const fl of p.files)for(const src of fl.srcs)if(!src.deleted)usedSrc.add(src.s);
+  const noPerm=[];for(const i of usedSrc){const s=S.sources[i];if(!s||!s.handle||s.removed)continue;if(await permState(s.handle)!=='granted'&&!await ensurePerm(s.handle))noPerm.push(s.name);}
+  if(noPerm.length&&!confirm(`⚠️ Δεν έχω άδεια να διαβάσω τα ΑΡΧΙΚΑ σε:\n• ${noPerm.join('\n• ')}\n\nΧωρίς αυτήν, αυτά τα αρχικά ΔΕΝ ελέγχονται και ΔΕΝ θα μπορείς να τα σβήσεις.\nΠάτα «Άκυρο» και μετά τα κουμπιά 🔓 στο πάνω μέρος (ή σύνδεσε τον δίσκο).\n\nΝα συνεχίσω παρ' όλα αυτά;`))return render();
+  const run=newRun('✅ 2ος έλεγχος');if(!run)return;
+  run.phase='Επαλήθευση';run.total=list.length;run.lines={'Εντάξει':0,'Επισκευάστηκαν':0,'Προβλήματα':0,'Αρχικά που δεν ελέγχθηκαν (χωρίς άδεια)':0};
+  for(const p of list){await run.wait();if(run.stop)break;let photoOk=true;
+    for(const fl of p.files){
+      let srcBuf=null;
+      for(const src of fl.srcs){if(src.deleted)continue;const s=S.sources[src.s];if(!s||!s.handle||await permState(s.handle)!=='granted'){run.lines['Αρχικά που δεν ελέγχθηκαν (χωρίς άδεια)']++;continue;}
+        try{const f=await (await fileHandleAt(s.handle,src.p)).getFile();src.ok=f.size===fl.size&&(await hashFile(f))===fl.h;src.why=src.ok?'':'το αρχικό άλλαξε';if(src.ok&&!srcBuf)srcBuf=f;}
+        catch(e){src.ok=false;src.why=e.name==='NotFoundError'?'λείπει':'σφάλμα ανάγνωσης';if(e.name!=='NotFoundError')readError(s,src.p,e,null);}}
+      let allOk=true;fl.v1=fl.v1||{};
+      for(const d of S.dests){let ok=false;
+        try{const f=await readRel(d.handle,fl.rel);ok=f.size===fl.size&&(await hashFile(f))===fl.h;}catch{}
+        if(!ok&&srcBuf){try{await writeRel(d.handle,fl.rel,new Blob([srcBuf]));const f2=await readRel(d.handle,fl.rel);ok=(await hashFile(f2))===fl.h;
+          if(ok){run.lines['Επισκευάστηκαν']++;logErr(`🔧 Ξαναγράφτηκε σωστά: ${d.name}/${fl.rel}`);}}catch(e){if(isFull(e)){run.stop=true;run.note='💽 Γέμισε ο δίσκος «'+d.name+'».';}}}
+        fl.v1[d.id]=ok;if(!ok){allOk=false;logErr(`❌ Πρόβλημα αντιγράφου: ${d.name}/${fl.rel}`);}}
+      if(allOk&&fl.role==='main'&&!p.video&&DECODE_EXT.has(fl.ext)){
+        try{const b=await readRel(S.dests[0].handle,fl.rel);const bm=await createImageBitmap(b);bm.close&&bm.close();fl.corrupt=false;}
+        catch(e){allOk=false;fl.corrupt=true;logErr(`❌ Η εικόνα δεν ανοίγει (χαλασμένη;): ${fl.rel}`);}}
+      fl.v2=allOk?Date.now():null;if(!allOk)photoOk=false;}
+    run.lines[photoOk?'Εντάξει':'Προβλήματα']++;run.i++;await savePhoto(p);updProg();}
+  await saveSources();await saveIndex();
+  const st=stats();
+  endRun(run,run.stop?'Σταμάτησε. Μπορείς να τον ξανατρέξεις όποτε θέλεις.':
+    `${st.v2===st.files?'✅':'⚠️'} Επαληθεύτηκαν ${fmtN(st.v2)} από ${fmtN(st.files)} αρχεία σε ${S.dests.length} ${S.dests.length>1?'αντίγραφα':'αντίγραφο'}. ${run.lines['Προβλήματα']?'Δες την «📊 Αναφορά» για τα προβλήματα.':''}${run.lines['Αρχικά που δεν ελέγχθηκαν (χωρίς άδεια)']?` ⚠️ ${fmtN(run.lines['Αρχικά που δεν ελέγχθηκαν (χωρίς άδεια)'])} αρχικά ΔΕΝ ελέγχθηκαν (χωρίς άδεια) — δώσε άδεια με τα κουμπιά 🔓 πάνω και ξανατρέξε, αλλιώς δεν σβήνονται.`:(run.lines['Προβλήματα']?'':'Όλα τέλεια!')}`);}
+function stats(){let files=0,v1=0,v2=0,locs=0,dupLocs=0,bytes=0,deleted=0,viewOnly=0;
+  for(const p of S.photos.values()){if(p.trashed)continue;if(p.viewOnly){viewOnly++;continue;}
+    for(const fl of p.files){files++;bytes+=fl.size||0;if(S.dests.length&&S.dests.every(d=>fl.v1&&fl.v1[d.id]))v1++;if(fl.v2)v2++;
+      const live=fl.srcs.filter(s=>!s.deleted).length;locs+=fl.srcs.length;if(fl.role==='main'&&live>1)dupLocs+=live-1;deleted+=fl.srcs.filter(s=>s.deleted).length;}}
+  return {photos:S.photos.size,files,v1,v2,locs,dupLocs,bytes,deleted,viewOnly};}
+
+/* ---------------- ΚΑΘΑΡΙΣΜΟΣ ΑΡΧΙΚΩΝ (με κλειδαριές) ---------------- */
+function deletionCandidates(){const out=[],b={notv2:0,susp:0,prot:0,srcbad:0,unchecked:0,nobackup:0,nohandle:0};
+  for(const p of S.photos.values()){if(p.viewOnly||p.trashed)continue;
+    for(const fl of p.files)for(const src of fl.srcs){if(src.deleted)continue;const s=S.sources[src.s];
+      if(!s||!s.handle||s.removed){b.nohandle++;continue;}
+      if(S.settings.requireBackup&&S.dests.length<2){b.nobackup++;continue;}
+      if(!fl.v2||!S.dests.length||!S.dests.every(d=>fl.v1&&fl.v1[d.id])){b.notv2++;continue;}
+      if(src.ok!==true){if(src.ok===false)b.srcbad++;else b.unchecked++;continue;}
+      if(s.suspicious){b.susp++;continue;}
+      if(src.prot||src.p.includes(LIB_DIR)||src.p.some(x=>x.toLowerCase()===META.toLowerCase())){b.prot++;continue;}
+      out.push({p,fl,src,s,cloud:CLOUD_RE.test(s.name+'/'+src.p.join('/'))});}}
+  return {out,blocked:b};}
+async function jitCheck(c){ // 3ος έλεγχος, ακριβώς πριν το σβήσιμο
+  try{const sh=await fileHandleAt(c.s.handle,c.src.p);const f=await sh.getFile();if(f.size!==c.fl.size||await hashFile(f)!==c.fl.h){c.src.ok=false;c.src.why='το αρχικό άλλαξε';return false;}
+    for(const d of S.dests){const dh=await fileHandleAt(d.handle,c.fl.rel.split('/'));
+      if(await sh.isSameEntry(dh)){logErr('🛑 Το «αρχικό» είναι το ίδιο το αντίγραφο της βιβλιοθήκης — ΔΕΝ σβήνεται: '+c.fl.rel);return false;}
+      const df=await dh.getFile();if(df.size!==c.fl.size||await hashFile(df)!==c.fl.h){c.fl.v2=null;c.fl.v1[d.id]=false;return false;}}
+    return true;}catch(e){return false;}}
+async function runDelete(includeCloud){
+  const {out}=deletionCandidates();const list=out.filter(c=>includeCloud||!c.cloud);
+  for(const d of S.dests)if(await permState(d.handle,'read')!=='granted')return toast('Χρειάζεται άδεια για τη βιβλιοθήκη «'+d.name+'».');
+  for(const s of new Set(list.map(c=>c.s)))if(await permState(s.handle,'readwrite')!=='granted')return toast('Δώσε πρώτα άδεια διαγραφής για «'+s.name+'».');
+  const run=newRun('🗑️ Καθαρισμός αρχικών');if(!run)return;
+  const batch=Date.now();run.total=list.length;run.phase='3ος έλεγχος & σβήσιμο';run.lines={'Σβήστηκαν':0,'Παραλείφθηκαν (για ασφάλεια)':0,'Χώρος που ελευθερώθηκε':'0 B'};let freed=0;
+  for(const c of list){await run.wait();if(run.stop)break;
+    try{if(!await jitCheck(c)){run.lines['Παραλείφθηκαν (για ασφάλεια)']++;logErr('Δεν σβήστηκε (απέτυχε ο τελευταίος έλεγχος): '+c.s.name+'/'+c.src.p.join('/'));}
+      else{const dir=await dirAt(c.s.handle,c.src.p.slice(0,-1));await dir.removeEntry(c.src.p[c.src.p.length-1]);
+        c.src.deleted=Date.now();S.deletions.push({b:batch,t:Date.now(),ph:c.p.h,h:c.fl.h,size:c.fl.size,s:c.src.s,p:c.src.p,rel:c.fl.rel});
+        run.lines['Σβήστηκαν']++;freed+=c.fl.size;run.lines['Χώρος που ελευθερώθηκε']=fmtSize(freed);await savePhoto(c.p);}}
+    catch(e){run.lines['Παραλείφθηκαν (για ασφάλεια)']++;logErr('Αποτυχία διαγραφής: '+c.s.name+'/'+c.src.p.join('/'),e);}
+    run.i++;updProg();if(run.i%25===0)dbPut('kv','deletions',S.deletions);}
+  await dbPut('kv','deletions',S.deletions);await saveIndex();rebuildSrcIndex();
+  endRun(run,`✅ Σβήστηκαν ${fmtN(run.lines['Σβήστηκαν'])} αρχικά (${fmtSize(freed)}). Τα αντίγραφα είναι ασφαλή στη βιβλιοθήκη.`);}
+/* (Τα πρόσωπα αφαιρέθηκαν. Αυτά μένουν μόνο για να καθαρίζονται σωστά τυχόν παλιά δεδομένα στο «Άδειασμα Κάδου».) */
+function meanDesc(arr){const m=new Array(128).fill(0);for(const a of arr)for(let i=0;i<128;i++)m[i]+=a[i];return m.map(v=>v/arr.length);}
+function recomputePerson(pr){const fs=[...S.faces.values()].filter(f=>f.person===pr.id).sort(cmpDate);pr.count=fs.length;
+  pr.recent=fs.slice(-12).map(f=>f.desc);pr.mean=pr.recent.length?meanDesc(pr.recent):null;pr.early=fs.length?meanDesc(fs.slice(0,6).map(f=>f.desc)):null;
+  let big=null;for(const f of fs)if(!big||f.size>big.size)big=f;pr.cover=big?big.id:null;}
+
+/* ---------------- ΠΡΟΒΟΛΗ σε Safari / iPhone / Firefox ---------------- */
+async function processFiles(files){
+  files=[...files].filter(f=>{const e=extOf(f.name);return IMG_EXT.has(e)||VID_EXT.has(e);});
+  if(!files.length)return toast('Δεν βρέθηκαν φωτογραφίες.');
+  const run=newRun('📱 Άνοιγμα φωτογραφιών');if(!run)return;run.total=files.length;run.lines={'Νέες':0,'Διπλότυπα':0};
+  for(const f of files){await run.wait();if(run.stop)break;
+    try{const ext=extOf(f.name),video=VID_EXT.has(ext);const buf=f.size<BIG?await f.arrayBuffer():null;const h=buf?await sha256(buf):await hashFile(f);
+      if(S.photos.has(h)){S.mem.set(h,f);run.lines['Διπλότυπα']++;}
+      else{const m=await readMeta(buf||f,f.name,f.lastModified,video);const place=m.lat!=null?await placeName(m.lat,m.lon):null;
+        const p={h,name:f.name,ext,size:f.size,date:m.date,ds:m.ds,lat:m.lat,lon:m.lon,place,video,viewOnly:true,added:Date.now(),fa:false,
+          files:[{role:'main',ext,h,size:f.size,srcs:[],rel:null,v1:{},v2:null,origins:[f.webkitRelativePath||f.name]}]};
+        const th=video?await videoThumb(f):await makeThumb(f,buf);if(th){p.w=th.w;p.hgt=th.h;await storeThumb(h,th.blob);}
+        S.photos.set(h,p);S.mem.set(h,f);await savePhoto(p);run.lines['Νέες']++;}}
+    catch(e){logErr('Σφάλμα: '+f.name,e);}
+    run.i++;updProg();}
+  endRun(run,'✅ Έτοιμο! Δες το Ημερολόγιο και τον Χάρτη.');}
+
+/* =====================================================================
+   ΟΘΟΝΕΣ
+   ===================================================================== */
+let MAP=null;
+function closeMap(){if(MAP){MAP.remove();MAP=null;}}
+function nav(h){if(location.hash.slice(1)===h)render();else location.hash=h;}
+const navTo=(...parts)=>nav(parts.map(x=>encodeURIComponent(x)).join('/'));
+window.addEventListener('hashchange',()=>{closeLB(true);render();});
+/* εικονίδια στα σταθερά κουμπιά */
+document.querySelectorAll('[data-ic]').forEach(b=>b.append(icon(b.dataset.ic)));
+$('#backBtn').onclick=()=>history.length>1?history.back():nav('');
+$('#homeBtn').onclick=()=>nav('');
+$('#searchForm').onsubmit=e=>{e.preventDefault();const q=$('#q').value.trim();if(q)navTo('search',q);};
+
+function render(){
+  const parts=location.hash.slice(1).split('/').map(x=>{try{return decodeURIComponent(x);}catch{return x;}});
+  const [v,a,b,c]=parts;const m=$('#main');closeMap();m.innerHTML='';PAGE=[];updSel();$('#backBtn').style.display=v?'':'none';window.scrollTo(0,0);
+  renderBanner();
+  try{({'':viewHome,cal:viewCalendar,places:viewPlaces,place:viewPlace,dups:viewDups,videos:viewVideos,photos:viewPhotos,more:viewMore,trash:viewTrash,organize:viewOrganize,verify:viewVerify,clean:viewClean,health:viewHealth,report:viewReport,
+     settings:viewSettings,open:viewOpen,view:viewOpenFiles,search:viewSearch}[v||'']||viewHome)(m,a,b,c);}
+  catch(e){console.error(e);m.append(el('div',{class:'card bad'},'Σφάλμα: '+e.message));}}
+const empty=(m,msg)=>m.append(card(el('p',{},msg||'Δεν υπάρχουν ακόμα φωτογραφίες εδώ.'),el('button',{class:'btn primary',onclick:()=>nav(FS_OK?'organize':'view')},icon('folder-down'),FS_OK?'Μάζεψε φωτογραφίες':'Άνοιξε φωτογραφίες')));
+
+async function renderBanner(){const b=$('#banner');b.innerHTML='';
+  if(!FS_OK){b.append(el('div',{class:'card warn small'},'ℹ️ Σε αυτόν τον browser (Safari, iPhone, Firefox) η εφαρμογή κάνει ',el('b',{},'μόνο προβολή'),'. Για μάζεμα, αντιγραφή και καθαρισμό άνοιξέ την με ',el('b',{},'Chrome ή Edge σε υπολογιστή'),'.'));return;}
+  const need=[];for(const d of S.dests)if(d.handle&&await permState(d.handle,'readwrite')!=='granted')need.push({h:d.handle,name:d.name,mode:'readwrite'});
+  for(const s of S.sources)if(s.handle&&!s.removed&&await permState(s.handle)!=='granted')need.push({h:s.handle,name:s.name,mode:'read'});
+  if(!need.length)return;
+  b.append(el('div',{class:'card warn'},el('b',{},'🔌 Για ασφάλεια, ο browser ζητά ξανά άδεια για τους φακέλους σου.'),el('p',{class:'small muted'},'Πάτα ένα-ένα τα κουμπιά. (Αν σου δώσει επιλογή «Να επιτρέπεται σε κάθε επίσκεψη», διάλεξέ την.)'),
+    el('div',{class:'row'},need.slice(0,8).map(n=>el('button',{class:'btn',onclick:async()=>{await ensurePerm(n.h,n.mode);render();}},'🔓 '+n.name)))));}
+
+/* Εικονίδια (Lucide, άδεια ISC) — ενσωματωμένα, δουλεύουν και χωρίς ίντερνετ */
+function icon(name){const s=el('span',{class:'ico','aria-hidden':'true'});s.innerHTML=`<svg viewBox="0 0 24 24">${ICONS[name]||''}</svg>`;return s;}
+function tiles(arr){return el('div',{class:'tiles'},arr.map(([ic,t,s,h,c])=>el('button',{class:'tile',style:c?'--c:'+c:null,onclick:()=>nav(h)},
+  el('span',{class:'ic'},ICONS[ic]?icon(ic):ic),el('span',{class:'tt'},el('b',{},t),s?el('small',{},s):null),el('span',{class:'chev'},icon('chevron-right')))));}
+
+function coverTile(title,sub,p,onclick,off){const c=el('div',{class:'cimg'});const t=el('button',{class:'ctile'+(off?' off':''),onclick:off?null:onclick},c,el('div',{class:'cap'},el('b',{},title),sub?el('small',{},sub):null));if(p)lazy(c,{h:p.h});return t;}
+/* ---- Επιλογή πολλών για σβήσιμο / επαναφορά ---- */
+let SEL=null,PAGE=[];
+const inTrashView=()=>location.hash.slice(1).split('/')[0]==='trash';
+function updSel(){const on=!!SEL;document.body.classList.toggle('selecting',on);$('#selbar').hidden=!on;$('#selBtn').hidden=!FS_OK||!S.dests.length;
+  $('#selBtn').classList.toggle('on',on);if(!on)return;
+  $('#selCount').textContent=SEL.size?`${fmtN(SEL.size)} επιλεγμένα`:'Πάτα φωτογραφίες/βίντεο για να τα επιλέξεις';
+  $('#selAct').replaceChildren(icon(inTrashView()?'undo-2':'trash-2'),inTrashView()?'Επαναφορά':'Σβήσιμο από παντού');$('#selAct').className='btn '+(inTrashView()?'primary':'danger');$('#selAct').disabled=!SEL.size;}
+function toggleSel(p,t){if(SEL.has(p.h)){SEL.delete(p.h);t.classList.remove('sel');}else{SEL.add(p.h);t.classList.add('sel');}updSel();}
+$('#selBtn').onclick=()=>{SEL=SEL?null:new Set();document.querySelectorAll('.thumb.sel').forEach(t=>t.classList.remove('sel'));updSel();if(SEL)toast('Πάτα τις φωτογραφίες/βίντεο που θέλεις και μετά το κόκκινο κουμπί κάτω.');};
+$('#selCancel').onclick=()=>{SEL=null;document.querySelectorAll('.thumb.sel').forEach(t=>t.classList.remove('sel'));updSel();};
+$('#selAll').onclick=()=>{if(!SEL)return;for(const p of PAGE)SEL.add(p.h);document.querySelectorAll('.thumb[data-h]').forEach(t=>{if(SEL.has(t.dataset.h))t.classList.add('sel');});updSel();};
+$('#selAct').onclick=async()=>{if(!SEL||!SEL.size)return;const list=[...SEL].map(h=>S.photos.get(h)).filter(Boolean);const tr=inTrashView();SEL=null;updSel();
+  if(tr)await restorePhotos(list);else await trashPhotos(list);};
+function gallery(list,lbList=list,offset=0){const wrap=el('div'),grid=el('div',{class:'grid'});let i=0;PAGE.push(...list);
+  const more=el('button',{class:'btn ghost',style:'margin:12px auto;display:block'},'Περισσότερες…');
+  const chunk=()=>{const end=Math.min(list.length,i+240);for(;i<end;i++){const k=i,p=list[k];const t=lazy(el('div',{class:'thumb'+(SEL&&SEL.has(p.h)?' sel':''),title:fmtDate(p.date,true),onclick:e=>SEL?toggleSel(p,e.currentTarget):openLB(lbList,offset+k)}),{h:p.h});
+      if(p.video)t.append(el('span',{class:'badge'},icon('play'),p.dur?fmtDur(p.dur):''));grid.append(t);}more.style.display=i<list.length?'':'none';};
+  more.onclick=chunk;new IntersectionObserver(es=>{if(es[0].isIntersecting&&i<list.length)chunk();},{rootMargin:'800px'}).observe(more);
+  chunk();wrap.append(grid,more);return wrap;}
+function stepper(label,prev,next){return el('div',{class:'stepper'},el('button',{class:'btn','aria-label':'Πίσω',onclick:prev,disabled:!prev},icon('chevron-left')),el('b',{},label),el('button',{class:'btn','aria-label':'Μπροστά',onclick:next,disabled:!next},icon('chevron-right')));}
+
+function viewHome(m){
+  setTitle('Μνήμες');const I=getIdx(),n=I.all.length,vids=I.all.filter(p=>p.video),phs=I.all.filter(p=>!p.video),nv=vids.length;
+  const last=l=>l.length?l[l.length-1]:null; // η πιο πρόσφατη
+  m.append(el('section',{class:'hello'},el('h2',{},n?'Οι αναμνήσεις σου':'Καλώς ήρθες'),
+    el('p',{class:'muted'},n?`${fmtN(n-nv)} φωτογραφίες${nv?` · ${fmtN(nv)} βίντεο`:''}${I.minYear?` · ${I.minYear}–${I.maxYear}`:''}`:'Μάζεψε όλες τις φωτογραφίες και τα βίντεό σου σε ένα μέρος, τακτοποιημένα ανά χρονιά, μήνα και μέρος.')));
+  const T=(cls,ic,c,t,s,h,p)=>{const b=el('button',{class:'btile '+cls+(p?' photo':''),style:'--c:'+c,onclick:()=>nav(h)});
+    if(p){const ci=el('div',{class:'cimg'});b.append(ci);lazy(ci,{h:p.h});}
+    b.append(el('span',{class:'bic'},icon(ic)),el('span',{class:'btxt'},el('b',{},t),s?el('small',{},s):null),el('span',{class:'barr'},icon('arrow-up-right')));return b;};
+  // ΤΑ ΒΑΣΙΚΑ — μόνο αυτά στην αρχική
+  m.append(el('div',{class:'bento'},
+    FS_OK?T('b-org','folder-down','#fff','Πάρε & τακτοποίησε','Αντιγραφή, ταξινόμηση ανά χρονιά και μήνα, διπλός έλεγχος.','organize')
+         :T('b-org','folder-down','#fff','Άνοιξε φωτογραφίες','Προβολή σε αυτή τη συσκευή','view'),
+    T('b-photos','images','#0ea5e9','Φωτογραφίες',fmtN(n-nv),'photos',last(phs)),
+    T('b-videos','film','#ef4444','Βίντεο',fmtN(nv),'videos',last(vids)),
+    T('b-cal','calendar-days','#6366f1','Ημερολόγιο','Μέρα, μήνας, χρονιά','cal'),
+    T('b-map','map','#10b981','Χάρτης',I.places.size?fmtN(I.places.size)+' μέρη':'Πού τραβήχτηκαν','places'),
+    T('b-more','layout-grid','#64748b','Προχωρημένες','Κάδος, επαλήθευση, αναφορά','more')));
+  if(n){m.append(el('div',{class:'sech'},el('h3',{class:'sec'},'Πρόσφατες'),el('button',{class:'link',onclick:()=>nav('photos')},'Όλες →')));m.append(gallery(I.all.slice(-24).reverse()));}}
+function viewMore(m){setTitle('Προχωρημένες');
+  const tn=[...S.photos.values()].filter(p=>p.trashed&&!p.purged).length;
+  if(!FS_OK){m.append(tiles([['images','Άνοιγμα φωτογραφιών','Μόνο προβολή','view','#6366f1'],['settings','Ρυθμίσεις','','settings','#64748b']]));return;}
+  m.append(el('h3',{class:'sec'},'Ασφάλεια'));
+  m.append(tiles([['trash-2','Κάδος',tn?fmtN(tn)+' σβησμένα · εδώ γίνεται το οριστικό σβήσιμο':'Άδειος','trash','#dc2626'],
+    ['shield-check','Επαλήθευση','Διπλός έλεγχος των αντιγράφων','verify','#16a34a'],
+    ['file-chart-column','Αναφορά','Τι έγινε, τι λείπει','report','#d97706'],
+    ['eraser','Σβήσιμο αρχικών','Αφού επαληθευτούν τα αντίγραφα','clean','#e11d48']]));
+  m.append(el('h3',{class:'sec'},'Εργαλεία'));
+  m.append(tiles([['map-pinned','Μέρη','Λίστα τόπων','places','#10b981'],['copy','Διπλότυπα','Ίδιες φωτογραφίες σε πολλά σημεία','dups','#0ea5e9'],
+    ['hard-drive','Υγεία δίσκων','Έλεγχος πριν από όλα','health','#475569'],['folder-open','Άνοιγμα βιβλιοθήκης','Από άλλον υπολογιστή','open','#8b5cf6'],
+    ['settings','Ρυθμίσεις','','settings','#64748b']]));}
+function viewTrash(m){setTitle('Κάδος');
+  const list=[...S.photos.values()].filter(p=>p.trashed&&!p.purged).sort((a,b)=>b.trashed-a.trashed);
+  m.append(card(el('p',{},'Εδώ είναι ό,τι έσβησες. Έχει ήδη φύγει από τη βιβλιοθήκη και από τις αρχικές θέσεις — εδώ κρατιέται ',el('b',{},'ένα επαληθευμένο αντίγραφο'),' για να το επαναφέρεις αν το μετανιώσεις.'),
+    el('p',{class:'small muted'},'Οριστικά χάνεται μόνο όταν πατήσεις «Άδειασμα Κάδου». Για επαναφορά μερικών: πάτα το κουμπί επιλογής πάνω δεξιά, διάλεξε, και «Επαναφορά».')));
+  if(!list.length)return m.append(card(el('p',{class:'muted'},'🗑️ Ο Κάδος είναι άδειος.')));
+  const left=list.reduce((a,p)=>a+p.files.reduce((b,fl)=>b+fl.srcs.filter(s=>!s.deleted&&!s.prot).length,0),0);
+  if(left)m.append(el('div',{class:'card warn'},el('b',{},`⚠️ ${fmtN(left)} αρχικά δεν σβήστηκαν ακόμα`),' (ο δίσκος/φάκελος ήταν αποσυνδεδεμένος ή χωρίς άδεια). Σύνδεσέ τον, δώσε άδεια 🔓 και πάτα:',
+    el('div',{class:'row',style:'margin-top:8px'},el('button',{class:'btn danger',onclick:()=>trashLeftovers(list)},'🗑️ Σβήσε και αυτά'))));
+  m.append(el('div',{class:'row',style:'margin-bottom:14px'},el('button',{class:'btn primary',onclick:()=>restorePhotos(list)},icon('undo-2'),`Επαναφορά όλων (${fmtN(list.length)})`),
+    el('button',{class:'btn danger',onclick:emptyTrash},icon('trash-2'),'Άδειασμα Κάδου (οριστικά)')));
+  m.append(gallery(list));}
+async function trashLeftovers(list){ // αρχικά που έμειναν επειδή ο δίσκος έλειπε
+  const ids=new Set();for(const p of list)for(const fl of p.files)for(const s of fl.srcs)if(!s.deleted&&!s.prot)ids.add(s.s);
+  for(const i of ids){const s=S.sources[i];if(s&&s.handle&&!s.removed)await ensurePerm(s.handle,'readwrite');}
+  let n=0;for(const p of list){for(const fl of p.files)for(const src of fl.srcs){if(src.deleted||src.prot)continue;const s=S.sources[src.s];if(!s||!s.handle||await permState(s.handle,'readwrite')!=='granted')continue;
+      try{const f=await (await fileHandleAt(s.handle,src.p)).getFile();if(f.size!==fl.size||await hashFile(f)!==fl.h)continue;
+        if(!await goodCopy(p,fl,true))continue; // σβήνεται ΜΟΝΟ αν υπάρχει σωστό αντίγραφο στον Κάδο
+        await removeRel(s.handle,src.p);src.deleted=Date.now();src.trashed=true;(p.trashSrc=p.trashSrc||[]).push({s:src.s,p:src.p,h:fl.h,rel:fl.rel});n++;}catch{}}
+    await savePhoto(p);}
+  await saveIndex();toast(`✅ Σβήστηκαν ακόμα ${fmtN(n)} αρχικά.`);render();}
+function viewPhotos(m){setTitle('Φωτογραφίες');const I=getIdx();const list=I.all.filter(p=>!p.video);
+  if(!list.length)return empty(m);
+  const rev=list.slice().reverse(),byM=new Map();for(const p of rev){const k=p.date?`${MONTHS[+p.date.slice(5,7)-1]} ${p.date.slice(0,4)}`:'Χωρίς ημερομηνία';if(!byM.has(k))byM.set(k,[]);byM.get(k).push(p);}
+  m.append(el('p',{class:'muted'},`${fmtN(list.length)} φωτογραφίες · οι πιο πρόσφατες πρώτα`));
+  let off=0;for(const [k,l] of byM){m.append(el('h3',{class:'sec'},`${k} · ${fmtN(l.length)}`));m.append(gallery(l,rev,off));off+=l.length;}}
+function viewVideos(m){setTitle('Βίντεο');const I=getIdx();const list=I.all.filter(p=>p.video);
+  if(!list.length)return empty(m,'Δεν υπάρχουν ακόμα βίντεο. Βεβαιώσου ότι στις Ρυθμίσεις είναι ανοιχτό το «Μάζεψε και βίντεο» και κάνε Μάζεμα.');
+  const ys=list.filter(p=>p.date).map(p=>p.date.slice(0,4));
+  m.append(el('p',{class:'muted'},`${fmtN(list.length)} βίντεο${ys.length?` · ${ys[0]}–${ys[ys.length-1]}`:''} · τα πιο πρόσφατα πρώτα`));
+  const rev=list.slice().reverse(),byY=new Map();for(const p of rev){const k=p.date?p.date.slice(0,4):'Χωρίς ημερομηνία';if(!byY.has(k))byY.set(k,[]);byY.get(k).push(p);}
+  let off=0;for(const [k,l] of byY){m.append(el('h3',{class:'sec'},`${k} · ${fmtN(l.length)} βίντεο`));m.append(gallery(l,rev,off));off+=l.length;}}
+
+function viewCalendar(m,y,mo,d){
+  const I=getIdx();if(!S.photos.size){setTitle('Ημερολόγιο');return empty(m);}
+  if(y==='none'){setTitle('Χωρίς ημερομηνία');m.append(el('p',{class:'muted'},'Φωτογραφίες χωρίς καμία πληροφορία ημερομηνίας (π.χ. σκαναρισμένες ή από εφαρμογές που την αφαιρούν).'));m.append(gallery(I.nodate));return;}
+  if(!y){setTitle('Ημερολόγιο');const ys=[...I.years.keys()].sort((a,b)=>b-a);
+    m.append(el('div',{class:'tiles cover'},ys.map(yy=>{const l=I.all.filter(p=>p.date&&+p.date.slice(0,4)===yy);return coverTile(String(yy),fmtN(I.years.get(yy))+' φωτογραφίες',mid(l),()=>nav('cal/'+yy));}),
+      I.nodate.length?coverTile('Χωρίς ημερομηνία',fmtN(I.nodate.length),I.nodate[0],()=>nav('cal/none')):null));return;}
+  y=+y;
+  if(!mo){setTitle(String(y));m.append(stepper(String(y),I.years.has(y-1)||y-1>=I.minYear?()=>nav('cal/'+(y-1)):null,y+1<=I.maxYear?()=>nav('cal/'+(y+1)):null));
+    m.append(el('div',{class:'tiles cover'},MONTHS.map((mn,i)=>{const l=I.months.get(`${y}-${pad(i+1)}`)||[];return coverTile(mn,l.length?fmtN(l.length)+' φωτο':'—',l.length?mid(l):null,()=>nav(`cal/${y}/${i+1}`),!l.length);})));return;}
+  mo=+mo;
+  if(!d){setTitle(`${MONTHS[mo-1]} ${y}`);const pm=mo===1?[y-1,12]:[y,mo-1],nm=mo===12?[y+1,1]:[y,mo+1];
+    m.append(stepper(`${MONTHS[mo-1]} ${y}`,()=>nav(`cal/${pm[0]}/${pm[1]}`),()=>nav(`cal/${nm[0]}/${nm[1]}`)));
+    const grid=el('div',{class:'cal'},WEEKDAYS.map(w=>el('div',{class:'wd'},w)));const off=(new Date(y,mo-1,1).getDay()+6)%7,dim=new Date(y,mo,0).getDate();
+    for(let i=0;i<off;i++)grid.append(el('div'));const today=new Date();
+    for(let dd=1;dd<=dim;dd++){const l=I.days.get(`${y}-${pad(mo)}-${pad(dd)}`);const isT=today.getFullYear()===y&&today.getMonth()+1===mo&&today.getDate()===dd;
+      const cell=el('button',{class:'day'+(l?' has':'')+(isT?' today':''),onclick:l?()=>nav(`cal/${y}/${mo}/${dd}`):null},el('span',{class:'n'},dd));
+      if(l){const c=el('div',{class:'cimg'});cell.append(c,el('span',{class:'badge'},l.length));lazy(c,{h:mid(l).h});}grid.append(cell);}
+    m.append(grid);const all=I.months.get(`${y}-${pad(mo)}`)||[];if(all.length){m.append(el('h3',{class:'sec'},`Όλες οι φωτογραφίες του μήνα (${fmtN(all.length)})`));m.append(gallery(all));}return;}
+  d=+d;const key=`${y}-${pad(mo)}-${pad(d)}`,l=I.days.get(key)||[];setTitle(fmtDate(key));
+  const ki=I.dayKeys.indexOf(key),pk=ki>0?I.dayKeys[ki-1]:null,nk=ki>=0&&ki<I.dayKeys.length-1?I.dayKeys[ki+1]:null;
+  const go=k=>()=>nav(`cal/${+k.slice(0,4)}/${+k.slice(5,7)}/${+k.slice(8,10)}`);
+  m.append(stepper(fmtDate(key),pk?go(pk):null,nk?go(nk):null));
+  const pls=[...new Set(l.map(p=>p.place).filter(Boolean))];
+  if(pls.length)m.append(el('p',{class:'muted row',style:'gap:6px'},icon('map-pinned'),pls.join(', ')));
+  m.append(gallery(l));}
+
+function viewPlaces(m){setTitle('Μέρη');const I=getIdx();const pls=[...I.places.values()].sort((a,b)=>b.list.length-a.list.length);
+  if(!pls.length)return m.append(card('Δεν βρέθηκαν ακόμα φωτογραφίες με τοποθεσία (GPS). Οι φωτογραφίες από κινητά συνήθως την έχουν.'));
+  m.append(el('p',{class:'muted'},`${fmtN(pls.length)} μέρη · πάτα μια φωτογραφία στον χάρτη`));
+  const md=el('div',{id:'map'});m.append(md);
+  m.append(el('div',{class:'tiles cover'},pls.map(pl=>coverTile(pl.name,fmtN(pl.list.length)+' φωτο',mid(pl.list),()=>navTo('place',pl.key)))));
+  requestAnimationFrame(()=>initMap(md,pls));}
+function initMap(div,pls){if(!window.L){div.replaceWith(card('Ο χάρτης χρειάζεται σύνδεση στο ίντερνετ.'));return;}
+  MAP=L.map(div,{worldCopyJump:true});const rt=document.documentElement.dataset.theme,dark=rt?rt==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+  // Χάρτης Esri: δωρεάν, ΧΩΡΙΣ κλειδί, δουλεύει και όταν η σελίδα ανοίγει ως αρχείο (το CARTO ζητάει πλέον κλειδί και το OSM μπλοκάρει).
+  const E='https://server.arcgisonline.com/ArcGIS/rest/services/';
+  if(dark){L.tileLayer(E+'Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Tiles © Esri'}).addTo(MAP);
+    L.tileLayer(E+'Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{maxZoom:16}).addTo(MAP);}
+  else L.tileLayer(E+'World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles © Esri'}).addTo(MAP);
+  const pts=[],max=Math.max(...pls.map(p=>p.list.length));
+  for(const pl of pls){if(!pl.n)continue;const sz=Math.round(40+24*Math.sqrt(pl.list.length/max));
+    const ic=L.divIcon({className:'pmk',html:`<div class="pmk-in" style="width:${sz}px;height:${sz}px"><b>${pl.list.length}</b></div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
+    const mk=L.marker([pl.lat,pl.lon],{icon:ic}).addTo(MAP);
+    const cover=mid(pl.list);if(cover)thumbURL(cover.h).then(u=>{const d=mk.getElement()&&mk.getElement().querySelector('.pmk-in');if(u&&d)d.style.backgroundImage=`url("${u}")`;});
+    mk.bindTooltip(esc(pl.name)+' · '+pl.list.length);mk.on('click',()=>navTo('place',pl.key));pts.push([pl.lat,pl.lon]);}
+  if(pts.length===1)MAP.setView(pts[0],10);else if(pts.length)MAP.fitBounds(pts,{padding:[40,40],maxZoom:12});else MAP.setView([38.5,23.5],6);}
+function viewPlace(m,key){const pl=getIdx().places.get(key);if(!pl)return empty(m);setTitle(pl.name);
+  const ys=[...new Set(pl.list.filter(p=>p.date).map(p=>p.date.slice(0,4)))];
+  m.append(el('p',{class:'muted'},`${fmtN(pl.list.length)} φωτογραφίες${ys.length?' · '+ys.join(', '):''}`));
+  m.append(gallery(pl.list));}
+
+function srcLabel(src){const s=S.sources[src.s];return (s?s.name:'?')+'/'+src.p.join('/');}
+function viewDups(m){setTitle('Διπλότυπα');
+  const list=[...S.photos.values()].filter(p=>!p.trashed).map(p=>({p,live:p.files[0].srcs.filter(s=>!s.deleted)})).filter(x=>x.live.length>1).sort((a,b)=>b.live.length-a.live.length);
+  const wasted=list.reduce((a,x)=>a+(x.live.length-1)*x.p.size,0);
+  m.append(card(el('b',{},`${fmtN(list.length)} φωτογραφίες υπάρχουν σε πολλά σημεία · σπατάλη χώρου: ${fmtSize(wasted)}`),
+    el('p',{class:'small muted'},'Στη βιβλιοθήκη «Μνήμες» μπήκε μόνο ΕΝΑ αντίγραφο της καθεμιάς. Αν θέλεις να ελευθερώσεις χώρο, ο «🗑️ Καθαρισμός» σβήνει όλες τις παλιές θέσεις — αλλά μόνο μετά τον διπλό έλεγχο.')));
+  const box=el('div',{class:'list card'});
+  list.slice(0,400).forEach(({p,live})=>{const t=lazy(el('div',{class:'thumb',onclick:()=>openLB([p],0)}),{h:p.h});
+    box.append(el('div',{class:'item'},t,el('div',{},el('b',{},`${live.length} θέσεις · ${fmtSize(p.size)}`),live.map(s=>el('div',{class:'path'},srcLabel(s))))));});
+  if(list.length)m.append(box);}
+function viewSearch(m,q){setTitle('Αναζήτηση: '+q);$('#q').value=q;const nq=norm(q),I=getIdx();let any=false;
+  const pls=[...I.places.values()].filter(pl=>norm(pl.name).includes(nq));
+  if(pls.length){any=true;m.append(el('h3',{class:'sec'},'📍 Μέρη'),el('div',{class:'tiles cover'},pls.map(pl=>coverTile(pl.name,fmtN(pl.list.length)+' φωτο',mid(pl.list),()=>navTo('place',pl.key)))));}
+  const ym=nq.match(/\b(19\d\d|20\d\d)\b/);const toks=nq.split(/\s+/);let mi=-1;
+  for(const tk of toks){if(tk.length<3)continue;const i=MONTHS.findIndex((x,k)=>norm(x).startsWith(tk)||norm(MONTHS_GEN[k]).startsWith(tk));if(i>=0){mi=i;break;}}
+  if(ym||mi>=0){const l=I.all.filter(p=>p.date&&(!ym||p.date.slice(0,4)===ym[1])&&(mi<0||+p.date.slice(5,7)===mi+1));
+    if(l.length){any=true;m.append(el('h3',{class:'sec'},`📅 ${mi>=0?MONTHS[mi]+' ':''}${ym?ym[1]:'(όλες οι χρονιές)'} · ${fmtN(l.length)}`));
+      if(ym&&mi>=0)m.append(el('button',{class:'btn',onclick:()=>nav(`cal/${ym[1]}/${mi+1}`)},'📅 Άνοιγμα στο ημερολόγιο'));m.append(gallery(l));}}
+  const fn=I.all.filter(p=>norm(p.name).includes(nq)).slice(0,500);
+  if(fn.length){any=true;m.append(el('h3',{class:'sec'},`🗂️ Όνομα αρχείου · ${fmtN(fn.length)}`),gallery(fn));}
+  if(!any)m.append(card(`Δεν βρέθηκε τίποτα για «${q}». Δοκίμασε μέρος (π.χ. Νάξος), χρονιά (2019) ή μήνα (Αύγουστος 2023).`));}
+
+/* ---- Μάζεμα ---- */
+function viewOrganize(m){setTitle('Πάρε & τακτοποίησε');
+  if(!FS_OK)return m.append(card('Το μάζεμα & η αντιγραφή χρειάζονται Chrome ή Edge σε υπολογιστή (Windows, Mac, Linux). Εδώ μπορείς να ',el('button',{class:'link',onclick:()=>nav('view')},'ανοίξεις φωτογραφίες για προβολή'),'.'));
+  const c1=card(el('h3',{},'① Πού θα μπουν οι φωτογραφίες;'),el('p',{class:'muted'},'Διάλεξε π.χ. τον φάκελο «Εικόνες». Μέσα του φτιάχνεται ο φάκελος «Μνήμες» με όλα τακτοποιημένα:'),
+    el('pre',{class:'tree'},'📁 Εικόνες\n └── 📁 Μνήμες\n      └── 📁 2023\n           └── 📁 08-Αύγουστος\n                ├── 📁 Νάξος\n                │    └── 🖼️ 2023-08-14_15-32-10.jpg\n                └── 📁 Αθήνα\n                     └── 🖼️ 2023-08-20_09-05-44.jpg'));
+  for(const d of S.dests)c1.append(el('div',{class:'row',style:'padding:8px 0;border-top:1px solid var(--line)'},
+    el('span',{style:'flex:1'},d.role==='backup'?'💾 2ο αντίγραφο: ':'📁 Βιβλιοθήκη: ',el('b',{},d.name),' ',d.test==='ok'?el('span',{class:'ok'},'✅ δοκιμάστηκε'):el('span',{class:'bad'},'❌ απέτυχε η δοκιμή'+(d.testErr?' ('+d.testErr+')':''))),
+    el('button',{class:'btn ghost',onclick:async()=>{if(await ensurePerm(d.handle,'readwrite')){toast((await testDest(d))?'✅ Εντάξει':'❌ Απέτυχε!');render();}}},'🔁 Δοκιμή'),
+    el('button',{class:'btn ghost',onclick:async()=>{if(!confirm('Να αφαιρεθεί από τη λίστα; (Τα αρχεία του ΔΕΝ σβήνονται.)'))return;S.dests=S.dests.filter(x=>x!==d);if(S.dests[0])S.dests[0].role='primary';await saveDests();render();}},'✕')));
+  c1.append(el('div',{class:'row',style:'margin-top:10px'},!S.dests.length?el('button',{class:'btn primary big',onclick:()=>pickDest('primary')},icon('folder-open'),'Διάλεξε φάκελο (π.χ. Εικόνες)'):null,
+    S.dests.length===1?el('button',{class:'btn',onclick:()=>pickDest('backup')},icon('hard-drive'),'2ο αντίγραφο σε ΑΛΛΟΝ δίσκο (προαιρετικό, το πιο ασφαλές)'):null));
+  const srcs=S.sources.filter(s=>s.handle&&!s.removed);
+  const c2=card(el('h3',{},'② Από πού να τις μαζέψω;'),el('p',{class:'muted'},'Πρόσθεσε όσους φακέλους και δίσκους θέλεις: Εικόνες, Επιφάνεια εργασίας, Έγγραφα, Λήψεις, OneDrive, δίσκο D:, USB stick, εξωτερικούς δίσκους, κάρτες SD. ',
+    el('br'),el('small',{},'(Ο Chrome, για ασφάλεια, δεν σε αφήνει να διαλέξεις ολόκληρο τον C:\\ ή τον φάκελο χρήστη — διάλεξε τους υποφακέλους τους. Φάκελοι συστήματος και προγραμμάτων παραλείπονται αυτόματα.)')));
+  for(const s of srcs)c2.append(el('div',{class:'row',style:'padding:8px 0;border-top:1px solid var(--line)'},el('span',{style:'flex:1'},'📂 ',el('b',{},s.name),' ',
+      s.suspicious?el('span',{class:'bad'},`⚠️ ${s.errors} σφάλματα ανάγνωσης — κλειδωμένος για διαγραφή`):el('span',{class:'ok'},'✓'),CLOUD_RE.test(s.name)?el('span',{class:'warn'},' ☁️ cloud'):null),
+    el('button',{class:'btn ghost',onclick:async()=>{s.removed=true;s.handle=null;await saveSources();render();}},'✕')));
+  c2.append(el('div',{class:'row',style:'margin-top:10px'},el('button',{class:'btn primary',onclick:pickSource},icon('folder-down'),'Πρόσθεσε φάκελο ή δίσκο')));
+  const c3=el('details',{class:'card'},el('summary',{},'🛡️ Τι κάνει για την ασφάλειά σου (πάτα για λεπτομέρειες)'),el('ul',{class:'locks'},[
+    ['🩺','Δοκιμή εγγραφής-ανάγνωσης στον προορισμό πριν ξεκινήσει. Αν αποτύχει, δεν ξεκινάει.'],
+    ['📋','ΜΟΝΟ αντιγραφή. Τα αρχικά δεν αγγίζονται, ούτε μετακινούνται.'],
+    ['💎','Αντιγραφή byte-προς-byte: ΙΔΙΑ ανάλυση, ΙΔΙΑ ποιότητα, ΙΔΙΑ EXIF — καμία συμπίεση ή αλλαγή, ούτε στις φωτογραφίες ούτε στα βίντεο. (Το αποτύπωμα SHA-256 το αποδεικνύει.)'],
+    ['💽','Έλεγχος χώρου: πριν αντιγραφεί οτιδήποτε, «κλείνεται» δοκιμαστικά όλος ο χώρος που χρειάζεται. Αν δεν χωράνε, δεν ξεκινάει. Αν γεμίσει στην πορεία, σταματάει με ασφάλεια.'],
+    ['🎬','Και βίντεο (ρυθμίζεται): ακόμα και βίντεο πολλών GB διαβάζονται σε κομμάτια, χωρίς να γεμίσει η μνήμη.'],
+    ['🔐','Ψηφιακό «δακτυλικό αποτύπωμα» (SHA-256) για κάθε αρχείο. Μετά την αντιγραφή ξαναδιαβάζεται από τον δίσκο και συγκρίνεται (1ος έλεγχος).'],
+    ['🚫','Ποτέ αντικατάσταση: αν υπάρχει ίδιο όνομα, μπαίνει _2, _3…'],
+    ['♻️','Διπλότυπα: αντιγράφονται μία φορά, αλλά καταγράφονται όλες οι θέσεις τους.'],
+    ['📎','Κρατάει μαζί RAW+JPG, Live Photos (HEIC+MOV) και αρχεία XMP/AAE.'],
+    ['⚠️','Δίσκος με σφάλματα ανάγνωσης (π.χ. bad sectors): παύση, και ο δίσκος κλειδώνει για πάντα για διαγραφή.'],
+    ['🔋','Χαμηλή μπαταρία (<20%) → αυτόματη παύση. Η οθόνη δεν σβήνει όσο δουλεύει.'],
+    ['⏯️','Αν κοπεί ή σταματήσει, συνεχίζει από εκεί που έμεινε.'],
+    ['🔒','Οι φωτογραφίες ΔΕΝ ανεβαίνουν πουθενά. (Μόνο οι συντεταγμένες στέλνονται για το όνομα του μέρους — μπορείς να το κλείσεις στις Ρυθμίσεις.)']].map(([i,t])=>el('li',{},el('span',{class:'ic'},i),el('span',{},t)))));
+  const ready=S.dests.length&&srcs.length;
+  const c4=card(el('h3',{},'③ Ξεκίνα'),el('button',{class:'btn primary big',disabled:!ready,onclick:runOrganize},icon('play'),'Πάρε & τακτοποίησε'),
+    el('p',{class:'small muted'},'Πρώτα ψάχνει και σου λέει πόσες βρήκε και πόσο χώρο θέλουν. Μετά πατάς «Συνέχεια»: αντιγράφει, ταξινομεί ανά χρονιά/μήνα/μέρος και στο τέλος κάνει ΜΟΝΟ του τον έλεγχο. Τα αρχικά δεν αγγίζονται.'));
+  m.append(c1,c2,c4,c3);}
+function kpis(arr){return el('div',{class:'kpis'},arr.map(([v,t,cls])=>el('div',{class:'kpi'},el('b',{class:cls||''},v),el('span',{},t))));}
+function viewVerify(m){setTitle('Διπλός έλεγχος');const st=stats();
+  m.append(kpis([[fmtN(st.photos-st.viewOnly),'μοναδικές φωτογραφίες'],[fmtN(st.files),'αρχεία (με RAW/Live/XMP)'],[fmtN(st.locs),'θέσεις αρχικών'],
+    [fmtN(st.v1),'✓ 1ος έλεγχος',st.v1===st.files?'ok':'warn'],[fmtN(st.v2),'✓ 2ος έλεγχος',st.v2===st.files?'ok':'warn']]));
+  m.append(card(el('h3',{},'Τι κάνει ο 2ος έλεγχος'),el('ul',{class:'locks'},[
+    ['🔁','Ξαναδιαβάζει ΚΑΙ το αρχικό ΚΑΙ κάθε αντίγραφο και συγκρίνει τα αποτυπώματα (SHA-256).'],
+    ['🖼️','Ανοίγει πραγματικά κάθε εικόνα για να βεβαιωθεί ότι δεν είναι χαλασμένη.'],
+    ['🔧','Αν ένα αντίγραφο είναι χαλασμένο ή λείπει (ή πρόσθεσες 2ο δίσκο), το ξαναγράφει από το αρχικό και το ξαναελέγχει.'],
+    ['🔢','Μετράει: βρέθηκαν Χ → αντιγράφηκαν Χ.'],
+    ['🟢','Μόνο όσα περάσουν ΟΛΑ αυτά μπορούν αργότερα να σβηστούν από τις παλιές θέσεις.']].map(([i,t])=>el('li',{},el('span',{class:'ic'},i),el('span',{},t)))),
+    el('p',{class:'small muted'},'Συμβουλή: τρέξ\' τον λίγες ώρες μετά, ή μετά από επανεκκίνηση του υπολογιστή — έτσι διαβάζονται σίγουρα από τον δίσκο κι όχι από τη μνήμη.'),
+    el('button',{class:'btn primary big',onclick:runVerify,disabled:!st.files},icon('shield-check'),'Ξεκίνα τον 2ο έλεγχο')));}
+function viewClean(m){setTitle('Καθαρισμός αρχικών');const {out,blocked}=deletionCandidates();
+  const cloud=out.filter(c=>c.cloud),safe=out.filter(c=>!c.cloud),bytes=out.reduce((a,c)=>a+c.fl.size,0);
+  m.append(card(el('p',{},'Εδώ σβήνεις τα ',el('b',{},'ΑΡΧΙΚΑ'),' αρχεία από τις παλιές τους θέσεις — ',el('b',{},'μόνο'),' όσα έχουν περάσει τον διπλό έλεγχο. Η βιβλιοθήκη «Μνήμες» δεν αγγίζεται ποτέ.'),
+    el('p',{class:'small muted'},'Κάθε αρχείο που σβήνεται εδώ υπάρχει ήδη, επαληθευμένο byte-προς-byte, στη βιβλιοθήκη «Μνήμες». Αν αργότερα θέλεις να σβήσεις μια φωτογραφία οριστικά, το κάνεις από τη βιβλιοθήκη: πάει στον Κάδο, και εκεί γίνεται το τελικό σβήσιμο.')));
+  const L=(ok,ic,t)=>el('li',{},el('span',{class:'ic'},ok?'✅':ic),el('span',{},t));
+  m.append(card(el('h3',{},'🔒 Οι κλειδαριές ασφαλείας'),el('ul',{class:'locks'},
+    L(true,'','Σβήνονται ΜΟΝΟ αρχεία με ✓ 1ο και ✓ 2ο έλεγχο σε ΟΛΑ τα αντίγραφα.'+(blocked.notv2?` (${fmtN(blocked.notv2)} περιμένουν τον 2ο έλεγχο)`:'')),
+    L(!blocked.susp,'🔒',`Δίσκοι/φάκελοι με σφάλματα ανάγνωσης κλειδώνουν εντελώς.${blocked.susp?` (${fmtN(blocked.susp)} αρχεία κλειδωμένα)`:''}`),
+    L(!blocked.srcbad,'🔒',`Αν ένα αρχικό άλλαξε ή λείπει από τον 2ο έλεγχο, δεν σβήνεται.${blocked.srcbad?` (${fmtN(blocked.srcbad)})`:''}`),
+    L(true,'',`Αρχεία μέσα σε βιβλιοθήκη Apple Photos δεν σβήνονται ποτέ (θα χαλούσε τη βιβλιοθήκη).${blocked.prot?` (${fmtN(blocked.prot)} προστατευμένα)`:''}`),
+    L(!S.settings.requireBackup||S.dests.length>1,'🔒',S.settings.requireBackup?'Απαιτείται 2ο αντίγραφο σε άλλον δίσκο (Ρυθμίσεις).':'Προαιρετικά: απαίτηση 2ου αντιγράφου σε άλλον δίσκο (Ρυθμίσεις).'),
+    L(true,'','Πρώτα δοκιμαστική εκτέλεση: βλέπεις ακριβώς τι θα σβηστεί.'),
+    L(true,'','Επιβεβαίωση γράφοντας τη λέξη ΔΙΑΓΡΑΦΗ.'),
+    L(true,'','3ος έλεγχος ακριβώς πριν σβηστεί ΚΑΘΕ αρχείο (αρχικό + όλα τα αντίγραφα).'))));
+  const why=[];
+  if(blocked.unchecked)why.push(`🔓 ${fmtN(blocked.unchecked)} αρχικά δεν ελέγχθηκαν στον 2ο έλεγχο, γιατί ο browser δεν είχε άδεια για τον φάκελό τους (ή ο δίσκος δεν ήταν συνδεδεμένος). Δώσε άδεια με τα κουμπιά 🔓 στο πάνω μέρος και ξανατρέξε τον Διπλό έλεγχο.`);
+  if(blocked.notv2)why.push(`⏳ ${fmtN(blocked.notv2)} αρχικά περιμένουν τον 2ο έλεγχο (ή κάποιο αντίγραφο δεν είναι σωστό — δες την «📊 Αναφορά»).`);
+  if(blocked.srcbad)why.push(`⚠️ ${fmtN(blocked.srcbad)} αρχικά άλλαξαν ή λείπουν — δεν σβήνονται.`);
+  if(blocked.nobackup)why.push(`🔒 ${fmtN(blocked.nobackup)} αρχικά: η Ρύθμιση ζητά 2ο αντίγραφο σε άλλον δίσκο.`);
+  if(blocked.nohandle)why.push(`📁 ${fmtN(blocked.nohandle)} αρχικά είναι σε φάκελο που αφαιρέθηκε από τη λίστα.`);
+  if(blocked.susp)why.push(`🔒 ${fmtN(blocked.susp)} αρχικά είναι σε δίσκο με σφάλματα ανάγνωσης.`);
+  if(!out.length&&!why.length){const st=stats(),used=new Set();
+    for(const p of S.photos.values())for(const fl of p.files)for(const s of fl.srcs)used.add(s.s);
+    const fresh=S.sources.filter((s,i)=>!s.removed&&s.handle&&!used.has(i));
+    m.append(card(el('b',{},st.deleted?`✅ Όλα τα αρχικά που μαζεύτηκαν έχουν ήδη σβηστεί (${fmtN(st.deleted)} αρχεία). Τα αντίγραφα είναι ασφαλή στη βιβλιοθήκη.`:'Τίποτα έτοιμο για σβήσιμο ακόμα.'),
+      fresh.length?el('p',{},`📥 Οι φάκελοι ${fresh.map(s=>'«'+s.name+'»').join(', ')} δεν έχουν μαζευτεί ακόμα. Κάνε πρώτα Μάζεμα, μετά Διπλό έλεγχο, και μετά έλα εδώ.`):null,
+      el('div',{class:'row'},fresh.length?el('button',{class:'btn primary',onclick:()=>nav('organize')},'📥 Μάζεμα'):null,el('button',{class:'btn',onclick:()=>nav('verify')},'✅ Διπλός έλεγχος'))));}
+  else if(!out.length)m.append(card(el('b',{},'Τίποτα έτοιμο για σβήσιμο ακόμα.'),why.length?el('ul',{class:'locks'},why.map(t=>el('li',{},el('span',{},t)))):el('p',{class:'muted'},'Τρέξε πρώτα τον '),el('button',{class:'btn primary',onclick:()=>nav('verify')},'✅ Διπλό έλεγχο')));
+  else if(blocked.unchecked)m.append(el('div',{class:'card warn'},why[0]));
+  else{
+    if(S.dests.length<2)m.append(el('div',{class:'card warn'},el('b',{},'💡 Μετά το σβήσιμο θα υπάρχει ΜΟΝΟ ένα αντίγραφο (στη βιβλιοθήκη).'),
+      el('p',{class:'small'},'Αν χαλάσει αυτός ο δίσκος, χάνονται. Το πιο ασφαλές: πρόσθεσε πρώτα «💾 2ο αντίγραφο» σε εξωτερικό δίσκο (στο Μάζεμα), τρέξε τον Διπλό έλεγχο και μετά σβήσε.'),
+      el('button',{class:'btn',onclick:()=>nav('organize')},'💾 Πρόσθεσε 2ο αντίγραφο')));
+    const groups=new Map();for(const c of out){const k=c.s.name+'/'+c.src.p.slice(0,-1).join('/');const g=groups.get(k)||{n:0,b:0};g.n++;g.b+=c.fl.size;groups.set(k,g);}
+    const dry=card(el('h3',{},'🧪 Δοκιμαστική εκτέλεση'),el('p',{},`Θα σβηστούν ${fmtN(out.length)} αρχικά αρχεία · θα ελευθερωθούν ${fmtSize(bytes)}.`),
+      el('details',{},el('summary',{},`Ανά φάκελο (${groups.size})`),el('table',{},el('tr',{},el('th',{},'Φάκελος'),el('th',{},'Αρχεία'),el('th',{},'Μέγεθος')),
+        [...groups.entries()].sort((a,b)=>b[1].n-a[1].n).slice(0,500).map(([k,g])=>el('tr',{},el('td',{class:'path'},k),el('td',{},fmtN(g.n)),el('td',{},fmtSize(g.b)))))),
+      el('details',{},el('summary',{},'Λίστα αρχείων (πρώτα 500)'),out.slice(0,500).map(c=>el('div',{class:'path'},srcLabel(c.src),' → ',c.fl.rel))));
+    m.append(dry);
+    const involved=[...new Set(out.map(c=>c.s))];
+    const perm=card(el('h3',{},'🔓 Άδεια διαγραφής'),el('p',{class:'small muted'},'Ο browser ζητάει ξεχωριστή άδεια «επεξεργασίας» για κάθε φάκελο. Πάτα ένα-ένα:'));
+    const permRow=el('div',{class:'row'});perm.append(permRow);m.append(perm);
+    let cloudChk=null;
+    if(cloud.length){cloudChk=el('input',{type:'checkbox'});m.append(el('div',{class:'card warn'},el('b',{},`☁️ ${fmtN(cloud.length)} αρχεία είναι σε φάκελο cloud (OneDrive / Google Drive / iCloud / Dropbox).`),
+      el('p',{},'Αν τα σβήσεις εδώ, σβήνονται ΚΑΙ από το cloud και από όλες τις συσκευές σου!'),el('label',{class:'chk'},cloudChk,el('span',{},'Καταλαβαίνω — να σβηστούν κι αυτά. (Αλλιώς παραλείπονται.)'))));}
+    const inp=el('input',{type:'text',placeholder:'Γράψε: ΔΙΑΓΡΑΦΗ',style:'font-size:20px'});
+    const go=el('button',{class:'btn danger big',disabled:true},icon('eraser'),'Σβήσε τα αρχικά');
+    const upd=async()=>{let allp=true;permRow.innerHTML='';for(const s of involved){const ok=await permState(s.handle,'readwrite')==='granted';if(!ok)allp=false;
+        permRow.append(el('button',{class:'btn'+(ok?' ghost':''),disabled:ok,onclick:async()=>{await ensurePerm(s.handle,'readwrite');upd();}},(ok?'✅ ':'🔓 ')+s.name));}
+      go.disabled=!(allp&&inp.value.trim()==='ΔΙΑΓΡΑΦΗ'&&(safe.length||(cloudChk&&cloudChk.checked)));};
+    inp.oninput=upd;if(cloudChk)cloudChk.onchange=upd;upd();
+    go.onclick=()=>{if(confirm(`Τελευταία ερώτηση: να σβηστούν ${fmtN(cloudChk&&cloudChk.checked?out.length:safe.length)} αρχικά;\nΤα αντίγραφα στη βιβλιοθήκη μένουν ανέγγιχτα.`))runDelete(!!(cloudChk&&cloudChk.checked));};
+    m.append(card(el('h3',{},'✍️ Επιβεβαίωση'),el('div',{class:'row'},inp,go)));}
+ }
+function viewHealth(m){setTitle('Υγεία δίσκων');
+  m.append(card(el('h3',{},'Τι ελέγχει η εφαρμογή μόνη της'),
+    S.dests.length?S.dests.map(d=>el('p',{},d.test==='ok'?'✅ ':'❌ ',el('b',{},d.name),` — δοκιμή εγγραφής/ανάγνωσης ${d.test==='ok'?'πέτυχε':'ΑΠΕΤΥΧΕ'}${d.tested?' ('+new Date(d.tested).toLocaleString('el-GR')+')':''}`)):el('p',{class:'muted'},'Δεν έχεις διαλέξει ακόμα προορισμό.'),
+    S.sources.filter(s=>!s.removed).map(s=>el('div',{class:'row',style:'padding:6px 0'},el('span',{style:'flex:1'},s.suspicious?'⚠️ ':'✅ ',el('b',{},s.name),s.suspicious?` — ${s.errors} σφάλματα ανάγνωσης → ΚΛΕΙΔΩΜΕΝΟΣ για διαγραφή (μόνο αντιγραφή)`:' — χωρίς σφάλματα'),
+      s.suspicious?el('button',{class:'btn ghost',onclick:async()=>{if(prompt('Ξεκλείδωμα ΜΟΝΟ αν έλεγξες τον δίσκο με CrystalDiskInfo/smartctl και είναι υγιής.\nΓράψε ΞΕΚΛΕΙΔΩΜΑ:')==='ΞΕΚΛΕΙΔΩΜΑ'){s.suspicious=false;s.errors=0;await saveSources();render();}}},'Ξεκλείδωμα')
+        :el('button',{class:'btn ghost',onclick:async()=>{s.suspicious=true;s.errors=(s.errors||0)+1;await saveSources();render();}},'Σημείωσέ τον ως προβληματικό'))),
+    el('p',{class:'small muted'},'Κάθε σφάλμα ανάγνωσης (π.χ. χαλασμένοι τομείς) κλειδώνει αυτόματα τον δίσκο: οι φωτογραφίες του σώζονται με αντιγραφή, αλλά τα αρχικά δεν σβήνονται ποτέ.')));
+  const cmd=(t)=>el('div',{class:'row'},el('pre',{style:'flex:1;margin:6px 0'},t),el('button',{class:'btn ghost',onclick:()=>{navigator.clipboard&&navigator.clipboard.writeText(t);toast('📋 Αντιγράφηκε');}},'📋'));
+  m.append(card(el('h3',{},'🩺 Πλήρης έλεγχος υγείας (SMART) — 1 λεπτό'),el('p',{class:'muted'},'Για λόγους ασφαλείας, κανένας browser δεν μπορεί να διαβάσει την υγεία του δίσκου (SMART). Κάν\' το μία φορά πριν ξεκινήσεις — ειδικά για παλιούς ή εξωτερικούς δίσκους:'),
+    el('b',{},'🪟 Windows'),el('p',{class:'small'},'Εύκολα: κατέβασε το δωρεάν CrystalDiskInfo — πρέπει να γράφει «Good / Καλή». Ή στο PowerShell:'),
+    cmd('Get-PhysicalDisk | Select FriendlyName, MediaType, HealthStatus, OperationalStatus'),
+    el('b',{},'🍎 Mac'),el('p',{class:'small'},'Βοηθός δίσκων → Πρώτες βοήθειες. Ή στο Τερματικό:'),cmd('diskutil info disk0 | grep -i smart'),
+    el('b',{},'🐧 Linux'),el('p',{class:'small'},'Εφαρμογή «Δίσκοι» (GNOME Disks) → Δεδομένα SMART. Ή:'),cmd('sudo smartctl -H -A /dev/sda'),
+    el('div',{class:'card warn',style:'margin-top:12px'},el('b',{},'Κανόνας: '),'αν ένας δίσκος δεν είναι «Healthy/Good» → ΜΗΝ τον βάλεις προορισμό. Αν είναι πηγή, πάτα «Σημείωσέ τον ως προβληματικό»: θα σωθούν οι φωτογραφίες του, αλλά δεν θα σβηστεί τίποτα από αυτόν.')));}
+function reportHTML(){const st=stats();const probs=[];
+  for(const p of S.photos.values())for(const fl of p.files)if(!p.viewOnly&&!p.trashed&&!fl.v2)probs.push([fl.rel||p.name,fl.srcs.map(srcLabel).join(' | ')||(fl.origins||[]).join(' | '),S.dests.map(d=>d.name+':'+(fl.v1&&fl.v1[d.id]?'✓':'✗')).join(' ')+(fl.corrupt?' · χαλασμένη':'')]);
+  return {st,probs};}
+function viewReport(m){setTitle('Αναφορά');const {st,probs}=reportHTML();
+  m.append(kpis([[fmtN(st.photos),'μοναδικές φωτογραφίες'],[fmtN(st.files),'αρχεία'],[fmtSize(st.bytes),'συνολικό μέγεθος'],[fmtN(st.locs),'θέσεις αρχικών'],[fmtN(st.dupLocs),'διπλότυπες θέσεις'],
+    [fmtN(st.v1),'✓ 1ος έλεγχος',st.v1===st.files?'ok':'warn'],[fmtN(st.v2),'✓ 2ος έλεγχος',st.v2===st.files?'ok':'warn'],[fmtN(st.deleted),'αρχικά σβήστηκαν']]));
+  m.append(card(el('h3',{},'Δίσκοι & φάκελοι'),el('table',{},el('tr',{},el('th',{},'Όνομα'),el('th',{},'Ρόλος'),el('th',{},'Κατάσταση')),
+    S.dests.map(d=>el('tr',{},el('td',{},d.name),el('td',{},d.role==='backup'?'2ο αντίγραφο':'Βιβλιοθήκη'),el('td',{class:d.test==='ok'?'ok':'bad'},d.test==='ok'?'✅ εντάξει':'❌ απέτυχε'))),
+    S.sources.filter(s=>!s.removed).map(s=>el('tr',{},el('td',{},s.name),el('td',{},'Πηγή'),el('td',{class:s.suspicious?'bad':'ok'},s.suspicious?`⚠️ ${s.errors} σφάλματα — κλειδωμένος`:'✅ εντάξει'))))));
+  m.append(card(el('h3',{},`Αρχεία χωρίς πλήρη επαλήθευση (${fmtN(probs.length)})`),probs.length?el('table',{},el('tr',{},el('th',{},'Αντίγραφο'),el('th',{},'Αρχικό'),el('th',{},'Κατάσταση')),
+    probs.slice(0,500).map(r=>el('tr',{},r.map(c=>el('td',{class:'path'},c))))):el('p',{class:'ok'},'✅ Κανένα πρόβλημα.')));
+  m.append(el('details',{class:'card'},el('summary',{},`Καταγραφή (${fmtN(S.log.length)})`),S.log.slice(-400).reverse().map(l=>el('div',{class:'path'},new Date(l.t).toLocaleString('el-GR')+' · '+l.msg+(l.e?' — '+l.e:'')))));
+  m.append(el('button',{class:'btn primary',onclick:async()=>{const html=`<!doctype html><meta charset="utf-8"><title>Αναφορά Μνήμες</title><body style="font-family:system-ui;padding:20px"><h1>Αναφορά — ${new Date().toLocaleString('el-GR')}</h1>
+<p>Φωτογραφίες: ${st.photos} · Αρχεία: ${st.files} · Μέγεθος: ${fmtSize(st.bytes)} · Θέσεις αρχικών: ${st.locs} · Διπλότυπα: ${st.dupLocs}<br>1ος έλεγχος: ${st.v1}/${st.files} · 2ος έλεγχος: ${st.v2}/${st.files} · Σβησμένα αρχικά: ${st.deleted}</p>
+<h2>Προβλήματα (${probs.length})</h2><table border=1 cellpadding=4>${probs.map(r=>'<tr>'+r.map(c=>'<td>'+esc(c)+'</td>').join('')+'</tr>').join('')}</table>
+<h2>Καταγραφή</h2><pre>${S.log.map(l=>esc(new Date(l.t).toLocaleString('el-GR')+' · '+l.msg+(l.e?' — '+l.e:''))).join('\n')}</pre>`;
+    const blob=new Blob([html],{type:'text/html'});const name=`Αναφορά-${new Date().toISOString().slice(0,10)}.html`;
+    if(S.dests[0]&&await permState(S.dests[0].handle,'readwrite')==='granted'){try{await writeRel(S.dests[0].handle,`${META}/${name}`,blob);}catch{}}download(blob,name);}},icon('file-chart-column'),'Αποθήκευση αναφοράς'));}
+function viewSettings(m){setTitle('Ρυθμίσεις');const st=S.settings;const save=()=>{dbPut('kv','settings',st);toast('✅ Αποθηκεύτηκε');};
+  const chk=(k,t,sub)=>{const i=el('input',{type:'checkbox',checked:!!st[k]});i.onchange=()=>{st[k]=i.checked;save();};return el('label',{class:'chk'},i,el('span',{},el('b',{},t),sub?el('div',{class:'small muted'},sub):null));};
+  const minkb=el('input',{type:'number',value:st.minKB,min:0,max:2000,style:'width:110px'});minkb.onchange=()=>{st.minKB=Math.max(0,+minkb.value||0);save();};
+  m.append(card(el('h3',{},'Μάζεμα'),el('label',{class:'chk'},el('span',{},'Αγνόησε αρχεία μικρότερα από ',minkb,' KB ',el('div',{class:'small muted'},'(εικονίδια, εικόνες προγραμμάτων)'))),
+    chk('videos','Μάζεψε και βίντεο','Τα βίντεο των Live Photos μαζεύονται πάντα μαζί με τη φωτογραφία τους.'),
+    chk('fileDate','Αν δεν υπάρχει ημερομηνία λήψης, χρησιμοποίησε την ημερομηνία του αρχείου','Σημειώνεται με ≈ γιατί μπορεί να μην είναι ακριβής.'),
+    chk('geocode','Ονόματα μερών (π.χ. «Νάξος»)','Στέλνει ΜΟΝΟ τις συντεταγμένες (όχι φωτογραφίες) στο BigDataCloud/OpenStreetMap. Αν το κλείσεις, οι φωτογραφίες εμφανίζονται στον χάρτη αλλά χωρίς όνομα μέρους.')),
+    card(el('h3',{},'Ασφάλεια'),chk('requireBackup','Επίτρεψε διαγραφή αρχικών ΜΟΝΟ αν υπάρχουν 2 επαληθευμένα αντίγραφα σε 2 δίσκους','Ο πιο ασφαλής κανόνας (κανόνας 3-2-1).')),
+    card(el('h3',{},'Εφαρμογή'),el('div',{class:'row'},el('button',{class:'btn',onclick:async()=>{await saveIndex();toast('💾 Το ευρετήριο αποθηκεύτηκε μέσα στη βιβλιοθήκη');}},'💾 Αποθήκευση ευρετηρίου τώρα'),
+      el('button',{class:'btn danger',onclick:async()=>{if(prompt('Θα καθαριστεί ΜΟΝΟ η μνήμη της εφαρμογής σε αυτόν τον browser. Οι φωτογραφίες σου ΔΕΝ σβήνονται και η βιβλιοθήκη μένει ανέγγιχτη.\nΓράψε ΚΑΘΑΡΙΣΜΟΣ:')!=='ΚΑΘΑΡΙΣΜΟΣ')return;
+        try{await saveIndex();}catch{}(await idb()).close();indexedDB.deleteDatabase('mnimes');setTimeout(()=>location.reload(),500);}},'Ξεκίνα από την αρχή')),
+      el('p',{class:'small muted'},'Έκδοση 2.0 · Όλα τρέχουν τοπικά. Βιβλιοθήκες: exifr, Leaflet, χάρτης Esri, εικονίδια Lucide (ISC), γραμματοσειρά Inter.')));}
+function viewOpen(m){setTitle('Άνοιγμα βιβλιοθήκης');
+  m.append(card(el('p',{},'Αν έχεις ήδη φάκελο «Μνήμες» (π.χ. σε εξωτερικό δίσκο ή από άλλον υπολογιστή), άνοιξέ τον εδώ: φορτώνονται αμέσως ημερολόγιο και χάρτης — χωρίς ξανά ανάλυση.'),
+    FS_OK?el('button',{class:'btn primary big',onclick:()=>{if(S.dests.length)return toast('Υπάρχει ήδη βιβλιοθήκη εδώ. Για άλλη: Ρυθμίσεις → «Ξεκίνα από την αρχή».');pickDest('primary');}},icon('folder-open'),'Διάλεξε τον φάκελο «Μνήμες»')
+      :el('p',{class:'warn'},'Χρειάζεται Chrome ή Edge σε υπολογιστή.')));}
+function viewOpenFiles(m){setTitle('Άνοιγμα φωτογραφιών');
+  const inp=el('input',{type:'file',multiple:true,accept:'image/*,video/*',style:'display:none'});inp.onchange=()=>processFiles(inp.files);
+  const dir=el('input',{type:'file',multiple:true,style:'display:none'});dir.setAttribute('webkitdirectory','');dir.onchange=()=>processFiles(dir.files);
+  m.append(card(el('p',{},'Σε iPhone, iPad, Safari και Firefox η εφαρμογή διαβάζει όσες φωτογραφίες επιλέξεις και φτιάχνει ',el('b',{},'ημερολόγιο και χάρτη'),'. Δεν μπορεί να αντιγράψει ή να σβήσει αρχεία — αυτό γίνεται μόνο με Chrome/Edge σε υπολογιστή.'),
+    el('div',{class:'row'},el('button',{class:'btn primary big',onclick:()=>inp.click()},icon('images'),'Διάλεξε φωτογραφίες'),'webkitdirectory' in dir?el('button',{class:'btn big',onclick:()=>dir.click()},icon('folder-open'),'Διάλεξε φάκελο'):null),inp,dir));}
+
+/* ---------------- Προβολή φωτογραφίας (lightbox) ---------------- */
+let LB=null;
+function openLB(list,idx){LB={list,idx,tok:null,url:null};$('#lb').hidden=false;document.body.style.overflow='hidden';showLB();}
+function closeLB(silent){if(!LB)return;if(LB.url)URL.revokeObjectURL(LB.url);LB=null;$('#lb').hidden=true;$('#lbMedia').innerHTML='';document.body.style.overflow='';}
+function stepLB(d){if(!LB)return;LB.idx=(LB.idx+d+LB.list.length)%LB.list.length;showLB();}
+async function showLB(){const {list,idx}=LB,p=list[idx],tok=LB.tok={};$('#lbCount').textContent=`${idx+1} / ${list.length}`;
+  const media=$('#lbMedia');media.innerHTML='';if(LB.url){URL.revokeObjectURL(LB.url);LB.url=null;}
+  $('#lbPrev').style.visibility=$('#lbNext').style.visibility=list.length>1?'visible':'hidden';renderLBInfo(p);
+  $('#lbTrash').hidden=!FS_OK||!!p.viewOnly||!S.dests.length;$('#lbTrash').replaceChildren(icon(p.trashed?'undo-2':'trash-2'));$('#lbTrash').title=p.trashed?'Επαναφορά από τον Κάδο':'Σβήσιμο από παντού (πάει στον Κάδο)';
+  const tu=await thumbURL(p.h);if(!LB||tok!==LB.tok)return;
+  if(p.video){const v=el('video',{controls:true,playsinline:true,poster:tu||null});media.append(v);const b=await photoBlob(p);if(!LB||tok!==LB.tok)return;if(b){LB.url=URL.createObjectURL(b);v.src=LB.url;}return;}
+  const img=el('img',{src:tu||'',alt:''});media.append(img);
+  const b=await photoBlob(p);if(!LB||tok!==LB.tok||!b)return;const u=URL.createObjectURL(b);const t=new Image();
+  t.onload=()=>{if(LB&&tok===LB.tok){img.src=u;LB.url=u;}else URL.revokeObjectURL(u);};t.onerror=()=>URL.revokeObjectURL(u);t.src=u;}
+function renderLBInfo(p){const info=$('#lbInfo');info.innerHTML='';
+  const go=h=>()=>{closeLB();nav(h);};
+  info.append(el('div',{class:'row'},el('b',{style:'font-size:18px'},(p.ds==='file'?'≈ ':'')+fmtDate(p.date,true)),
+    p.date?el('button',{class:'link row',style:'gap:5px',onclick:go(`cal/${+p.date.slice(0,4)}/${+p.date.slice(5,7)}/${+p.date.slice(8,10)}`)},icon('calendar-days'),'όλη η μέρα'):null,
+    placeKey(p)?el('button',{class:'link row',style:'gap:5px',onclick:()=>{closeLB();navTo('place',placeKey(p));}},icon('map-pinned'),placeLabel(p)):null));
+  for(const fl of p.files){
+    if(fl.rel)info.append(el('div',{class:'path'},`💾 ${fl.rel}  `,S.dests.map(d=>(fl.v1&&fl.v1[d.id]?'✅':'⏳')).join(''),fl.v2?' · ✅✅ διπλοελεγμένο':' · ⏳ περιμένει 2ο έλεγχο'));
+    for(const s of fl.srcs)info.append(el('div',{class:'path'},`📍 αρχικό: ${srcLabel(s)}`,s.deleted?' · 🗑️ σβήστηκε (υπάρχει αντίγραφο)':s.ok===true?' · ✅':s.ok===false?' · ⚠️ '+(s.why||''):''));
+    for(const o of fl.origins||[])info.append(el('div',{class:'path'},'📍 '+o));}
+  info.append(el('div',{class:'path'},`${p.name} · ${fmtSize(p.size)}${p.w?` · ${p.w}×${p.hgt}`:''}${p.ds==='file'?' · ημερομηνία από το αρχείο (κατά προσέγγιση)':p.ds==='name'?' · ημερομηνία από το όνομα':''}`));}
+$('#lbTrash').onclick=async()=>{if(!LB)return;const p=LB.list[LB.idx];if(!p)return;
+  if(p.viewOnly)return toast('Σε προβολή μόνο (iPhone/Safari) δεν γίνεται σβήσιμο.');
+  closeLB();if(p.trashed)await restorePhotos([p]);else await trashPhotos([p]);};
+$('#lbClose').onclick=()=>closeLB();$('#lbPrev').onclick=()=>stepLB(-1);$('#lbNext').onclick=()=>stepLB(1);
+document.addEventListener('keydown',e=>{if(!LB)return;if(e.key==='Escape')closeLB();else if(e.key==='ArrowLeft')stepLB(-1);else if(e.key==='ArrowRight')stepLB(1);});
+let tx0=null;$('#lbMedia').addEventListener('touchstart',e=>{tx0=e.touches[0].clientX;},{passive:true});
+$('#lbMedia').addEventListener('touchend',e=>{if(tx0==null)return;const dx=e.changedTouches[0].clientX-tx0;tx0=null;if(Math.abs(dx)>50)stepLB(dx<0?1:-1);});
+
+/* ---------------- Εκκίνηση ---------------- */
+(async()=>{
+  if(!window.crypto||!crypto.subtle){$('#main').append(el('div',{class:'card bad'},'Ο browser δεν υποστηρίζει τα απαραίτητα (Web Crypto). Χρησιμοποίησε νέα έκδοση Chrome, Edge ή Safari.'));return;}
+  if(!window.exifr)toast('⚠️ Χωρίς ίντερνετ: οι ημερομηνίες θα βγουν μόνο από το όνομα/ημερομηνία αρχείου. Άνοιξε την εφαρμογή με σύνδεση.',8000);
+  const shaOk=await selfTestSha();console.info('SHA256-selftest:'+shaOk);if(!shaOk)console.warn('SHA-256 self-test failed — μεγάλα αρχεία θα διαβάζονται ολόκληρα');
+  await loadAll();render();
+})();
+</script>
+</body>
+</html>
