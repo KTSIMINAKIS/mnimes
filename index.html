@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Μνήμες · όλες οι φωτογραφίες σου, σε σειρά</title>
+<meta name="author" content="Κωνσταντίνος Τσιμινάκης">
+<meta name="copyright" content="© 2026 Κωνσταντίνος Τσιμινάκης">
 <meta name="description" content="Δωρεάν εφαρμογή που μαζεύει και τακτοποιεί φωτογραφίες και βίντεο ανά χρονιά, μήνα και μέρος. Τίποτα δεν ανεβαίνει στο ίντερνετ.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
@@ -59,7 +61,9 @@ h2{font-size:clamp(24px,3vw,32px);letter-spacing:-.035em;margin:0 0 18px;font-we
 .need td:first-child{font-weight:600;white-space:nowrap}
 .need td:last-child{color:var(--muted)}
 .tbl{overflow-x:auto}
-footer{color:var(--muted);font-size:13.5px;text-align:center}
+footer{color:var(--muted);font-size:13.5px;text-align:center;line-height:1.5}
+footer p{margin:4px 0}
+footer a{color:var(--accent)}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 .top{justify-content:space-between}
 .brand{display:flex;align-items:center;gap:10px}
@@ -165,7 +169,7 @@ dialog .close{border:1px solid var(--line);background:var(--soft);color:var(--in
     <button class="cbtn" id="coffeeBtn" type="button"><svg viewBox="0 0 24 24"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg><span data-t="cb">Κέρασέ με έναν καφέ</span></button>
   </section>
 
-  <footer data-t="foot">Μνήμες 2.0 · Οι φωτογραφίες στις εικόνες είναι παραδείγματα.</footer>
+  <footer><p data-t="copy">© 2026 Κωνσταντίνος Τσιμινάκης · Με επιφύλαξη παντός δικαιώματος</p><p data-t="credit">Δημιουργία του Τσιμινάκη Κωνσταντίνου του Αλεξάνδρου</p><p><a href="terms.html" data-t="terms">Όροι χρήσης και άδειες</a> · <span data-t="foot">Μνήμες 2.0 · Οι φωτογραφίες στις εικόνες είναι παραδείγματα.</span></p></footer>
 </div>
 
 <dialog id="coffee">
@@ -201,7 +205,7 @@ const EN={
  n3:'<td>Internet</td><td>For the map, place names and capture dates. Only rounded coordinates are sent, never photos.</td>',
  ch:'Found it useful?', cp:'Mnimes is free and will stay free. If you like, buy me a coffee.', cb:'Buy me a coffee',
  dh:'Thank you! ☕', dp:'Open your bank app → <b>IRIS</b> → send to mobile number, and enter:', cpy:'Copy', copied:'Copied ✓', dq:'Or scan the QR with your camera to get the number. (IRIS works with Greek banks.)', dc:'Close',
- foot:'Mnimes 2.0 · The photos in the pictures are examples.',
+ foot:'Mnimes 2.0 · The photos in the pictures are examples.', copy:'© 2026 Konstantinos Tsiminakis · All rights reserved', credit:'Created by Konstantinos Tsiminakis, son of Alexandros', terms:'Terms of use and licences',
  shot:'The Mnimes home screen with tiles for Photos, Videos, Calendar and Map'
 };
 const EL={};document.querySelectorAll('[data-t]').forEach(e=>EL[e.dataset.t]=e.innerHTML);

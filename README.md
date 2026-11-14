@@ -9,3 +9,10 @@
 - Τίποτα δεν ανεβαίνει στο ίντερνετ.
 
 **Χρήση:** κατέβασε το `Mnimes.html` και άνοιξέ το με Chrome ή Edge σε υπολογιστή. Σε Safari, iPhone και Firefox κάνει μόνο προβολή.
+
+## Πνευματικά δικαιώματα / Copyright
+
+© 2026 Κωνσταντίνος Τσιμινάκης · Με επιφύλαξη παντός δικαιώματος. Δημιουργία του Τσιμινάκη Κωνσταντίνου του Αλεξάνδρου.
+Δωρεάν για προσωπική χρήση· απαγορεύεται η αντιγραφή, αναδημοσίευση, τροποποίηση ή πώληση χωρίς γραπτή άδεια. Δες το [LICENSE](LICENSE) και τους [όρους χρήσης και άδειες](https://ktsiminakis.github.io/mnimes/terms.html).
+
+© 2026 Konstantinos Tsiminakis · All rights reserved. Free for personal use; no copying, republishing, modifying or selling without written permission. Contact: ktsiminakis@gmail.com

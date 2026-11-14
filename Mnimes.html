@@ -7,6 +7,10 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://server.arcgisonline.com https://cdnjs.cloudflare.com; media-src 'self' blob:; connect-src 'self' blob: data: https://api.bigdatacloud.net https://nominatim.openstreetmap.org; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Μνήμες</title>
+<!-- Μνήμες · © 2026 Κωνσταντίνος Τσιμινάκης (Konstantinos Tsiminakis). Με επιφύλαξη παντός δικαιώματος / All rights reserved.
+     Απαγορεύεται η αντιγραφή, αναδημοσίευση, τροποποίηση ή πώληση χωρίς γραπτή άδεια. Όροι: https://ktsiminakis.github.io/mnimes/terms.html -->
+<meta name="author" content="Κωνσταντίνος Τσιμινάκης">
+<meta name="copyright" content="© 2026 Κωνσταντίνος Τσιμινάκης">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <!-- Κάθε εξωτερική βιβλιοθήκη έχει «σφραγίδα» (integrity): αν κάποιος την αλλάξει στο ίντερνετ, ο browser ΔΕΝ την τρέχει -->
@@ -76,6 +80,7 @@ h3{margin:.3em 0 .5em;font-weight:700;letter-spacing:-.015em}
 .btn.ghost{background:transparent}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
 .btn .ico{width:18px;height:18px}
+.credit{text-align:center;margin:36px 0 8px;line-height:1.7}
 .link{background:none;border:0;color:var(--accent);cursor:pointer;padding:0;font-weight:600}
 
 /* αρχική */
@@ -304,6 +309,7 @@ const RANK={jpg:0,jpeg:0,jpe:0,heic:1,heif:1,png:2,webp:2,avif:2,tif:3,tiff:3,bm
 const SKIP_DIRS=new Set(['windows','windows.old','$windows.~bt','$windows.~ws','program files','program files (x86)','programdata','appdata','$recycle.bin','recycler','system volume information','recovery','msocache','perflogs','node_modules','cache','caches','temp','tmp','thumbnails','thumbs','library','_photoapp','lost+found','proc','sys','dev','snap','steamapps','windowsapps']);
 const CLOUD_RE=/onedrive|google ?drive|icloud|dropbox|\bmega\b|pcloud|box ?sync|nextcloud/i;
 const FS_OK=typeof window.showDirectoryPicker==='function';
+/* Εικονίδια: Lucide (https://lucide.dev) — ISC License, © Lucide Contributors 2022· τμήματα © Cole Bemis 2013-2022 (Feather, MIT). Πλήρες κείμενο: LUCIDE_LICENSE πιο κάτω. */
 const ICONS={'image':'<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>','folder-down':'<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><path d="M12 10v6"/><path d="m15 13-3 3-3-3"/>','layout-grid':'<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>','map':'<path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/>','calendar-days':'<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>','copy':'<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>','file-chart-column':'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 18v-1"/><path d="M12 18v-6"/><path d="M16 18v-3"/>','film':'<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/>','folder-open':'<path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/>','hard-drive':'<line x1="22" x2="2" y1="12" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" x2="6.01" y1="16" y2="16"/><line x1="10" x2="10.01" y1="16" y2="16"/>','images':'<path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/>','map-pinned':'<path d="M18 8c0 3.613-3.869 7.429-5.393 8.795a1 1 0 0 1-1.214 0C9.87 15.429 6 11.613 6 8a6 6 0 0 1 12 0"/><circle cx="12" cy="8" r="2"/><path d="M8.714 14h-3.71a1 1 0 0 0-.948.683l-2.004 6A1 1 0 0 0 3 22h18a1 1 0 0 0 .948-1.316l-2-6a1 1 0 0 0-.949-.684h-3.712"/>','settings':'<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>','shield-check':'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>','arrow-left':'<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>','arrow-up-right':'<path d="M7 7h10v10"/><path d="M7 17 17 7"/>','search':'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>','square-check':'<rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/>','x':'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>','chevron-left':'<path d="m15 18-6-6 6-6"/>','chevron-right':'<path d="m9 18 6-6-6-6"/>','play':'<polygon points="6 3 20 12 6 21 6 3"/>','undo-2':'<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/>','eraser':'<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>','trash-2':'<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',};
 
 const S={photos:new Map(),faces:new Map(),persons:new Map(),sources:[],dests:[],geo:{},log:[],deletions:[],
@@ -918,7 +924,7 @@ function render(){
   const [v,a,b,c]=parts;const m=$('#main');closeMap();m.innerHTML='';PAGE=[];updSel();$('#backBtn').style.display=v?'':'none';window.scrollTo(0,0);
   renderBanner();
   try{({'':viewHome,cal:viewCalendar,places:viewPlaces,place:viewPlace,dups:viewDups,videos:viewVideos,photos:viewPhotos,more:viewMore,trash:viewTrash,organize:viewOrganize,verify:viewVerify,clean:viewClean,health:viewHealth,report:viewReport,
-     settings:viewSettings,open:viewOpen,view:viewOpenFiles,search:viewSearch}[v||'']||viewHome)(m,a,b,c);}
+     settings:viewSettings,terms:viewTerms,open:viewOpen,view:viewOpenFiles,search:viewSearch}[v||'']||viewHome)(m,a,b,c);}
   catch(e){console.error(e);m.append(el('div',{class:'card bad'},(EN?'Error: ':'Σφάλμα: ')+e.message));}}
 const empty=(m,msg)=>m.append(card(el('p',{},msg||(EN?'There are no photos here yet.':'Δεν υπάρχουν ακόμα φωτογραφίες εδώ.')),el('button',{class:'btn primary',onclick:()=>nav(FS_OK?'organize':'view')},icon('folder-down'),FS_OK?(EN?'Collect photos':'Μάζεψε φωτογραφίες'):(EN?'Open photos':'Άνοιξε φωτογραφίες'))));
 
@@ -974,7 +980,8 @@ function viewHome(m){
     T('b-cal','calendar-days','#6366f1',(EN?'Calendar':'Ημερολόγιο'),(EN?'Day, month, year':'Μέρα, μήνας, χρονιά'),'cal'),
     T('b-map','map','#10b981',(EN?'Map':'Χάρτης'),I.places.size?fmtN(I.places.size)+(EN?' places':' μέρη'):(EN?'Where they were taken':'Πού τραβήχτηκαν'),'places'),
     T('b-more','layout-grid','#64748b',(EN?'Advanced':'Προχωρημένες'),(EN?'Trash, verification, report':'Κάδος, επαλήθευση, αναφορά'),'more')));
-  if(n){m.append(el('div',{class:'sech'},el('h3',{class:'sec'},(EN?'Recent':'Πρόσφατες')),el('button',{class:'link',onclick:()=>nav('photos')},(EN?'All →':'Όλες →'))));m.append(gallery(I.all.slice(-24).reverse()));}}
+  if(n){m.append(el('div',{class:'sech'},el('h3',{class:'sec'},(EN?'Recent':'Πρόσφατες')),el('button',{class:'link',onclick:()=>nav('photos')},(EN?'All →':'Όλες →'))));m.append(gallery(I.all.slice(-24).reverse()));}
+  m.append(creditLine());}
 function viewMore(m){setTitle((EN?'Advanced':'Προχωρημένες'));
   const tn=[...S.photos.values()].filter(p=>p.trashed&&!p.purged).length;
   if(!FS_OK){m.append(tiles([['images',(EN?'Open photos':'Άνοιγμα φωτογραφιών'),(EN?'View only':'Μόνο προβολή'),'view','#6366f1'],['settings',(EN?'Settings':'Ρυθμίσεις'),'','settings','#64748b']]));return;}
@@ -986,7 +993,8 @@ function viewMore(m){setTitle((EN?'Advanced':'Προχωρημένες'));
   m.append(el('h3',{class:'sec'},(EN?'Tools':'Εργαλεία')));
   m.append(tiles([['map-pinned',(EN?'Places':'Μέρη'),(EN?'List of places':'Λίστα τόπων'),'places','#10b981'],['copy',(EN?'Duplicates':'Διπλότυπα'),(EN?'Same photos in several locations':'Ίδιες φωτογραφίες σε πολλά σημεία'),'dups','#0ea5e9'],
     ['hard-drive',(EN?'Drive health':'Υγεία δίσκων'),(EN?'Check before anything else':'Έλεγχος πριν από όλα'),'health','#475569'],['folder-open',(EN?'Open library':'Άνοιγμα βιβλιοθήκης'),(EN?'From another computer':'Από άλλον υπολογιστή'),'open','#8b5cf6'],
-    ['settings',(EN?'Settings':'Ρυθμίσεις'),'','settings','#64748b']]));}
+    ['settings',(EN?'Settings':'Ρυθμίσεις'),'','settings','#64748b'],['file-chart-column',EN?'Terms & licences':'Όροι & άδειες',EN?'Copyright, privacy, licences':'Πνευματικά δικαιώματα, απόρρητο, άδειες','terms','#475569']]));
+  m.append(creditLine());}
 function viewTrash(m){setTitle((EN?'Trash':'Κάδος'));
   const list=[...S.photos.values()].filter(p=>p.trashed&&!p.purged).sort((a,b)=>b.trashed-a.trashed);
   m.append(card(el('p',{},(EN?'Here is everything you deleted. It is already gone from the library and from the original locations — here we keep ':'Εδώ είναι ό,τι έσβησες. Έχει ήδη φύγει από τη βιβλιοθήκη και από τις αρχικές θέσεις — εδώ κρατιέται '),el('b',{},(EN?'one verified copy':'ένα επαληθευμένο αντίγραφο')),(EN?' so you can restore it if you change your mind.':' για να το επαναφέρεις αν το μετανιώσεις.')),
@@ -1055,9 +1063,9 @@ function initMap(div,pls){if(!window.L){div.replaceWith(card((EN?'The map needs 
   MAP=L.map(div,{worldCopyJump:true});const rt=document.documentElement.dataset.theme,dark=rt?rt==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
   // Χάρτης Esri: δωρεάν, ΧΩΡΙΣ κλειδί, δουλεύει και όταν η σελίδα ανοίγει ως αρχείο (το CARTO ζητάει πλέον κλειδί και το OSM μπλοκάρει).
   const E='https://server.arcgisonline.com/ArcGIS/rest/services/';
-  if(dark){L.tileLayer(E+'Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Tiles © Esri'}).addTo(MAP);
+  if(dark){L.tileLayer(E+'Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Powered by <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a> · © Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors'}).addTo(MAP);
     L.tileLayer(E+'Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{maxZoom:16}).addTo(MAP);}
-  else L.tileLayer(E+'World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles © Esri'}).addTo(MAP);
+  else L.tileLayer(E+'World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Powered by <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a> · © Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors'}).addTo(MAP);
   const pts=[],max=Math.max(...pls.map(p=>p.list.length));
   for(const pl of pls){if(!pl.n)continue;const sz=Math.round(40+24*Math.sqrt(pl.list.length/max));
     const ic=L.divIcon({className:'pmk',html:`<div class="pmk-in" style="width:${sz}px;height:${sz}px"><b>${pl.list.length}</b></div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
@@ -1239,7 +1247,54 @@ function viewSettings(m){setTitle((EN?'Settings':'Ρυθμίσεις'));const st
     card(el('h3',{},(EN?'App':'Εφαρμογή')),el('div',{class:'row'},el('button',{class:'btn',onclick:async()=>{await saveIndex();toast((EN?'💾 The index was saved inside the library':'💾 Το ευρετήριο αποθηκεύτηκε μέσα στη βιβλιοθήκη'));}},(EN?'💾 Save index now':'💾 Αποθήκευση ευρετηρίου τώρα')),
       el('button',{class:'btn danger',onclick:async()=>{if(prompt((EN?'ONLY the app’s memory in this browser will be cleared. Your photos are NOT deleted and the library stays untouched.\nType RESET:':'Θα καθαριστεί ΜΟΝΟ η μνήμη της εφαρμογής σε αυτόν τον browser. Οι φωτογραφίες σου ΔΕΝ σβήνονται και η βιβλιοθήκη μένει ανέγγιχτη.\nΓράψε ΚΑΘΑΡΙΣΜΟΣ:'))!==(EN?'RESET':'ΚΑΘΑΡΙΣΜΟΣ'))return;
         try{await saveIndex();}catch{}(await idb()).close();indexedDB.deleteDatabase('mnimes');setTimeout(()=>location.reload(),500);}},(EN?'Start over':'Ξεκίνα από την αρχή'))),
-      el('p',{class:'small muted'},(EN?'Version 2.0 · Everything runs locally. Libraries: exifr, Leaflet, Esri map, Lucide icons (ISC), Inter font.':'Έκδοση 2.0 · Όλα τρέχουν τοπικά. Βιβλιοθήκες: exifr, Leaflet, χάρτης Esri, εικονίδια Lucide (ISC), γραμματοσειρά Inter.'))));}
+      el('p',{class:'small muted'},(EN?'Version 2.0 · Everything runs locally. Libraries: exifr, Leaflet, Esri map, Lucide icons (ISC), Inter font.':'Έκδοση 2.0 · Όλα τρέχουν τοπικά. Βιβλιοθήκες: exifr, Leaflet, χάρτης Esri, εικονίδια Lucide (ISC), γραμματοσειρά Inter.'))),
+    creditLine());}
+/* ---- Όροι χρήσης και άδειες (ίδιο πακέτο με τα άλλα έργα του δημιουργού) ---- */
+const COPY=EN?'© 2026 Konstantinos Tsiminakis · All rights reserved':'© 2026 Κωνσταντίνος Τσιμινάκης · Με επιφύλαξη παντός δικαιώματος';
+const CREDIT=EN?'Created by Konstantinos Tsiminakis, son of Alexandros':'Δημιουργία του Τσιμινάκη Κωνσταντίνου του Αλεξάνδρου';
+function creditLine(){return el('p',{class:'credit small muted'},COPY,el('br'),CREDIT,' · ',el('button',{class:'link',onclick:()=>nav('terms')},EN?'Terms of use and licences':'Όροι χρήσης και άδειες'));}
+const TERMS=EN?[
+ ['What it is','Mnimes is a free app that copies your photos and videos from the folders and drives you choose into one library folder, sorted by year, month and place, and shows them in a calendar and a map. It runs entirely in your browser, on your own computer.'],
+ ['Your data stays with you','Your photos and videos never leave your computer and the creator never sees or collects them. The app’s index stays in this browser (IndexedDB) and in the «Μνήμες/_PhotoApp» folder of your library. There is no account, no ads and no tracking.'],
+ ['What is sent over the internet','• Place names: only coordinates rounded to 2 decimals (about 1 km) go to BigDataCloud and, if needed, to OpenStreetMap Nominatim. You can turn this off in Settings.\n• Map: map pieces come from Esri’s servers, which see your IP address and the area you look at.\n• Font and libraries: the Inter font comes from Google Fonts and the exifr and Leaflet libraries from jsDelivr and cdnjs, which see your IP address.\nNo photo, file name or folder name is ever sent.'],
+ ['Your rights (GDPR)','The creator holds no personal data of yours. You can delete the app’s memory at any time from Settings → «Start over» (your photos are not touched). Questions: ktsiminakis@gmail.com. You may complain to the Hellenic Data Protection Authority (www.dpa.gr).'],
+ ['Liability','The app is provided «as is», free of charge, without any warranty. The SHA-256 checks greatly reduce the risk but cannot remove it: drives fail, cables come loose, cloud folders sync. Before deleting originals, always keep a second copy on another drive. Deleting from a cloud folder (OneDrive, Google Drive, iCloud, Dropbox) also deletes from your other devices. The creator is not liable for any loss or damage from its use. Dates, places and duplicates are detected automatically and may be wrong.'],
+ ['Copyright','The app (code, design, texts, images, name, presentation and videos) belongs to its creator. Copying, republishing, changing or selling it, in whole or in part, without the creator’s written permission is forbidden. Your photos are yours. Mnimes is an independent app and is not connected with Microsoft, Google, Apple, Esri or any other company named in it.'],
+ ['Third-party software and data','exifr (MIT, © Mike Kovařík) · Leaflet (BSD-2-Clause, © Volodymyr Agafonkin, © CloudMade) · Lucide icons (ISC, © Lucide Contributors; parts MIT, © Cole Bemis / Feather) · Inter font (SIL Open Font License 1.1, © The Inter Project Authors) · map: Powered by Esri — © Esri and its data providers · place names: BigDataCloud, © OpenStreetMap contributors (ODbL). They belong to their creators and are used under their licences.'],
+ ['Contact','Creator and responsible for the app: Konstantinos Tsiminakis · ktsiminakis@gmail.com']]
+:[
+ ['Τι είναι','Οι Μνήμες είναι δωρεάν εφαρμογή που αντιγράφει τις φωτογραφίες και τα βίντεό σου από τους φακέλους και τους δίσκους που διαλέγεις σε έναν φάκελο-βιβλιοθήκη, τακτοποιημένα ανά χρονιά, μήνα και μέρος, και τα δείχνει σε ημερολόγιο και χάρτη. Τρέχει ολόκληρη μέσα στον browser, στον δικό σου υπολογιστή.'],
+ ['Τα δεδομένα σου μένουν σε σένα','Οι φωτογραφίες και τα βίντεό σου δεν φεύγουν ποτέ από τον υπολογιστή σου και ο δημιουργός δεν τα βλέπει ούτε τα συλλέγει. Το ευρετήριο της εφαρμογής μένει σε αυτόν τον browser (IndexedDB) και στον φάκελο «Μνήμες/_PhotoApp» της βιβλιοθήκης σου. Δεν υπάρχει λογαριασμός, διαφημίσεις ή παρακολούθηση.'],
+ ['Τι στέλνεται στο ίντερνετ','• Ονόματα μερών: μόνο συντεταγμένες στρογγυλεμένες σε 2 δεκαδικά (περίπου 1 χλμ.) πάνε στο BigDataCloud και, αν χρειαστεί, στο OpenStreetMap Nominatim. Το κλείνεις από τις Ρυθμίσεις.\n• Χάρτης: τα κομμάτια του χάρτη έρχονται από τους servers της Esri, που βλέπουν τη διεύθυνση IP και την περιοχή που κοιτάς.\n• Γραμματοσειρά και βιβλιοθήκες: η γραμματοσειρά Inter έρχεται από το Google Fonts και οι βιβλιοθήκες exifr και Leaflet από τα jsDelivr και cdnjs, που βλέπουν τη διεύθυνση IP.\nΚαμία φωτογραφία, όνομα αρχείου ή φακέλου δεν στέλνεται ποτέ.'],
+ ['Τα δικαιώματά σου (GDPR)','Ο δημιουργός δεν κρατά κανένα προσωπικό σου δεδομένο. Σβήνεις τη μνήμη της εφαρμογής όποτε θέλεις από Ρυθμίσεις → «Ξεκίνα από την αρχή» (οι φωτογραφίες σου δεν αγγίζονται). Για ερωτήσεις: ktsiminakis@gmail.com. Έχεις δικαίωμα καταγγελίας στην Αρχή Προστασίας Δεδομένων Προσωπικού Χαρακτήρα (www.dpa.gr).'],
+ ['Ευθύνη','Η εφαρμογή δίνεται «ως έχει», δωρεάν, χωρίς καμία εγγύηση. Οι έλεγχοι SHA-256 μειώνουν πολύ τον κίνδυνο αλλά δεν τον μηδενίζουν: δίσκοι χαλάνε, καλώδια βγαίνουν, φάκελοι cloud συγχρονίζονται. Πριν σβήσεις αρχικά, κράτα πάντα δεύτερο αντίγραφο σε άλλον δίσκο. Το σβήσιμο από φάκελο cloud (OneDrive, Google Drive, iCloud, Dropbox) σβήνει και από τις άλλες συσκευές σου. Ο δημιουργός δεν ευθύνεται για απώλεια ή ζημιά από τη χρήση της. Ημερομηνίες, μέρη και διπλότυπα βρίσκονται αυτόματα και μπορεί να είναι λάθος.'],
+ ['Πνευματικά δικαιώματα','Η εφαρμογή (κώδικας, σχέδιο, κείμενα, εικόνες, όνομα, παρουσίαση και βίντεο) ανήκει στον δημιουργό της. Απαγορεύεται η αντιγραφή, η αναδημοσίευση, η τροποποίηση ή η πώληση της εφαρμογής ή μέρους της χωρίς γραπτή άδεια του δημιουργού. Οι φωτογραφίες σου είναι δικές σου. Οι Μνήμες είναι ανεξάρτητη εφαρμογή και δεν συνδέονται με τη Microsoft, τη Google, την Apple, την Esri ή άλλη εταιρεία που αναφέρεται.'],
+ ['Λογισμικό και δεδομένα τρίτων','exifr (MIT, © Mike Kovařík) · Leaflet (BSD-2-Clause, © Volodymyr Agafonkin, © CloudMade) · εικονίδια Lucide (ISC, © Lucide Contributors· τμήματα MIT, © Cole Bemis / Feather) · γραμματοσειρά Inter (SIL Open Font License 1.1, © The Inter Project Authors) · χάρτης: Powered by Esri — © Esri και οι πάροχοι δεδομένων της · ονόματα μερών: BigDataCloud, © OpenStreetMap contributors (ODbL). Ανήκουν στους δημιουργούς τους και χρησιμοποιούνται σύμφωνα με τις άδειές τους.'],
+ ['Επικοινωνία','Δημιουργός και υπεύθυνος της εφαρμογής: Κωνσταντίνος Τσιμινάκης · ktsiminakis@gmail.com']];
+const LUCIDE_LICENSE=`ISC License
+
+Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+The MIT License (MIT) — for portions derived from Feather
+
+Copyright (c) 2013-2022 Cole Bemis
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`;
+function viewTerms(m){setTitle(EN?'Terms of use and licences':'Όροι χρήσης και άδειες');
+  m.append(card(el('p',{},el('b',{},COPY)),el('p',{class:'muted'},CREDIT)));
+  for(const [h,t] of TERMS)m.append(card(el('h3',{},h),...t.split('\n').map(x=>el('p',{style:'margin:.35em 0'},x))));
+  m.append(el('details',{class:'card'},el('summary',{},EN?'Full licence texts':'Πλήρη κείμενα αδειών'),
+    el('p',{class:'small muted'},EN?'The Lucide icons are built into this file, so their licence travels with it. The full texts of all licences are also at ':'Τα εικονίδια Lucide είναι ενσωματωμένα σε αυτό το αρχείο, γι’ αυτό η άδειά τους ταξιδεύει μαζί του. Όλα τα πλήρη κείμενα υπάρχουν και στο ',
+      el('a',{href:'https://ktsiminakis.github.io/mnimes/terms.html',target:'_blank',rel:'noopener'},'ktsiminakis.github.io/mnimes/terms.html'),'.'),
+    el('pre',{style:'white-space:pre-wrap'},LUCIDE_LICENSE)));}
 function viewOpen(m){setTitle((EN?'Open library':'Άνοιγμα βιβλιοθήκης'));
   m.append(card(el('p',{},(EN?'If you already have a «Μνήμες» folder (e.g. on an external drive or from another computer), open it here: the calendar and map load right away — no new analysis.':'Αν έχεις ήδη φάκελο «Μνήμες» (π.χ. σε εξωτερικό δίσκο ή από άλλον υπολογιστή), άνοιξέ τον εδώ: φορτώνονται αμέσως ημερολόγιο και χάρτης — χωρίς ξανά ανάλυση.')),
     FS_OK?el('button',{class:'btn primary big',onclick:()=>{if(S.dests.length)return toast((EN?'There is already a library here. For another one: Settings → «Start over».':'Υπάρχει ήδη βιβλιοθήκη εδώ. Για άλλη: Ρυθμίσεις → «Ξεκίνα από την αρχή».'));pickDest('primary');}},icon('folder-open'),(EN?'Choose the «Μνήμες» folder':'Διάλεξε τον φάκελο «Μνήμες»'))
