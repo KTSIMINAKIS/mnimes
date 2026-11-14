@@ -814,9 +814,11 @@ async function importIndex(d){let data;try{data=JSON.parse(await (await readRel(
   rebuildSrcIndex();S.ver++;S.fver++;toast((EN?`📂 Loaded ${fmtN(n)} photos from the library.`:`📂 Φορτώθηκαν ${fmtN(n)} φωτογραφίες από τη βιβλιοθήκη.`));}
 
 /* ---------------- 2ος ΕΛΕΓΧΟΣ ---------------- */
+/* Χρειάζεται έλεγχο: αρχείο χωρίς 2ο έλεγχο, ή αρχικό (όχι σβησμένο) που δεν έχει βγει σωστό */
+const needsVerify=p=>p.files.some(fl=>!fl.v2||fl.srcs.some(s=>!s.deleted&&s.ok!==true));
 async function runVerify(onlyNew){onlyNew=onlyNew===true;
   for(const d of S.dests)if(await permState(d.handle,'readwrite')!=='granted')return toast((EN?'Permission needed for «':'Χρειάζεται άδεια για «')+d.name+(EN?'». Press «Connect» at the top.':'». Πάτα «Σύνδεση» πάνω.'));
-  const list=[...S.photos.values()].filter(p=>!p.viewOnly&&!p.trashed&&p.files[0].rel&&(!onlyNew||p.files.some(fl=>!fl.v2)));
+  const list=[...S.photos.values()].filter(p=>!p.viewOnly&&!p.trashed&&p.files[0].rel&&(!onlyNew||needsVerify(p)));
   if(!list.length)return toast((EN?'There are no copied photos yet.':'Δεν υπάρχουν ακόμα αντιγραμμένες φωτογραφίες.'));
   const usedSrc=new Set();for(const p of list)for(const fl of p.files)for(const src of fl.srcs)if(!src.deleted)usedSrc.add(src.s);
   const noPerm=[];for(const i of usedSrc){const s=S.sources[i];if(!s||!s.handle||s.removed)continue;if(await permState(s.handle)!=='granted'&&!await ensurePerm(s.handle))noPerm.push(s.name);}
@@ -1155,7 +1157,14 @@ function viewVerify(m){setTitle((EN?'Double check':'Διπλός έλεγχος'
     ['🔢',(EN?'Counts: found X → copied X.':'Μετράει: βρέθηκαν Χ → αντιγράφηκαν Χ.')],
     ['🟢',(EN?'Only files that pass ALL of this can later be deleted from the old locations.':'Μόνο όσα περάσουν ΟΛΑ αυτά μπορούν αργότερα να σβηστούν από τις παλιές θέσεις.')]].map(([i,t])=>el('li',{},el('span',{class:'ic'},i),el('span',{},t)))),
     el('p',{class:'small muted'},(EN?'Tip: run it a few hours later, or after restarting the computer — that way the files are surely read from the drive and not from memory.':'Συμβουλή: τρέξ\' τον λίγες ώρες μετά, ή μετά από επανεκκίνηση του υπολογιστή — έτσι διαβάζονται σίγουρα από τον δίσκο κι όχι από τη μνήμη.')),
-    el('button',{class:'btn primary big',onclick:runVerify,disabled:!st.files},icon('shield-check'),(EN?'Start the 2nd check':'Ξεκίνα τον 2ο έλεγχο'))));}
+    (()=>{const todo=[...S.photos.values()].filter(p=>!p.viewOnly&&!p.trashed&&p.files[0].rel&&needsVerify(p)).length;
+      return el('div',{},
+        el('p',{},todo?(EN?`${fmtN(todo)} photos/videos still need checking. The rest have already passed and keep their ✓ — no need to check them again before deleting.`:`${fmtN(todo)} φωτογραφίες/βίντεο θέλουν ακόμα έλεγχο. Οι υπόλοιπες έχουν ήδη περάσει και κρατούν το ✓ — δεν χρειάζεται να ξαναελεγχθούν πριν το σβήσιμο.`)
+          :el('b',{class:'ok'},EN?'✅ Everything has already been checked. You don’t need to run it again before deleting: right before each deletion there is a 3rd check of that file anyway.':'✅ Όλα έχουν ήδη ελεγχθεί. Δεν χρειάζεται να τον ξανατρέξεις πριν το σβήσιμο: ακριβώς πριν σβηστεί κάθε αρχείο γίνεται έτσι κι αλλιώς 3ος έλεγχος.')),
+        el('div',{class:'row'},
+          el('button',{class:'btn primary big',onclick:()=>runVerify(true),disabled:!todo},icon('shield-check'),EN?`Check only what’s left (${fmtN(todo)})`:`Έλεγξε μόνο όσα λείπουν (${fmtN(todo)})`),
+          el('button',{class:'btn',onclick:()=>runVerify(false),disabled:!st.files},EN?`Check everything again (${fmtN(st.files)} files)`:`Ξανά όλα (${fmtN(st.files)} αρχεία)`)),
+        el('p',{class:'small muted'},EN?'«Everything again» is optional: do it now and then (e.g. once a month) to make sure the drive is still healthy.':'Το «Ξανά όλα» είναι προαιρετικό: κάν’ το πού και πού (π.χ. μία φορά τον μήνα), για να βεβαιωθείς ότι ο δίσκος είναι ακόμα υγιής.'));})()));}
 function viewClean(m){setTitle((EN?'Delete originals':'Καθαρισμός αρχικών'));const {out,blocked}=deletionCandidates();
   const cloud=out.filter(c=>c.cloud),safe=out.filter(c=>!c.cloud),bytes=out.reduce((a,c)=>a+c.fl.size,0);
   m.append(card(el('p',{},(EN?'Here you delete the ':'Εδώ σβήνεις τα '),el('b',{},(EN?'ORIGINAL':'ΑΡΧΙΚΑ')),(EN?' files from their old locations — ':' αρχεία από τις παλιές τους θέσεις — '),el('b',{},(EN?'only':'μόνο')),(EN?' those that passed the double check. The «Μνήμες» library is never touched.':' όσα έχουν περάσει τον διπλό έλεγχο. Η βιβλιοθήκη «Μνήμες» δεν αγγίζεται ποτέ.')),

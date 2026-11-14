@@ -36,11 +36,16 @@ function setLang(l){const D=l==='en'?EN:EL;
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===l));
   document.querySelectorAll('a[href^="Mnimes.html"]').forEach(a=>{if(!a.hasAttribute('download'))a.href='Mnimes.html?lang='+l;});
   document.querySelectorAll('img[data-en]').forEach(im=>{if(!im.dataset.el)im.dataset.el=im.getAttribute('src');im.src=l==='en'?im.dataset.en:im.dataset.el;});
-  document.querySelectorAll('#show .frames img').forEach(im=>im.src='slides/'+l+'_'+im.dataset.n+'.jpg');
+  window.SLIDE_LANG=l;setSlides();
   try{localStorage.setItem('lang',l);}catch(e){}}
 document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
 let start='el';try{start=new URLSearchParams(location.search).get('lang')||localStorage.getItem('lang')||((navigator.language||'el').toLowerCase().startsWith('el')?'el':'en');}catch(e){}
 if(start==='en')setLang('en');
+/* στο κινητό (στενή οθόνη): κάθετες διαφάνειες, που διαβάζονται άνετα */
+function setSlides(){const l=window.SLIDE_LANG||document.documentElement.lang||'el',t=matchMedia('(max-width: 600px)').matches;document.getElementById('show').classList.toggle('tall',t);
+  document.querySelectorAll('#show .frames img').forEach(im=>{im.src='slides/'+l+'_'+(t?'t':'')+im.dataset.n+'.jpg';im.width=t?720:1600;im.height=t?1280:900;});}
+matchMedia('(max-width: 600px)').addEventListener('change',setSlides);
+setSlides();
 /* slideshow: αλλάζει μόνο του κάθε 3,5″ (όχι αν ο επισκέπτης έχει ζητήσει λιγότερη κίνηση) */
 (()=>{const box=document.getElementById('show'),ims=[...box.querySelectorAll('.frames img')],dots=[...box.querySelectorAll('.sdots button')];
   let i=0,t=null,hover=false;const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;

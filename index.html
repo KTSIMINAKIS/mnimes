@@ -89,17 +89,18 @@ dialog .copy{border:1px solid var(--line);background:var(--soft);color:var(--ink
 dialog .small{font-size:13px;margin-top:-6px}
 dialog img{max-width:200px!important}
 dialog .close{border:1px solid var(--line);background:var(--soft);color:var(--ink);font:600 15px var(--font);padding:10px 22px;border-radius:999px;cursor:pointer}
-.show{position:relative;border-radius:24px;overflow:hidden;background:#0b0b14;box-shadow:var(--shadow);aspect-ratio:16/9;max-width:100%}
+.show{max-width:100%}
+.stage{position:relative;border-radius:24px;overflow:hidden;background:#0b0b14;box-shadow:var(--shadow);aspect-ratio:16/9;max-width:100%}
 .frames img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .7s ease}
 .frames img.on{opacity:1}
-.show .nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(20,20,32,.55);color:#fff;display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity .2s}
-.show:hover .nav,.show .nav:focus-visible{opacity:1}
-.show .nav svg{width:22px;height:22px}
-.show .prev{left:14px}.show .next{right:14px}
-.sdots{position:absolute;left:0;right:0;bottom:14px;display:flex;justify-content:center;gap:8px}
-.sdots button{width:9px;height:9px;padding:0;border:0;border-radius:999px;background:rgba(255,255,255,.35);cursor:pointer;transition:width .3s,background .3s}
-.sdots button.on{width:26px;background:#fff}
-@media (hover:none){.show .nav{opacity:1;width:38px;height:38px}}
+.show.tall .stage{aspect-ratio:9/16;max-width:420px;margin:0 auto}
+.sctl{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:14px}
+.sctl .nav{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);display:grid;place-items:center;cursor:pointer;flex:none;transition:transform .15s}
+.sctl .nav:hover{transform:scale(1.06)}
+.sctl .nav svg{width:22px;height:22px}
+.sdots{display:flex;align-items:center;gap:8px}
+.sdots button{width:9px;height:9px;padding:0;border:0;border-radius:999px;background:var(--line);cursor:pointer;transition:width .3s,background .3s}
+.sdots button.on{width:26px;background:var(--ink)}
 @media (max-width:820px){.hero{grid-template-columns:1fr;gap:30px}.steps{grid-template-columns:1fr}.safe{grid-template-columns:1fr}.wrap{gap:44px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -129,10 +130,12 @@ dialog .close{border:1px solid var(--line);background:var(--soft);color:var(--in
   <section aria-roledescription="carousel" aria-label="Παρουσίαση">
     <h2 data-t="watch">Δες πώς δουλεύει</h2>
     <div class="show" id="show">
-      <div class="frames"><img src="slides/el_1.jpg" data-n="1" alt="" width="1600" height="900" class="on"><img src="slides/el_2.jpg" data-n="2" alt="" width="1600" height="900" loading="lazy"><img src="slides/el_3.jpg" data-n="3" alt="" width="1600" height="900" loading="lazy"><img src="slides/el_4.jpg" data-n="4" alt="" width="1600" height="900" loading="lazy"><img src="slides/el_5.jpg" data-n="5" alt="" width="1600" height="900" loading="lazy"><img src="slides/el_6.jpg" data-n="6" alt="" width="1600" height="900" loading="lazy"><img src="slides/el_7.jpg" data-n="7" alt="" width="1600" height="900" loading="lazy"><img src="slides/el_8.jpg" data-n="8" alt="" width="1600" height="900" loading="lazy"></div>
-      <button class="nav prev" type="button" aria-label="Προηγούμενη"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
-      <button class="nav next" type="button" aria-label="Επόμενη"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
-      <div class="sdots"><button type="button" aria-label="1"></button><button type="button" aria-label="2"></button><button type="button" aria-label="3"></button><button type="button" aria-label="4"></button><button type="button" aria-label="5"></button><button type="button" aria-label="6"></button><button type="button" aria-label="7"></button><button type="button" aria-label="8"></button></div>
+      <div class="stage"><div class="frames"><img src="slides/el_1.jpg" data-n="1" alt="" width="1600" height="900" class="on"><img src="slides/el_2.jpg" data-n="2" alt="" width="1600" height="900" loading="lazy"><img src="slides/el_3.jpg" data-n="3" alt="" width="1600" height="900" loading="lazy"><img src="slides/el_4.jpg" data-n="4" alt="" width="1600" height="900" loading="lazy"><img src="slides/el_5.jpg" data-n="5" alt="" width="1600" height="900" loading="lazy"><img src="slides/el_6.jpg" data-n="6" alt="" width="1600" height="900" loading="lazy"><img src="slides/el_7.jpg" data-n="7" alt="" width="1600" height="900" loading="lazy"><img src="slides/el_8.jpg" data-n="8" alt="" width="1600" height="900" loading="lazy"></div></div>
+      <div class="sctl">
+        <button class="nav prev" type="button" aria-label="Προηγούμενη"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+        <div class="sdots"><button type="button" aria-label="1"></button><button type="button" aria-label="2"></button><button type="button" aria-label="3"></button><button type="button" aria-label="4"></button><button type="button" aria-label="5"></button><button type="button" aria-label="6"></button><button type="button" aria-label="7"></button><button type="button" aria-label="8"></button></div>
+        <button class="nav next" type="button" aria-label="Επόμενη"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+      </div>
     </div>
   </section>
 
