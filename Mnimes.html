@@ -287,6 +287,8 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
 
 <script>
 'use strict';
+/* Ασφάλεια: η εφαρμογή δεν τρέχει μέσα σε πλαίσιο (iframe) άλλης σελίδας — προστασία από «παγίδευση κλικ» */
+if(window.top!==window.self){document.documentElement.textContent='';throw new Error('Μνήμες: δεν επιτρέπεται άνοιγμα μέσα σε άλλη σελίδα');}
 /* Γλώσσα: ελληνικά ή αγγλικά (?lang=en / ?lang=el, αλλιώς η γλώσσα του browser). ΤΑ ΟΝΟΜΑΤΑ ΦΑΚΕΛΩΝ ΜΕΝΟΥΝ ΠΑΝΤΑ ΕΛΛΗΝΙΚΑ. */
 const LANG=(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(q==='en'||q==='el'){localStorage.setItem('mnimes.lang',q);return q;}
   const s=localStorage.getItem('mnimes.lang');if(s==='en'||s==='el')return s;}catch(e){}return (navigator.language||'el').toLowerCase().startsWith('el')?'el':'en';})();
@@ -406,8 +408,10 @@ function rebuildSrcIndex(){S.srcIndex.clear();for(const p of S.photos.values())f
 /* ---------------- Αρχεία (File System Access API) ---------------- */
 async function permState(h,mode='read'){if(!h)return 'denied';try{return await h.queryPermission({mode});}catch{return 'denied';}}
 async function ensurePerm(h,mode='read'){if(!h)return false;if(await permState(h,mode)==='granted')return true;try{return (await h.requestPermission({mode}))==='granted';}catch{return false;}}
-async function dirAt(root,segs,create=false){let d=root;for(const s of segs)d=await d.getDirectoryHandle(s,{create});return d;}
-async function fileHandleAt(root,segs,create=false){const d=await dirAt(root,segs.slice(0,-1),create);return d.getFileHandle(segs[segs.length-1],{create});}
+/* Ασφάλεια: κάθε κομμάτι διαδρομής πρέπει να είναι κανονικό όνομα (ποτέ '', '.', '..') */
+const badSeg=s=>typeof s!=='string'||!s||s==='.'||s==='..'||/[\/\x00]/.test(s);
+async function dirAt(root,segs,create=false){let d=root;for(const s of segs){if(badSeg(s))throw new Error('Μη έγκυρη διαδρομή');d=await d.getDirectoryHandle(s,{create});}return d;}
+async function fileHandleAt(root,segs,create=false){const d=await dirAt(root,segs.slice(0,-1),create);const f=segs[segs.length-1];if(badSeg(f))throw new Error('Μη έγκυρη διαδρομή');return d.getFileHandle(f,{create});}
 async function writeRel(root,rel,blob){const fh=await fileHandleAt(root,rel.split('/'),true);const w=await fh.createWritable();
   try{await w.write(blob);await w.close();}catch(e){try{await w.abort();}catch{}throw e;}}
 async function readRel(root,rel){return (await fileHandleAt(root,rel.split('/'))).getFile();}
@@ -449,7 +453,7 @@ let geoLast=0;
 function cleanPlace(n){return n?String(n).replace(/^(Δήμος|Δημοτική Ενότητα|Περιφερειακή Ενότητα|Municipality of|Municipal Unit of)\s+/i,'').trim():null;}
 async function placeName(lat,lon){
   const key=lat.toFixed(2)+','+lon.toFixed(2);
-  if(key in S.geo)return S.geo[key];
+  if(Object.prototype.hasOwnProperty.call(S.geo,key)&&typeof S.geo[key]==='string')return S.geo[key];
   if(!S.settings.geocode||!navigator.onLine)return null;
   const wait=geoLast+700-Date.now();if(wait>0)await sleep(wait);geoLast=Date.now();
   let name=null;lat=lat.toFixed(2);lon=lon.toFixed(2); // ιδιωτικότητα: στέλνεται μόνο η περιοχή (~1 χλμ), όχι το ακριβές σημείο
@@ -513,7 +517,7 @@ async function photoBlob(p){
    2) ΜΟΝΟ αφού επαληθευτεί, σβήνεται από τη βιβλιοθήκη, το 2ο αντίγραφο και ΟΛΕΣ τις αρχικές θέσεις.
    3) Οριστικά χάνεται μόνο όταν αδειάσεις τον Κάδο. */
 const TRASH=META+'/Κάδος';
-async function removeRel(root,segs){const dir=await dirAt(root,segs.slice(0,-1));await dir.removeEntry(segs[segs.length-1]);}
+async function removeRel(root,segs){const dir=await dirAt(root,segs.slice(0,-1));const f=segs[segs.length-1];if(badSeg(f))throw new Error('Μη έγκυρη διαδρομή');await dir.removeEntry(f);}
 async function goodCopy(p,fl,fromTrash){ // βρες ένα αντίγραφο με ΣΩΣΤΟ αποτύπωμα
   for(const d of S.dests){try{const f=await readRel(d.handle,(fromTrash?TRASH+'/':'')+fl.rel);if(f.size===fl.size&&await hashFile(f)===fl.h)return f;}catch{}}
   for(const src of fl.srcs){if(src.deleted)continue;const s=S.sources[src.s];if(!s||!s.handle)continue;try{const f=await (await fileHandleAt(s.handle,src.p)).getFile();if(f.size===fl.size&&await hashFile(f)===fl.h)return f;}catch{}}
@@ -796,13 +800,17 @@ async function saveIndex(){clearTimeout(idxTimer);
   const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
   for(const d of S.dests){if(!d.handle||await permState(d.handle,'readwrite')!=='granted')continue;try{await writeRel(d.handle,`${META}/index.json`,blob);}catch(e){console.warn(e);}}}
 async function importIndex(d){let data;try{data=JSON.parse(await (await readRel(d.handle,`${META}/index.json`)).text());}catch{return;}
-  let n=0;
-  for(const p of data.photos||[]){if(S.photos.has(p.h))continue;
+  let n=0;if(!data||typeof data!=='object')return;
+  /* Ασφάλεια: το index.json μπορεί να έρθει από άλλον υπολογιστή — δεχόμαστε μόνο σωστά δομημένες εγγραφές */
+  const okH=x=>typeof x==='string'&&/^[0-9a-f]{64}$/.test(x);
+  const okRel=r=>r==null||(typeof r==='string'&&r.length<1000&&r.split('/').every(s=>!badSeg(s)));
+  const okP=p=>p&&typeof p==='object'&&okH(p.h)&&Array.isArray(p.files)&&p.files.length&&p.files.every(f=>f&&typeof f==='object'&&okRel(f.rel)&&(f.h==null||okH(f.h))&&(f.srcs==null||Array.isArray(f.srcs)));
+  for(const p of Array.isArray(data.photos)?data.photos:[]){if(!okP(p)||S.photos.has(p.h))continue;
     for(const fl of p.files){fl.origins=(fl.srcs||[]).map(s=>((data.sources||[])[s.s]||{}).name+'/'+s.p.join('/'));fl.srcs=[];fl.v1={};fl.v2=null;}
     p.imported=true;S.photos.set(p.h,p);await savePhoto(p);n++;}
-  for(const f of data.faces||[])if(!S.faces.has(f.id)){S.faces.set(f.id,f);dbPut('faces',f.id,f);}
-  for(const pr of data.persons||[])if(!S.persons.has(pr.id)){S.persons.set(pr.id,pr);dbPut('persons',pr.id,pr);}
-  Object.assign(S.geo,data.geo||{});dbPut('kv','geo',S.geo);
+  for(const f of Array.isArray(data.faces)?data.faces:[])if(f&&typeof f.id==='string'&&!S.faces.has(f.id)){S.faces.set(f.id,f);dbPut('faces',f.id,f);}
+  for(const pr of Array.isArray(data.persons)?data.persons:[])if(pr&&typeof pr.id==='string'&&!S.persons.has(pr.id)){S.persons.set(pr.id,pr);dbPut('persons',pr.id,pr);}
+  if(data.geo&&typeof data.geo==='object')for(const [k,v] of Object.entries(data.geo))if(typeof v==='string'&&v.length<200&&/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(k))S.geo[k]=v;dbPut('kv','geo',S.geo);
   rebuildSrcIndex();S.ver++;S.fver++;toast((EN?`📂 Loaded ${fmtN(n)} photos from the library.`:`📂 Φορτώθηκαν ${fmtN(n)} φωτογραφίες από τη βιβλιοθήκη.`));}
 
 /* ---------------- 2ος ΕΛΕΓΧΟΣ ---------------- */
