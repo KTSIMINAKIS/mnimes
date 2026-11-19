@@ -628,10 +628,45 @@ $('#progStop').onclick=()=>{const r=S.run;if(!r)return;if(r.done){$('#prog').hid
 window.addEventListener('beforeunload',e=>{if(S.run&&!S.run.done){e.preventDefault();e.returnValue='';}});
 function readError(src,path,e,run){
   if(e&&e.name==='NotFoundError'){logErr((EN?`Not found: ${src.name}/${path.join('/')}`:`Δεν βρέθηκε: ${src.name}/${path.join('/')}`),e);return;}
-  src.errors=(src.errors||0)+1;src.suspicious=true;logErr((EN?`Read error: ${src.name}/${path.join('/')}`:`Σφάλμα ανάγνωσης: ${src.name}/${path.join('/')}`),e);
+  src.errors=(src.errors||0)+1;src.suspicious=true;src.errFiles=src.errFiles||[];if(src.errFiles.length<300)src.errFiles.push(path.join('/'));
+  if(run&&!src.riskOk&&!src.asked){src.asked=true;run.paused=true;setTimeout(()=>diskAlarm(src),50);}
+  logErr((EN?`Read error: ${src.name}/${path.join('/')}`:`Σφάλμα ανάγνωσης: ${src.name}/${path.join('/')}`),e);
   if(run){run.lines[(EN?'Errors':'Σφάλματα')]=(run.lines[(EN?'Errors':'Σφάλματα')]||0)+1;run.consecErr++;
     if(run.consecErr>=5&&!run.paused){run.paused=true;run.consecErr=0;run.note=(EN?'⚠️ Many read errors in a row. Was the drive disconnected, or does it have bad sectors? Check it and press «Resume».':'⚠️ Πολλά σφάλματα ανάγνωσης στη σειρά. Μήπως αποσυνδέθηκε ο δίσκος ή έχει χαλασμένους τομείς; Έλεγξέ τον και πάτα «Συνέχεια».');}}
   clearTimeout(readError.t);readError.t=setTimeout(saveSources,1000);}
+
+
+/* ---------- a drive with read errors (owner 2026-11-18): STOP, explain in detail, let the person choose. Default = nothing is
+   done with that drive. "At my own risk" = ONLY copying (to rescue the photos); deleting its originals stays locked. ---------- */
+function diskAlarm(src){
+  if(document.getElementById('diskAlarm'))return;
+  const files=(src.errFiles||[]).slice(0,25);
+  const chk=el('input',{type:'checkbox'});
+  const close=(risk)=>{if(risk){src.riskOk=true;logErr((EN?`⚠️ «${src.name}»: copying continues AT THE USER'S OWN RISK. Deleting originals stays locked.`:`⚠️ «${src.name}»: η αντιγραφή συνεχίζει ΜΕ ΕΥΘΥΝΗ ΤΟΥ ΧΡΗΣΤΗ. Το σβήσιμο αρχικών μένει κλειδωμένο.`));}
+    else logErr((EN?`⛔ «${src.name}»: stopped — nothing more is done with this drive.`:`⛔ «${src.name}»: σταμάτησε — δεν γίνεται τίποτα άλλο με αυτόν τον δίσκο.`));
+    saveSources();box.remove();if(S.run&&!S.run.done){S.run.paused=false;updProg(true);}render();};
+  const go=el('button',{class:'btn',disabled:true,onclick:()=>close(true)},(EN?'Continue at my own risk (copy only)':'Συνέχεια με δική μου ευθύνη (μόνο αντιγραφή)'));
+  chk.onchange=()=>{go.disabled=!chk.checked;};
+  const box=el('div',{id:'diskAlarm',style:'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:14px'},
+    el('div',{class:'card',style:'max-width:640px;max-height:92vh;overflow:auto;background:var(--card,#fff)'},
+      el('h2',{},(EN?'⛔ The drive «':'⛔ Ο δίσκος «')+src.name+(EN?'» has read errors':'» έχει σφάλματα ανάγνωσης')),
+      el('p',{style:'font-size:17px'},(EN?`Some files (${fmtN(src.errors||0)} so far) could not be read correctly. I stopped, so that nothing is done with a drive that may be failing.`:`Κάποια αρχεία (${fmtN(src.errors||0)} μέχρι τώρα) δεν διαβάστηκαν σωστά. Σταμάτησα, για να μη γίνει τίποτα με έναν δίσκο που μπορεί να χαλάει.`)),
+      el('h3',{},(EN?'What it means':'Τι σημαίνει')),
+      el('ul',{},el('li',{},(EN?'Most often the drive has damaged areas (bad sectors) and is starting to fail. Sometimes it is only a loose cable or a USB port.':'Τις περισσότερες φορές ο δίσκος έχει χαλασμένα σημεία (τομείς) και αρχίζει να χαλάει. Καμιά φορά φταίει μόνο ένα χαλαρό καλώδιο ή η θύρα USB.')),
+        el('li',{},(EN?'A failing drive can also give WRONG data without an error. Then even a copy can come out damaged, and no check can tell.':'Ένας δίσκος που χαλάει μπορεί να δώσει και ΛΑΘΟΣ δεδομένα χωρίς να βγάλει σφάλμα. Τότε και το αντίγραφο μπορεί να βγει χαλασμένο, χωρίς να το καταλάβει κανένας έλεγχος.')),
+        el('li',{},(EN?'Every extra reading tires a failing drive more. Some drives stop completely after a few hours of work.':'Κάθε επιπλέον διάβασμα κουράζει κι άλλο έναν δίσκο που χαλάει. Κάποιοι σταματούν εντελώς μετά από λίγες ώρες δουλειάς.'))),
+      el('h3',{},(EN?'What I recommend':'Τι προτείνω')),
+      el('ol',{},el('li',{},(EN?'Press «Stop». The app will not read, copy or delete anything on this drive.':'Πάτα «Σταμάτα». Η εφαρμογή δεν θα διαβάσει, δεν θα αντιγράψει και δεν θα σβήσει τίποτα από αυτόν τον δίσκο.')),
+        el('li',{},(EN?'Check the cable/port and the drive’s health (Drive health → SMART).':'Έλεγξε το καλώδιο/τη θύρα και την υγεία του δίσκου (Υγεία δίσκων → SMART).')),
+        el('li',{},el('b',{},(EN?'If there are precious photos on it (a wedding, the children’s births…), do not experiment: take the drive to a data-recovery lab. ':'Αν έχει πολύτιμες φωτογραφίες (γάμος, γέννα των παιδιών…), μην πειραματιστείς: πήγαινε τον δίσκο σε εργαστήριο ανάκτησης δεδομένων. ')),
+          (EN?'They first make a full copy of the drive with special equipment, and work on that.':'Εκεί πρώτα κάνουν πλήρες αντίγραφο του δίσκου με ειδικά μηχανήματα και δουλεύουν πάνω σε αυτό.'))),
+      files.length?el('details',{},el('summary',{},(EN?`Files that could not be read (${fmtN((src.errFiles||[]).length)})`:`Αρχεία που δεν διαβάστηκαν (${fmtN((src.errFiles||[]).length)})`)),files.map(f=>el('div',{class:'path'},f))):null,
+      el('div',{class:'card warn',style:'margin-top:12px'},el('b',{},(EN?'Continue at my own risk':'Συνέχεια με δική μου ευθύνη')),
+        el('p',{class:'small'},(EN?'Only if you understand the risk: the app will only COPY the photos it can read, to rescue them. It will NEVER delete anything from this drive (deleting stays locked). Copies from a failing drive may be damaged.':'Μόνο αν καταλαβαίνεις τον κίνδυνο: η εφαρμογή θα κάνει μόνο ΑΝΤΙΓΡΑΦΗ όσων φωτογραφιών διαβάζονται, για να σωθούν. ΔΕΝ θα σβήσει ποτέ τίποτα από αυτόν τον δίσκο (το σβήσιμο μένει κλειδωμένο). Τα αντίγραφα από δίσκο που χαλάει μπορεί να είναι χαλασμένα.')),
+        el('label',{class:'chk'},chk,el('span',{},(EN?'I understand that photos may be lost or come out damaged, and I continue at my own risk.':'Καταλαβαίνω ότι μπορεί να χαθούν ή να χαλάσουν φωτογραφίες και συνεχίζω με δική μου ευθύνη.'))),go),
+      el('button',{class:'btn primary big',style:'width:100%;margin-top:12px',onclick:()=>close(false)},(EN?'⛔ Stop — do nothing with this drive (recommended)':'⛔ Σταμάτα — μην κάνεις τίποτα με αυτόν τον δίσκο (προτείνεται)'))));
+  document.body.append(box);
+}
 
 /* ---------------- Προορισμοί & πηγές ---------------- */
 async function testDest(d){
@@ -668,6 +703,7 @@ async function pickSource(){
 
 /* ---------------- ΜΑΖΕΜΑ: σκανάρισμα → αντιγραφή → 1ος έλεγχος ---------------- */
 async function scanSource(s,run,groups){
+  if(s.suspicious&&!s.riskOk){run.lines[(EN?'Skipped: drive with errors':'Παραλείφθηκαν: δίσκος με σφάλματα')]=(run.lines[(EN?'Skipped: drive with errors':'Παραλείφθηκαν: δίσκος με σφάλματα')]||0)+1;logErr((EN?`⛔ «${s.name}» was not touched: the drive has read errors (see Drive health).`:`⛔ Ο «${s.name}» δεν αγγίχτηκε: ο δίσκος έχει σφάλματα ανάγνωσης (δες Υγεία δίσκων).`));return;}
   const stack=[{h:s.handle,p:[]}];
   const addGroup=async g=>{const key=g.s+'|'+[...g.p,g.main.name].join('/');
     if(S.srcIndex.has(key)){run.lines[(EN?'Already done':'Ήδη έτοιμες')]=(run.lines[(EN?'Already done':'Ήδη έτοιμες')]||0)+1;return;}
@@ -724,6 +760,7 @@ async function copyFileToDests(p,fl,data,run){
 async function processGroup(g,run){
   const src=S.sources[g.s];const mainPath=[...g.p,g.main.name];const key=g.s+'|'+mainPath.join('/');
   if(S.srcIndex.has(key))return;
+  if(src.suspicious&&!src.riskOk){run.lines[(EN?'Skipped: drive with errors':'Παραλείφθηκαν: δίσκος με σφάλματα')]=(run.lines[(EN?'Skipped: drive with errors':'Παραλείφθηκαν: δίσκος με σφάλματα')]||0)+1;return;}   // owner: nothing is done with a faulty drive
   let r;try{r=await readHashed(()=>g.main.fh.getFile());}catch(e){readError(src,mainPath,e,run);return;}
   run.consecErr=0;
   const {f,buf,h}=r;
@@ -828,7 +865,7 @@ async function runVerify(onlyNew){onlyNew=onlyNew===true;
   for(const p of list){await run.wait();if(run.stop)break;let photoOk=true;
     for(const fl of p.files){
       let srcBuf=null;
-      for(const src of fl.srcs){if(src.deleted)continue;const s=S.sources[src.s];if(!s||!s.handle||await permState(s.handle)!=='granted'){run.lines[(EN?'Originals not checked (no permission)':'Αρχικά που δεν ελέγχθηκαν (χωρίς άδεια)')]++;continue;}
+      for(const src of fl.srcs){if(src.deleted)continue;const s=S.sources[src.s];if(!s||!s.handle||(s.suspicious&&!s.riskOk)||await permState(s.handle)!=='granted'){run.lines[(EN?'Originals not checked (no permission)':'Αρχικά που δεν ελέγχθηκαν (χωρίς άδεια)')]++;continue;}
         try{const f=await (await fileHandleAt(s.handle,src.p)).getFile();src.ok=f.size===fl.size&&(await hashFile(f))===fl.h;src.why=src.ok?'':(EN?'the original changed':'το αρχικό άλλαξε');if(src.ok&&!srcBuf)srcBuf=f;}
         catch(e){src.ok=false;src.why=e.name==='NotFoundError'?(EN?'missing':'λείπει'):(EN?'read error':'σφάλμα ανάγνωσης');if(e.name!=='NotFoundError')readError(s,src.p,e,null);}}
       let allOk=true;fl.v1=fl.v1||{};
@@ -1165,12 +1202,17 @@ function viewVerify(m){setTitle((EN?'Double check':'Διπλός έλεγχος'
           el('button',{class:'btn primary big',onclick:()=>runVerify(true),disabled:!todo},icon('shield-check'),EN?`Check only what’s left (${fmtN(todo)})`:`Έλεγξε μόνο όσα λείπουν (${fmtN(todo)})`),
           el('button',{class:'btn',onclick:()=>runVerify(false),disabled:!st.files},EN?`Check everything again (${fmtN(st.files)} files)`:`Ξανά όλα (${fmtN(st.files)} αρχεία)`)),
         el('p',{class:'small muted'},EN?'«Everything again» is optional: do it now and then (e.g. once a month) to make sure the drive is still healthy.':'Το «Ξανά όλα» είναι προαιρετικό: κάν’ το πού και πού (π.χ. μία φορά τον μήνα), για να βεβαιωθείς ότι ο δίσκος είναι ακόμα υγιής.'));})()));}
-function viewClean(m){setTitle((EN?'Delete originals':'Καθαρισμός αρχικών'));const {out,blocked}=deletionCandidates();
+function viewClean(m){setTitle((EN?'Delete originals':'Σβήσιμο αρχικών'));const {out,blocked}=deletionCandidates();
+  // owner 2026-11-18: «κάνω διπλό έλεγχο» by itself, then ONE big «Διαγραφή» button; the details and locks stay below, closed
+  const top=el('div',{});m.append(top);
+  const adv=el('details',{class:'card'},el('summary',{},el('b',{},(EN?'🔒 Details & safety locks':'🔒 Λεπτομέρειες & κλειδαριές ασφαλείας'))));
+  const todo=[...S.photos.values()].filter(p=>!p.viewOnly&&!p.trashed&&p.files[0].rel&&needsVerify(p)).length;
+  const checkThenBack=async()=>{toast((EN?'🔍 Running the double check…':'🔍 Κάνω διπλό έλεγχο…'));await runVerify(true);nav('clean');};
   const cloud=out.filter(c=>c.cloud),safe=out.filter(c=>!c.cloud),bytes=out.reduce((a,c)=>a+c.fl.size,0);
-  m.append(card(el('p',{},(EN?'Here you delete the ':'Εδώ σβήνεις τα '),el('b',{},(EN?'ORIGINAL':'ΑΡΧΙΚΑ')),(EN?' files from their old locations — ':' αρχεία από τις παλιές τους θέσεις — '),el('b',{},(EN?'only':'μόνο')),(EN?' those that passed the double check. The «Μνήμες» library is never touched.':' όσα έχουν περάσει τον διπλό έλεγχο. Η βιβλιοθήκη «Μνήμες» δεν αγγίζεται ποτέ.')),
+  adv.append(card(el('p',{},(EN?'Here you delete the ':'Εδώ σβήνεις τα '),el('b',{},(EN?'ORIGINAL':'ΑΡΧΙΚΑ')),(EN?' files from their old locations — ':' αρχεία από τις παλιές τους θέσεις — '),el('b',{},(EN?'only':'μόνο')),(EN?' those that passed the double check. The «Μνήμες» library is never touched.':' όσα έχουν περάσει τον διπλό έλεγχο. Η βιβλιοθήκη «Μνήμες» δεν αγγίζεται ποτέ.')),
     el('p',{class:'small muted'},(EN?'Every file deleted here already exists, verified byte-for-byte, in the «Μνήμες» library. If you later want to delete a photo for good, do it from the library: it goes to the Trash, and the final deletion happens there.':'Κάθε αρχείο που σβήνεται εδώ υπάρχει ήδη, επαληθευμένο byte-προς-byte, στη βιβλιοθήκη «Μνήμες». Αν αργότερα θέλεις να σβήσεις μια φωτογραφία οριστικά, το κάνεις από τη βιβλιοθήκη: πάει στον Κάδο, και εκεί γίνεται το τελικό σβήσιμο.'))));
   const L=(ok,ic,t)=>el('li',{},el('span',{class:'ic'},ok?'✅':ic),el('span',{},t));
-  m.append(card(el('h3',{},(EN?'🔒 The safety locks':'🔒 Οι κλειδαριές ασφαλείας')),el('ul',{class:'locks'},
+  adv.append(card(el('h3',{},(EN?'🔒 The safety locks':'🔒 Οι κλειδαριές ασφαλείας')),el('ul',{class:'locks'},
     L(true,'',(EN?'ONLY files with a ✓ 1st and ✓ 2nd check on ALL copies are deleted.':'Σβήνονται ΜΟΝΟ αρχεία με ✓ 1ο και ✓ 2ο έλεγχο σε ΟΛΑ τα αντίγραφα.')+(blocked.notv2?(EN?` (${fmtN(blocked.notv2)} waiting for the 2nd check)`:` (${fmtN(blocked.notv2)} περιμένουν τον 2ο έλεγχο)`):'')),
     L(!blocked.susp,'🔒',(EN?`Drives/folders with read errors are locked completely.${blocked.susp?` (${fmtN(blocked.susp)} files locked)`:''}`:`Δίσκοι/φάκελοι με σφάλματα ανάγνωσης κλειδώνουν εντελώς.${blocked.susp?` (${fmtN(blocked.susp)} αρχεία κλειδωμένα)`:''}`)),
     L(!blocked.srcbad,'🔒',(EN?`If an original changed or was missing in the 2nd check, it is not deleted.${blocked.srcbad?` (${fmtN(blocked.srcbad)})`:''}`:`Αν ένα αρχικό άλλαξε ή λείπει από τον 2ο έλεγχο, δεν σβήνεται.${blocked.srcbad?` (${fmtN(blocked.srcbad)})`:''}`)),
@@ -1189,13 +1231,13 @@ function viewClean(m){setTitle((EN?'Delete originals':'Καθαρισμός αρ
   if(!out.length&&!why.length){const st=stats(),used=new Set();
     for(const p of S.photos.values())for(const fl of p.files)for(const s of fl.srcs)used.add(s.s);
     const fresh=S.sources.filter((s,i)=>!s.removed&&s.handle&&!used.has(i));
-    m.append(card(el('b',{},st.deleted?(EN?`✅ All collected originals have already been deleted (${fmtN(st.deleted)} files). The copies are safe in the library.`:`✅ Όλα τα αρχικά που μαζεύτηκαν έχουν ήδη σβηστεί (${fmtN(st.deleted)} αρχεία). Τα αντίγραφα είναι ασφαλή στη βιβλιοθήκη.`):(EN?'Nothing ready to delete yet.':'Τίποτα έτοιμο για σβήσιμο ακόμα.')),
+    adv.append(card(el('b',{},st.deleted?(EN?`✅ All collected originals have already been deleted (${fmtN(st.deleted)} files). The copies are safe in the library.`:`✅ Όλα τα αρχικά που μαζεύτηκαν έχουν ήδη σβηστεί (${fmtN(st.deleted)} αρχεία). Τα αντίγραφα είναι ασφαλή στη βιβλιοθήκη.`):(EN?'Nothing ready to delete yet.':'Τίποτα έτοιμο για σβήσιμο ακόμα.')),
       fresh.length?el('p',{},(EN?`📥 The folders ${fresh.map(s=>'«'+s.name+'»').join(', ')} haven’t been collected yet. First Collect, then Double check, then come back here.`:`📥 Οι φάκελοι ${fresh.map(s=>'«'+s.name+'»').join(', ')} δεν έχουν μαζευτεί ακόμα. Κάνε πρώτα Μάζεμα, μετά Διπλό έλεγχο, και μετά έλα εδώ.`)):null,
       el('div',{class:'row'},fresh.length?el('button',{class:'btn primary',onclick:()=>nav('organize')},(EN?'📥 Collect':'📥 Μάζεμα')):null,el('button',{class:'btn',onclick:()=>nav('verify')},(EN?'✅ Double check':'✅ Διπλός έλεγχος')))));}
-  else if(!out.length)m.append(card(el('b',{},(EN?'Nothing ready to delete yet.':'Τίποτα έτοιμο για σβήσιμο ακόμα.')),why.length?el('ul',{class:'locks'},why.map(t=>el('li',{},el('span',{},t)))):el('p',{class:'muted'},(EN?'First run the ':'Τρέξε πρώτα τον ')),el('button',{class:'btn primary',onclick:()=>nav('verify')},(EN?'✅ Double check':'✅ Διπλό έλεγχο'))));
-  else if(blocked.unchecked)m.append(el('div',{class:'card warn'},why[0]));
+  else if(!out.length)adv.append(card(el('b',{},(EN?'Nothing ready to delete yet.':'Τίποτα έτοιμο για σβήσιμο ακόμα.')),why.length?el('ul',{class:'locks'},why.map(t=>el('li',{},el('span',{},t)))):el('p',{class:'muted'},(EN?'First run the ':'Τρέξε πρώτα τον ')),el('button',{class:'btn primary',onclick:()=>nav('verify')},(EN?'✅ Double check':'✅ Διπλό έλεγχο'))));
+  else if(blocked.unchecked)adv.append(el('div',{class:'card warn'},why[0]));
   else{
-    if(S.dests.length<2)m.append(el('div',{class:'card warn'},el('b',{},(EN?'💡 After deleting, there will be ONLY one copy (in the library).':'💡 Μετά το σβήσιμο θα υπάρχει ΜΟΝΟ ένα αντίγραφο (στη βιβλιοθήκη).')),
+    if(S.dests.length<2)adv.append(el('div',{class:'card warn'},el('b',{},(EN?'💡 After deleting, there will be ONLY one copy (in the library).':'💡 Μετά το σβήσιμο θα υπάρχει ΜΟΝΟ ένα αντίγραφο (στη βιβλιοθήκη).')),
       el('p',{class:'small'},(EN?'If that drive fails, they are lost. The safest: first add a «💾 2nd copy» on an external drive (in Collect), run the Double check, then delete.':'Αν χαλάσει αυτός ο δίσκος, χάνονται. Το πιο ασφαλές: πρόσθεσε πρώτα «💾 2ο αντίγραφο» σε εξωτερικό δίσκο (στο Μάζεμα), τρέξε τον Διπλό έλεγχο και μετά σβήσε.')),
       el('button',{class:'btn',onclick:()=>nav('organize')},(EN?'💾 Add a 2nd copy':'💾 Πρόσθεσε 2ο αντίγραφο'))));
     const groups=new Map();for(const c of out){const k=c.s.name+'/'+c.src.p.slice(0,-1).join('/');const g=groups.get(k)||{n:0,b:0};g.n++;g.b+=c.fl.size;groups.set(k,g);}
@@ -1203,23 +1245,42 @@ function viewClean(m){setTitle((EN?'Delete originals':'Καθαρισμός αρ
       el('details',{},el('summary',{},(EN?`By folder (${groups.size})`:`Ανά φάκελο (${groups.size})`)),el('table',{},el('tr',{},el('th',{},(EN?'Folder':'Φάκελος')),el('th',{},(EN?'Files':'Αρχεία')),el('th',{},(EN?'Size':'Μέγεθος'))),
         [...groups.entries()].sort((a,b)=>b[1].n-a[1].n).slice(0,500).map(([k,g])=>el('tr',{},el('td',{class:'path'},k),el('td',{},fmtN(g.n)),el('td',{},fmtSize(g.b)))))),
       el('details',{},el('summary',{},(EN?'File list (first 500)':'Λίστα αρχείων (πρώτα 500)')),out.slice(0,500).map(c=>el('div',{class:'path'},srcLabel(c.src),' → ',c.fl.rel))));
-    m.append(dry);
+    adv.append(dry);
     const involved=[...new Set(out.map(c=>c.s))];
     const perm=card(el('h3',{},(EN?'🔓 Delete permission':'🔓 Άδεια διαγραφής')),el('p',{class:'small muted'},(EN?'The browser asks for separate «edit» permission for each folder. Press them one by one:':'Ο browser ζητάει ξεχωριστή άδεια «επεξεργασίας» για κάθε φάκελο. Πάτα ένα-ένα:')));
-    const permRow=el('div',{class:'row'});perm.append(permRow);m.append(perm);
+    const permRow=el('div',{class:'row'});perm.append(permRow);adv.append(perm);
     let cloudChk=null;
-    if(cloud.length){cloudChk=el('input',{type:'checkbox'});m.append(el('div',{class:'card warn'},el('b',{},(EN?`☁️ ${fmtN(cloud.length)} files are in a cloud folder (OneDrive / Google Drive / iCloud / Dropbox).`:`☁️ ${fmtN(cloud.length)} αρχεία είναι σε φάκελο cloud (OneDrive / Google Drive / iCloud / Dropbox).`)),
+    if(cloud.length){cloudChk=el('input',{type:'checkbox'});adv.append(el('div',{class:'card warn'},el('b',{},(EN?`☁️ ${fmtN(cloud.length)} files are in a cloud folder (OneDrive / Google Drive / iCloud / Dropbox).`:`☁️ ${fmtN(cloud.length)} αρχεία είναι σε φάκελο cloud (OneDrive / Google Drive / iCloud / Dropbox).`)),
       el('p',{},(EN?'If you delete them here, they are ALSO deleted from the cloud and from all your devices!':'Αν τα σβήσεις εδώ, σβήνονται ΚΑΙ από το cloud και από όλες τις συσκευές σου!')),el('label',{class:'chk'},cloudChk,el('span',{},(EN?'I understand — delete these too. (Otherwise they are skipped.)':'Καταλαβαίνω — να σβηστούν κι αυτά. (Αλλιώς παραλείπονται.)')))));}
-    const inp=el('input',{type:'text',placeholder:(EN?'Type: DELETE':'Γράψε: ΔΙΑΓΡΑΦΗ'),style:'font-size:20px'});
-    const go=el('button',{class:'btn danger big',disabled:true},icon('eraser'),(EN?'Delete the originals':'Σβήσε τα αρχικά'));
+
+    const n=safe.length,go=el('button',{class:'btn danger big',disabled:true,style:'width:100%;font-size:20px;padding:18px'},icon('trash-2'),(EN?`Delete ${fmtN(n)} originals`:`Διαγραφή ${fmtN(n)} αρχικών`)),hint=el('p',{class:'small muted'});
     const upd=async()=>{let allp=true;permRow.innerHTML='';for(const s of involved){const ok=await permState(s.handle,'readwrite')==='granted';if(!ok)allp=false;
         permRow.append(el('button',{class:'btn'+(ok?' ghost':''),disabled:ok,onclick:async()=>{await ensurePerm(s.handle,'readwrite');upd();}},(ok?'✅ ':'🔓 ')+s.name));}
-      go.disabled=!(allp&&inp.value.trim()===(EN?'DELETE':'ΔΙΑΓΡΑΦΗ')&&(safe.length||(cloudChk&&cloudChk.checked)));};
-    inp.oninput=upd;if(cloudChk)cloudChk.onchange=upd;upd();
+      go.disabled=!(allp&&(safe.length||(cloudChk&&cloudChk.checked)));
+      hint.textContent=allp?'':(EN?'👆 First give permission for each folder (buttons above), then press Delete.':'👆 Δώσε πρώτα άδεια για κάθε φάκελο (κουμπιά από πάνω) και μετά πάτα Διαγραφή.');};
+    if(cloudChk)cloudChk.onchange=upd;
     go.onclick=()=>{if(confirm((EN?`Last question: delete ${fmtN(cloudChk&&cloudChk.checked?out.length:safe.length)} originals?\nThe copies in the library stay untouched.`:`Τελευταία ερώτηση: να σβηστούν ${fmtN(cloudChk&&cloudChk.checked?out.length:safe.length)} αρχικά;\nΤα αντίγραφα στη βιβλιοθήκη μένουν ανέγγιχτα.`)))runDelete(!!(cloudChk&&cloudChk.checked));};
-    m.append(card(el('h3',{},(EN?'✍️ Confirmation':'✍️ Επιβεβαίωση')),el('div',{class:'row'},inp,go)));}
- }
+    // the simple part, on top: what passed the double check + permission buttons + ONE big button
+    top.append(card(el('h2',{},(EN?'✅ The double check passed':'✅ Ο διπλός έλεγχος πέρασε')),
+      el('p',{style:'font-size:18px'},(EN?`${fmtN(out.length)} originals are safe in the library, verified byte-for-byte. Deleting them frees ${fmtSize(bytes)}.`:`${fmtN(out.length)} αρχικά είναι ασφαλή στη βιβλιοθήκη, ελεγμένα byte-προς-byte. Αν τα σβήσεις, ελευθερώνονται ${fmtSize(bytes)}.`)),
+      todo?el('p',{class:'small'},(EN?`⏳ ${fmtN(todo)} more are waiting for the double check: `:`⏳ Άλλα ${fmtN(todo)} περιμένουν διπλό έλεγχο: `),el('button',{class:'btn',onclick:checkThenBack},(EN?'🔍 Check them too':'🔍 Έλεγξέ τα κι αυτά'))):null,
+      S.dests.length<2?el('p',{class:'small',style:'color:#b45309'},(EN?'💡 After deleting there will be only ONE copy (the library). Safer: first add a «💾 2nd copy» on an external drive.':'💡 Μετά το σβήσιμο θα υπάρχει ΜΟΝΟ ένα αντίγραφο (η βιβλιοθήκη). Πιο ασφαλές: πρόσθεσε πρώτα «💾 2ο αντίγραφο» σε εξωτερικό δίσκο.')):null,
+      perm,cloud.length?adv.lastChild:null,go,hint,
+      el('p',{class:'small muted'},(EN?'Right before each file is deleted it is checked a 3rd time. Your copies in the library are not touched.':'Ακριβώς πριν σβηστεί κάθε αρχείο γίνεται 3ος έλεγχος. Τα αντίγραφα στη βιβλιοθήκη δεν τα αγγίζει.'))));
+    upd();}
+   if(!out.length&&todo)top.append(card(el('h2',{},(EN?'🔍 First the double check':'🔍 Πρώτα διπλός έλεγχος')),
+    el('p',{style:'font-size:18px'},(EN?`Before anything is deleted, I check that every copy in the library is identical to its original (${fmtN(todo)} photos/videos).`:`Πριν σβηστεί οτιδήποτε, ελέγχω ότι κάθε αντίγραφο στη βιβλιοθήκη είναι ίδιο με το αρχικό του (${fmtN(todo)} φωτογραφίες/βίντεο).`)),
+    el('button',{class:'btn primary big',style:'width:100%;font-size:20px;padding:18px',onclick:checkThenBack},(EN?'🔍 Run the double check':'🔍 Κάνε διπλό έλεγχο')),
+    el('p',{class:'small muted'},(EN?'When it finishes, the «Delete» button appears here.':'Μόλις τελειώσει, εδώ εμφανίζεται το κουμπί «Διαγραφή».'))));
+  m.append(adv);if(!out.length&&!todo)adv.open=true;
+}
 function viewHealth(m){setTitle((EN?'Drive health':'Υγεία δίσκων'));
+  for(const s of S.sources.filter(x=>!x.removed&&x.suspicious))m.append(el('div',{class:'card warn'},
+    el('h3',{},'⛔ «'+s.name+(EN?'» has read errors':'» έχει σφάλματα ανάγνωσης')),
+    el('p',{},s.riskOk?(EN?'⚠️ You chose to continue AT YOUR OWN RISK: photos are only COPIED from it. Nothing is ever deleted from it.':'⚠️ Διάλεξες συνέχεια ΜΕ ΔΙΚΗ ΣΟΥ ΕΥΘΥΝΗ: από αυτόν μόνο ΑΝΤΙΓΡΑΦΟΝΤΑΙ φωτογραφίες. Δεν σβήνεται ποτέ τίποτα.')
+      :(EN?'Stopped: the app does nothing with this drive (no reading, no copying, no deleting).':'Σταματημένος: η εφαρμογή δεν κάνει τίποτα με αυτόν τον δίσκο (ούτε διάβασμα, ούτε αντιγραφή, ούτε σβήσιμο).')),
+    el('div',{class:'row'},el('button',{class:'btn',onclick:()=>diskAlarm(s)},(EN?'ℹ️ Explanation & choices':'ℹ️ Εξήγηση & επιλογές')),
+      s.riskOk?el('button',{class:'btn',onclick:async()=>{s.riskOk=false;await saveSources();render();}},(EN?'⛔ Stop it again':'⛔ Σταμάτα τον πάλι')):null)));
   m.append(card(el('h3',{},(EN?'What the app checks on its own':'Τι ελέγχει η εφαρμογή μόνη της')),
     S.dests.length?S.dests.map(d=>el('p',{},d.test==='ok'?'✅ ':'❌ ',el('b',{},d.name),(EN?` — write/read test ${d.test==='ok'?'passed':'FAILED'}${d.tested?' ('+new Date(d.tested).toLocaleString(LOC)+')':''}`:` — δοκιμή εγγραφής/ανάγνωσης ${d.test==='ok'?'πέτυχε':'ΑΠΕΤΥΧΕ'}${d.tested?' ('+new Date(d.tested).toLocaleString(LOC)+')':''}`))):el('p',{class:'muted'},(EN?'You haven’t chosen a destination yet.':'Δεν έχεις διαλέξει ακόμα προορισμό.')),
     S.sources.filter(s=>!s.removed).map(s=>el('div',{class:'row',style:'padding:6px 0'},el('span',{style:'flex:1'},s.suspicious?'⚠️ ':'✅ ',el('b',{},s.name),s.suspicious?(EN?` — ${s.errors} read errors → LOCKED for deletion (copy only)`:` — ${s.errors} σφάλματα ανάγνωσης → ΚΛΕΙΔΩΜΕΝΟΣ για διαγραφή (μόνο αντιγραφή)`):(EN?' — no errors':' — χωρίς σφάλματα')),
