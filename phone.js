@@ -124,22 +124,32 @@ async function walk(dir, path, out) {
   for await (const [name, h] of dir.entries()) {
     if (name.startsWith('.')) continue;                      // hidden folders: thumbnails, trash
     if (h.kind === 'directory') { if (!/^(thumbnails|\.thumbnails|cache)$/i.test(name)) await walk(h, [...path, name], out); }
-    else if (wanted(name)) out.push({ p: [...path, name], get: () => h.getFile() });
+    else if (wanted(name)) { out.push({ p: [...path, name], get: () => h.getFile() }); if (out.length % 50 === 0) status(T(`Looking… ${out.length} found`, `Ψάχνω… βρέθηκαν ${out.length}`)); }
   }
 }
 $('pickDir').onclick = async () => {
+  if (busy) return;
   let d; try { d = await window.showDirectoryPicker({ mode: 'read' }); } catch { return; }
-  status(T('Looking…', 'Ψάχνω…')); const out = []; await walk(d, [d.name], out); await chosen(out);
+  ['pickDir', 'pickFolder', 'pickFiles'].forEach(id => $(id).hidden = true);
+  status(T('Looking…', 'Ψάχνω…')); hint(T('Many photos take a minute to list. Keep the screen on.', 'Πολλές φωτογραφίες θέλουν ένα λεπτό για να μετρηθούν. Κράτα την οθόνη ανοιχτή.')); keepAwake(); const out = []; await walk(d, [d.name], out); await chosen(out);
 };
 $('pickFolder').onclick = () => $('inFolder').click();
 $('pickFiles').onclick = () => $('inFiles').click();
 $('inFolder').onchange = e => chosen([...e.target.files].filter(f => wanted(f.name)).map(f => ({ p: (f.webkitRelativePath || f.name).split('/').filter(Boolean), get: async () => f })));
 $('inFiles').onchange = e => chosen([...e.target.files].filter(f => wanted(f.name) || /^(image|video)\//.test(f.type)).map(f => ({ p: [T('Phone', 'Κινητό'), f.name], get: async () => f })));
 
+let busy = false;   // a second tap while the list is read must not start a second list
 async function chosen(list) {
-  if (!list.length) { status(T('No photos or videos there. Choose another folder.', 'Δεν βρέθηκαν φωτογραφίες ή βίντεο εκεί. Διάλεξε άλλον φάκελο.'), 'bad'); return; }
+  if (busy) return; busy = true;
+  ['pickDir', 'pickFolder', 'pickFiles'].forEach(id => $(id).hidden = true);
+  if (!list.length) { busy = false; ready(); status(T('No photos or videos there. Choose another folder.', 'Δεν βρέθηκαν φωτογραφίες ή βίντεο εκεί. Διάλεξε άλλον φάκελο.'), 'bad'); return; }
   files = [];
-  for (const x of list) { try { const f = await x.get(); files.push({ ...x, size: f.size, lm: f.lastModified }); } catch {} }
+  // the size and date of each file: 16 at a time (one by one is very slow on phones), with a counter so it never looks stuck
+  for (let i = 0; i < list.length; i += 16) {
+    const got = await Promise.all(list.slice(i, i + 16).map(async x => { try { const f = await x.get(); return { ...x, size: f.size, lm: f.lastModified }; } catch { return null; } }));
+    for (const g of got) if (g) files.push(g);
+    status(T(`Reading the list… ${Math.min(i + 16, list.length)} / ${list.length}`, `Διαβάζω τη λίστα… ${Math.min(i + 16, list.length)} / ${list.length}`));
+  }
   const total = files.reduce((a, f) => a + f.size, 0);
   ['pickDir', 'pickFolder', 'pickFiles'].forEach(id => $(id).hidden = true);
   status(T(`Found ${files.length} files (${fmt(total)}). Sending…`, `Βρέθηκαν ${files.length} αρχεία (${fmt(total)}). Στέλνω…`), 'ok');
