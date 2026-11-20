@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <!-- Ασφάλεια: η σελίδα επιτρέπεται να μιλήσει ΜΟΝΟ με αυτές τις διευθύνσεις (τίποτα άλλο δεν μπορεί να φορτωθεί ή να σταλεί αλλού) -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://server.arcgisonline.com https://cdnjs.cloudflare.com; media-src 'self' blob:; connect-src 'self' blob: data: https://api.bigdatacloud.net https://nominatim.openstreetmap.org; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://server.arcgisonline.com https://cdnjs.cloudflare.com; media-src 'self' blob:; connect-src 'self' blob: data: https://api.bigdatacloud.net https://nominatim.openstreetmap.org https://mnimes-pair.ktsiminakis.workers.dev; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Μνήμες</title>
 <!-- Μνήμες · © 2026 Κωνσταντίνος Τσιμινάκης (Konstantinos Tsiminakis). Με επιφύλαξη παντός δικαιώματος / All rights reserved.
@@ -387,7 +387,7 @@ const dbPut=(s,k,v)=>tx(s,'readwrite',o=>o.put(v,k)).catch(e=>console.warn('idb'
 const dbDel=(s,k)=>tx(s,'readwrite',o=>o.delete(k)).catch(()=>{});
 const dbAll=s=>tx(s,'readonly',o=>o.getAll()).catch(()=>[]);
 const savePhoto=p=>dbPut('photos',p.h,p);
-const saveSources=()=>dbPut('kv','sources',S.sources);
+const saveSources=()=>dbPut('kv','sources',S.sources.map(s=>s.phone?{id:s.id,name:s.name,phone:true,errors:s.errors||0,handle:null,removed:true,added:s.added}:s)); // a phone (live Wi-Fi link) is not stored
 const saveDests=()=>dbPut('kv','dests',S.dests);
 async function loadAll(){
   try{
@@ -627,6 +627,7 @@ $('#progStop').onclick=()=>{const r=S.run;if(!r)return;if(r.done){$('#prog').hid
   if(confirm((EN?'Stop the task?\nEverything done so far is saved and you can continue later from where it stopped.':'Να σταματήσει η εργασία;\nΌ,τι έγινε μένει αποθηκευμένο και μπορείς να συνεχίσεις αργότερα από εκεί που έμεινε.'))){r.stop=true;r.paused=false;}};
 window.addEventListener('beforeunload',e=>{if(S.run&&!S.run.done){e.preventDefault();e.returnValue='';}});
 function readError(src,path,e,run){
+  if(src&&src.phone){logErr((EN?`📱 Not received from the phone: ${path.join('/')}`:`📱 Δεν ήρθε από το κινητό: ${path.join('/')}`),e);if(run)run.lines[(EN?'Errors':'Σφάλματα')]=(run.lines[(EN?'Errors':'Σφάλματα')]||0)+1;return;}
   if(e&&e.name==='NotFoundError'){logErr((EN?`Not found: ${src.name}/${path.join('/')}`:`Δεν βρέθηκε: ${src.name}/${path.join('/')}`),e);return;}
   src.errors=(src.errors||0)+1;src.suspicious=true;src.errFiles=src.errFiles||[];if(src.errFiles.length<300)src.errFiles.push(path.join('/'));
   if(run&&!src.riskOk&&!src.asked){src.asked=true;run.paused=true;setTimeout(()=>diskAlarm(src),50);}
@@ -740,11 +741,120 @@ async function pickSource(){
   let h;try{h=await showDirectoryPicker({id:'mnimessrc',mode:'read'});}
   catch(e){if(e.name==='AbortError')return;toast((EN?'Chrome doesn’t allow this folder (e.g. the whole C:\\ or your user folder). Choose its subfolders: Pictures, Desktop, Documents, Downloads.':'Ο Chrome δεν επιτρέπει αυτόν τον φάκελο (π.χ. ολόκληρο τον C:\\ ή τον φάκελο χρήστη). Διάλεξε τους υποφακέλους του: Εικόνες, Επιφάνεια εργασίας, Έγγραφα, Λήψεις.'),9000);return;}
   for(const d of S.dests){if(await d.handle.isSameEntry(h))return toast((EN?'This is the library folder!':'Αυτός είναι ο φάκελος της βιβλιοθήκης!'));if(await d.handle.resolve(h))return toast((EN?'This folder is inside the «Μνήμες» library — it’s already sorted.':'Αυτός ο φάκελος είναι μέσα στη βιβλιοθήκη «Μνήμες» — είναι ήδη τακτοποιημένος.'));}
-  for(const s of S.sources){if(!s.handle)continue;if(await s.handle.isSameEntry(h))return toast((EN?'Already in the list.':'Υπάρχει ήδη στη λίστα.'));
+  for(const s of S.sources){if(!s.handle||s.phone)continue;if(await s.handle.isSameEntry(h))return toast((EN?'Already in the list.':'Υπάρχει ήδη στη λίστα.'));
     if(await s.handle.resolve(h))return toast((EN?'Already covered by the folder «':'Καλύπτεται ήδη από τον φάκελο «')+s.name+'».');}
-  for(const s of S.sources){if(s.handle&&await h.resolve(s.handle)){s.handle=null;s.removed=true;s.note=(EN?'Covered by «':'Καλύπτεται από «')+h.name+'»';}}
+  for(const s of S.sources){if(s.handle&&!s.phone&&await h.resolve(s.handle)){s.handle=null;s.removed=true;s.note=(EN?'Covered by «':'Καλύπτεται από «')+h.name+'»';}}
   S.sources.push({id:S.sources.length,name:h.name,handle:h,errors:0,suspicious:false,added:Date.now()});
   await saveSources();render();}
+
+/* ---------------- 📱 ΑΠΟ ΚΙΝΗΤΟ (Wi-Fi) — owner 2026-11-20: "phone → disk, with Windows or Linux, whatever happens" ----------------
+   With a USB cable a browser cannot read a phone (Windows/Linux keep it for themselves). So: the computer shows a QR code, the
+   phone opens web/phone.html, the two find each other through a tiny meeting point (mnimes-pair: two short notes sealed with a
+   key that exists only inside the QR, deleted after 15 minutes) and the files come phone → computer DIRECTLY over the Wi-Fi
+   (WebRTC, encrypted). The phone becomes one more SOURCE (a virtual folder, PhoneDir) and goes through exactly the same copy +
+   SHA-256 checks. Each file also carries the phone's own fingerprint: the bytes received must match it (else it is asked again,
+   then counted as an error). Phone originals are never deleted (prot): Mnimes cannot reach them later anyway. */
+const PAIR='https://mnimes-pair.ktsiminakis.workers.dev',PHONE_PAGE='https://ktsiminakis.github.io/mnimes/phone.html';
+const QR_JS=['https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js','sha384-mZT2gIty7ZDdOGkxfP6joZcYdMW1Jvj9dRlfpTmaJAKKXTqzygtB22k7FLe+KZC1'];
+const ICE=[{urls:'stun:stun.cloudflare.com:3478'}];
+const b64u={enc:b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''),
+  dec:s=>Uint8Array.from(atob(String(s).replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((String(s).length+3)%4)),c=>c.charCodeAt(0))};
+async function pairSeal(k,room,slot,obj){const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode(room+'|'+slot)},k,new TextEncoder().encode(JSON.stringify(obj)));
+  return b64u.enc(iv)+'.'+b64u.enc(ct);}
+async function pairOpen(k,room,slot,s){const [iv,ct]=String(s).split('.');
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64u.dec(iv),additionalData:new TextEncoder().encode(room+'|'+slot)},k,b64u.dec(ct));
+  return JSON.parse(new TextDecoder().decode(pt));}
+function iceDone(pc){return new Promise(res=>{if(pc.iceGatheringState==='complete')return res();const t=setTimeout(res,5000);
+  pc.addEventListener('icegatheringstatechange',()=>{if(pc.iceGatheringState==='complete'){clearTimeout(t);res();}});});}
+/* what the library already has (original name + size): a phone file like that is not sent again */
+function phoneKnown(){if(phoneKnown.v!==S.ver){phoneKnown.v=S.ver;phoneKnown.s=new Set();for(const p of S.photos.values())if(!p.viewOnly&&p.files&&p.files[0]&&p.files[0].rel)phoneKnown.s.add(String(p.name).toLowerCase()+'|'+p.size);}return phoneKnown.s;}
+/* the phone's files as a folder: the same calls a real folder has (entries, getFile …), nothing that writes or deletes */
+class PhoneFile{constructor(conn,e,name){this.kind='file';this.name=name;this.phone=true;this.size=e.size;this.lm=e.lm;this.i=e.i;this.conn=conn;}
+  async getFile(){return this.conn.fetch(this);} async isSameEntry(o){return o===this;}}
+class PhoneDir{constructor(name){this.kind='directory';this.name=name;this.phone=true;this.kids=new Map();}
+  async *entries(){for(const e of this.kids)yield e;}
+  async getDirectoryHandle(n){const k=this.kids.get(n);if(k&&k.kind==='directory')return k;throw new DOMException('not found','NotFoundError');}
+  async getFileHandle(n){const k=this.kids.get(n);if(k&&k.kind==='file')return k;throw new DOMException('not found','NotFoundError');}
+  async isSameEntry(o){return o===this;} async resolve(){return null;}
+  async queryPermission(){return 'granted';} async requestPermission(){return 'granted';}
+  async removeEntry(){throw new DOMException('phone files are never deleted','NotAllowedError');}}
+/* one file at a time: ask → header → pieces → end with the phone's fingerprint (checked here before the file is used) */
+class PhoneConn{constructor(dc){this.dc=dc;this.cur=null;this.n=0;this.chain=Promise.resolve();this.alive=true;this.list=[];dc.binaryType='arraybuffer';dc.onmessage=e=>this.msg(e.data);}
+  msg(d){const c=this.cur;
+    if(typeof d!=='string'){if(c&&c.parts){const u=new Uint8Array(d);c.got+=u.length;c.hs.update(u);c.buf.push(d);c.bb+=u.length;c.touch=Date.now();
+        if(c.bb>=16*1024*1024){c.parts.push(new Blob(c.buf));c.buf=[];c.bb=0;}}return;}   // pieces become Blobs often: the browser keeps big ones on disk, not in memory
+    let m;try{m=JSON.parse(d);}catch{return;}
+    if(m.t==='list'){if(Array.isArray(m.files))this.list.push(...m.files);if(m.last&&this.onList)this.onList(this.list);return;}
+    if(!c||m.n!==c.n)return;
+    if(m.t==='hdr'){c.size=m.size;c.parts=[];c.buf=[];c.bb=0;c.got=0;c.hs=new Sha256();c.touch=Date.now();}
+    else if(m.t==='end'&&c.parts){c.parts.push(new Blob(c.buf));c.buf=[];this.cur=null;const h=c.hs.hex();
+      if(c.got!==c.size||c.got!==c.f.size||h!==m.h)c.rej(new Error(EN?'The file arrived different from the phone’s copy':'Το αρχείο ήρθε διαφορετικό από του κινητού'));
+      else c.res(new File(c.parts,c.f.name,{lastModified:c.f.lm||Date.now()}));}}
+  fetch(f){const p=this.chain.then(()=>new Promise((res,rej)=>{
+      if(!this.alive||this.dc.readyState!=='open')return rej(new Error(EN?'The phone is no longer connected':'Το κινητό δεν είναι πια συνδεδεμένο'));
+      const n=++this.n;this.cur={n,f,res,rej,touch:Date.now()};this.dc.send(JSON.stringify({t:'get',i:f.i,n}));
+      const w=setInterval(()=>{const c=this.cur;if(!c||c.n!==n){clearInterval(w);return;}
+        if(!this.alive||Date.now()-c.touch>90000){clearInterval(w);this.cur=null;rej(new Error(EN?'The phone stopped answering':'Το κινητό σταμάτησε να απαντάει'));}},2000);}));
+    this.chain=p.catch(()=>{});return p;}
+  send(o){try{if(this.dc.readyState==='open')this.dc.send(JSON.stringify(o));}catch{}}}
+async function phoneModal(){
+  if(!S.dests.length)return toast((EN?'First choose where the photos will go (step ①), e.g. the external drive.':'Διάλεξε πρώτα πού θα μπουν οι φωτογραφίες (βήμα ①), π.χ. τον εξωτερικό δίσκο.'),6000);
+  if(S.run&&!S.run.done)return toast((EN?'Wait for the current task to finish.':'Περίμενε να τελειώσει η εργασία που τρέχει.'));
+  try{if(!window.qrcode)await loadScript(...QR_JS);}catch{return toast((EN?'An internet connection is needed to connect the phone.':'Χρειάζεται σύνδεση στο ίντερνετ για να συνδεθεί το κινητό.'),6000);}
+  const room=b64u.enc(crypto.getRandomValues(new Uint8Array(18))),kr=crypto.getRandomValues(new Uint8Array(32));
+  const key=await crypto.subtle.importKey('raw',kr,'AES-GCM',false,['encrypt','decrypt']);
+  const link=PHONE_PAGE+'#r='+room+'&k='+b64u.enc(kr)+'&l='+(EN?'en':'el');
+  const pc=new RTCPeerConnection({iceServers:ICE});const dc=pc.createDataChannel('mnimes',{ordered:true});
+  let closed=false,conn=null,handed=false;
+  const st=el('p',{style:'font-weight:600;margin:8px 0'},(EN?'Preparing…':'Ετοιμάζω…'));
+  const qrBox=el('div',{style:'display:flex;justify-content:center;margin:10px 0;min-height:120px'});
+  const box=el('div',{id:'phoneModal',style:'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:14px'},
+    el('div',{class:'card',style:'max-width:560px;max-height:94vh;overflow:auto;background:var(--card,#fff)'},
+      el('h2',{},(EN?'📱 Photos from the phone':'📱 Φωτογραφίες από το κινητό')),
+      el('ol',{style:'margin:.3em 0 .3em 1.2em;padding:0'},
+        el('li',{},(EN?'Phone and computer on the SAME Wi-Fi.':'Κινητό και υπολογιστής στο ΙΔΙΟ Wi-Fi.')),
+        el('li',{},(EN?'Open the phone camera and point it at the code below. Tap the link that appears.':'Άνοιξε την κάμερα του κινητού και στόχευσε τον κωδικό από κάτω. Πάτα τον σύνδεσμο που εμφανίζεται.')),
+        el('li',{},(EN?'On the phone choose the camera folder (DCIM) or the photos you want.':'Στο κινητό διάλεξε τον φάκελο της κάμερας (DCIM) ή όσες φωτογραφίες θέλεις.'))),
+      qrBox,st,
+      el('p',{class:'muted small'},(EN?'🔒 The photos go directly from the phone to this computer, encrypted — not through the internet. Nothing is deleted on the phone.':'🔒 Οι φωτογραφίες πάνε απευθείας από το κινητό σε αυτόν τον υπολογιστή, κρυπτογραφημένες — όχι μέσα από το ίντερνετ. Στο κινητό δεν σβήνεται τίποτα.')),
+      el('button',{class:'btn',style:'width:100%;margin-top:8px',onclick:()=>{closed=true;box.remove();if(!handed){try{pc.close();}catch{}}}},(EN?'Cancel':'Άκυρο'))));
+  document.body.append(box);
+  const fail=t=>{if(!closed){st.textContent='⚠️ '+t;st.className='bad';}};
+  try{await pc.setLocalDescription(await pc.createOffer());await iceDone(pc);
+    const r=await fetch(PAIR+'/p/'+room+'/o',{method:'PUT',body:await pairSeal(key,room,'o',pc.localDescription.toJSON())});if(!r.ok)throw new Error('pair '+r.status);}
+  catch(e){logErr('📱 pairing',e);return fail(EN?'Could not prepare the connection. Is the computer online?':'Δεν ετοιμάστηκε η σύνδεση. Έχει ίντερνετ ο υπολογιστής;');}
+  const qr=qrcode(0,'M');qr.addData(link);qr.make();
+  qrBox.append(el('img',{src:qr.createDataURL(5,4),alt:'QR','data-link':link,style:'image-rendering:pixelated;width:260px;height:260px;background:#fff;border-radius:12px'}));
+  st.textContent=(EN?'Waiting for the phone…':'Περιμένω το κινητό…');
+  dc.onopen=()=>{conn=new PhoneConn(dc);st.textContent=(EN?'✅ The phone is connected. Now choose on the phone what to send.':'✅ Το κινητό συνδέθηκε. Τώρα διάλεξε στο κινητό τι θα σταλεί.');st.className='ok';
+    conn.onList=list=>{if(closed)return;handed=true;closed=true;box.remove();phoneSource(conn,pc,list);};};
+  pc.onconnectionstatechange=()=>{if(['failed','closed','disconnected'].includes(pc.connectionState)){if(conn)conn.alive=false;if(conn&&conn.src)phoneLost(conn);
+    else if(pc.connectionState==='failed')fail(EN?'The phone could not connect. Are both on the same Wi-Fi?':'Το κινητό δεν μπόρεσε να συνδεθεί. Είναι και τα δύο στο ίδιο Wi-Fi;');}};
+  for(let t0=Date.now();!closed&&Date.now()-t0<10*60000;){await sleep(1500);if(closed||pc.remoteDescription)break;
+    try{const r=await fetch(PAIR+'/p/'+room+'/a',{cache:'no-store'});if(r.ok){await pc.setRemoteDescription(await pairOpen(key,room,'a',await r.text()));st.textContent=(EN?'Connecting to the phone…':'Συνδέομαι με το κινητό…');}}
+    catch(e){if(e&&e.name==='OperationError')return fail(EN?'The phone’s answer could not be verified. Press «From the phone» again.':'Η απάντηση του κινητού δεν επαληθεύτηκε. Πάτα ξανά «Από κινητό».');}}
+  if(!closed&&!pc.remoteDescription)fail(EN?'Time ran out. Press «From the phone» again.':'Τελείωσε ο χρόνος. Πάτα ξανά «Από κινητό».');}
+/* the list came: the phone becomes a source and collecting starts by itself */
+async function phoneSource(conn,pc,list){
+  const d=new Date(),name='📱 '+(EN?'Phone ':'Κινητό ')+`${pad(d.getDate())}/${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const root=new PhoneDir(name);let n=0;
+  for(const e of list){if(!e||!Array.isArray(e.p)||!e.p.length||e.p.length>30||e.p.some(badSeg)||!Number.isInteger(e.i)||!(e.size>=0))continue;
+    let dir=root;for(const seg of e.p.slice(0,-1)){let k=dir.kids.get(seg);if(!k||k.kind!=='directory'){k=new PhoneDir(seg);dir.kids.set(seg,k);}dir=k;}
+    const fn=e.p[e.p.length-1];if(!dir.kids.has(fn)){dir.kids.set(fn,new PhoneFile(conn,e,fn));n++;}}
+  const s={id:S.sources.length,name,handle:root,phone:true,errors:0,suspicious:false,added:Date.now()};
+  S.sources.push(s);conn.src=s;await saveSources();
+  toast((EN?`📱 ${fmtN(n)} files from the phone. Collecting starts…`:`📱 ${fmtN(n)} αρχεία από το κινητό. Ξεκινάει το μάζεμα…`),5000);
+  nav('organize');
+  const tick=setInterval(()=>{const r=S.run;if(r&&!r.done)conn.send({t:'prog',done:r.i||0,of:r.total||0,note:r.phase||''});},2000);
+  S.autoGo=true;
+  try{await runOrganize(s);}finally{clearInterval(tick);S.autoGo=false;}
+  const r=S.run;conn.send({t:'done',note:r&&r.note?String(r.note).slice(0,400):''});
+  s.handle=null;s.removed=true;await saveSources();render();
+  setTimeout(()=>{try{pc.close();}catch{}},4000);}
+function phoneLost(conn){const s=conn.src;if(!s||s.removed)return;
+  logErr((EN?'📱 The connection with the phone was cut.':'📱 Η σύνδεση με το κινητό κόπηκε.'));
+  const r=S.run;if(r&&!r.done){r.paused=true;r.note=(EN?'📱 The connection with the phone was cut. Press «Stop», then «From the phone» again — what came is kept and is not sent twice.':'📱 Η σύνδεση με το κινητό κόπηκε. Πάτα «Διακοπή» και μετά ξανά «Από κινητό» — όσα ήρθαν μένουν και δεν ξαναστέλνονται.');updProg(true);}}
 
 /* ---------------- ΜΑΖΕΜΑ: σκανάρισμα → αντιγραφή → 1ος έλεγχος ---------------- */
 async function scanSource(s,run,groups){
@@ -752,8 +862,9 @@ async function scanSource(s,run,groups){
   const stack=[{h:s.handle,p:[]}];
   const addGroup=async g=>{const key=g.s+'|'+[...g.p,g.main.name].join('/');
     if(S.srcIndex.has(key)){run.lines[(EN?'Already done':'Ήδη έτοιμες')]=(run.lines[(EN?'Already done':'Ήδη έτοιμες')]||0)+1;return;}
-    try{const f=await g.main.fh.getFile();g.size=f.size;if(!g.video&&f.size<S.settings.minKB*1024){run.lines[(EN?'Small/icons':'Μικρές/εικονίδια')]=(run.lines[(EN?'Small/icons':'Μικρές/εικονίδια')]||0)+1;return;}
-      for(const c of g.comps){try{g.size+=(await c.fh.getFile()).size;}catch{}}}
+    if(g.main.fh.phone&&phoneKnown().has(g.main.name.toLowerCase()+'|'+g.main.fh.size)){run.lines[(EN?'Already done':'Ήδη έτοιμες')]=(run.lines[(EN?'Already done':'Ήδη έτοιμες')]||0)+1;return;}
+    try{const f=g.main.fh.phone?{size:g.main.fh.size}:await g.main.fh.getFile();g.size=f.size;if(!g.video&&f.size<S.settings.minKB*1024){run.lines[(EN?'Small/icons':'Μικρές/εικονίδια')]=(run.lines[(EN?'Small/icons':'Μικρές/εικονίδια')]||0)+1;return;}
+      for(const c of g.comps){try{g.size+=c.fh.phone?c.fh.size:(await c.fh.getFile()).size;}catch{}}}
     catch(e){readError(s,[...g.p,g.main.name],e,run);return;}
     groups.push(g);run.lines[(EN?'Found':'Βρέθηκαν')]++;};
   while(stack.length){
@@ -809,22 +920,22 @@ async function processGroup(g,run){
   let r;try{r=await readHashed(()=>g.main.fh.getFile());}catch(e){readError(src,mainPath,e,run);return;}
   run.consecErr=0;
   const {f,buf,h}=r;
-  const prot=mainPath.some(x=>/\.photoslibrary$/i.test(x))||undefined;
+  const prot=src.phone||mainPath.some(x=>/\.photoslibrary$/i.test(x))||undefined,pok=src.phone?true:null; // phone: checked on arrival, never deleted
   let p=S.photos.get(h);
   if(p){ // διπλότυπο: αντιγράφεται ΜΙΑ φορά, αλλά καταγράφεται κάθε θέση
-    const mf=p.files[0];if(!mf.srcs.some(x=>x.s===g.s&&x.p.join('/')===mainPath.join('/')))mf.srcs.push({s:g.s,p:mainPath,ok:null,prot});
+    const mf=p.files[0];if(!mf.srcs.some(x=>x.s===g.s&&x.p.join('/')===mainPath.join('/')))mf.srcs.push({s:g.s,p:mainPath,ok:pok,prot});
     for(const c of g.comps){const cf=p.files.find(x=>x.role==='comp'&&x.ext===c.ext);if(!cf)continue;
-      try{const cr=await readHashed(()=>c.fh.getFile());if(cr.h===cf.h){const cp=[...g.p,c.name];if(!cf.srcs.some(x=>x.s===g.s&&x.p.join('/')===cp.join('/')))cf.srcs.push({s:g.s,p:cp,ok:null,prot});S.srcIndex.add(g.s+'|'+cp.join('/'));}}
+      try{const cr=await readHashed(()=>c.fh.getFile());if(cr.h===cf.h){const cp=[...g.p,c.name];if(!cf.srcs.some(x=>x.s===g.s&&x.p.join('/')===cp.join('/')))cf.srcs.push({s:g.s,p:cp,ok:pok,prot});S.srcIndex.add(g.s+'|'+cp.join('/'));}}
       catch(e){readError(src,[...g.p,c.name],e,run);}}
     S.srcIndex.add(key);run.lines[(EN?'Duplicates':'Διπλότυπα')]++;await savePhoto(p);return;}
   const meta=await readMeta(buf||f,g.main.name,f.lastModified,g.video);
   const place=meta.lat!=null?await placeName(meta.lat,meta.lon):null;
   p={h,name:g.main.name,ext:g.main.ext,size:f.size,date:meta.date,ds:meta.ds,lat:meta.lat,lon:meta.lon,place,video:g.video,added:Date.now(),fa:false,
-     files:[{role:'main',ext:g.main.ext,h,size:f.size,srcs:[{s:g.s,p:mainPath,ok:null,prot}],rel:null,v1:{},v2:null}]};
+     files:[{role:'main',ext:g.main.ext,h,size:f.size,srcs:[{s:g.s,p:mainPath,ok:pok,prot}],rel:null,v1:{},v2:null}]};
   // Τα δεδομένα γράφονται ΑΥΤΟΥΣΙΑ (byte προς byte): ίδια ανάλυση, ίδια ποιότητα, ίδια EXIF — καμία συμπίεση/αλλαγή.
   const datas=[buf||f];
   for(const c of g.comps){try{const cr=await readHashed(()=>c.fh.getFile());const ch=cr.h;const cp=[...g.p,c.name];
-      p.files.push({role:'comp',ext:c.ext,h:ch,size:cr.f.size,srcs:[{s:g.s,p:cp,ok:null,prot}],rel:null,v1:{},v2:null});datas.push(cr.buf||cr.f);S.srcIndex.add(g.s+'|'+cp.join('/'));}
+      p.files.push({role:'comp',ext:c.ext,h:ch,size:cr.f.size,srcs:[{s:g.s,p:cp,ok:pok,prot}],rel:null,v1:{},v2:null});datas.push(cr.buf||cr.f);S.srcIndex.add(g.s+'|'+cp.join('/'));}
     catch(e){readError(src,[...g.p,c.name],e,run);}}
   const th=g.video?await videoThumb(f):await makeThumb(f,buf);
   if(th){p.w=th.w;p.hgt=th.h;p.dec=th.dec;await storeThumb(h,th.blob);}
@@ -833,9 +944,9 @@ async function processGroup(g,run){
   for(let i=0;i<p.files.length;i++){if(run.stop&&run.note.startsWith('💽'))break;await copyFileToDests(p,p.files[i],datas[i],run);}
   if(th&&S.dests[0])writeRel(S.dests[0].handle,`${META}/thumbs/${h}.jpg`,th.blob).catch(()=>{});
   S.photos.set(h,p);S.srcIndex.add(key);await savePhoto(p);run.lines[(EN?'New':'Νέες')]++;scheduleIndexSave();}
-async function runOrganize(){
+async function runOrganize(only){ // only = one source (the phone): the other folders are not touched in that run
   if(!S.dests.length)return toast((EN?'First choose where the photos will go (step ①).':'Διάλεξε πρώτα πού θα μπουν οι φωτογραφίες (βήμα ①).'));
-  const srcs=S.sources.filter(s=>s.handle&&!s.removed);if(!srcs.length)return toast((EN?'Add at least one folder or drive (step ②).':'Πρόσθεσε τουλάχιστον έναν φάκελο ή δίσκο (βήμα ②).'));
+  const srcs=only&&only.handle?[only]:S.sources.filter(s=>s.handle&&!s.removed);if(!srcs.length)return toast((EN?'Add at least one folder or drive (step ②).':'Πρόσθεσε τουλάχιστον έναν φάκελο ή δίσκο (βήμα ②).'));
   for(const d of S.dests){if(d.test!=='ok')return toast((EN?'The destination «':'Ο προορισμός «')+d.name+(EN?'» failed the write test. Remove it or test it again.':'» απέτυχε στη δοκιμή εγγραφής. Αφαίρεσέ τον ή ξαναδοκίμασέ τον.'));
     if(await permState(d.handle,'readwrite')!=='granted')return toast((EN?'Permission needed for «':'Χρειάζεται άδεια για «')+d.name+(EN?'». Press the «Connect» button at the top.':'». Πάτα το κουμπί «Σύνδεση» πάνω.'));}
   for(const s of srcs)if(await permState(s.handle)!=='granted')return toast((EN?'Permission needed for «':'Χρειάζεται άδεια για «')+s.name+(EN?'». Press the «Connect» button at the top.':'». Πάτα το κουμπί «Σύνδεση» πάνω.'));
@@ -860,6 +971,7 @@ async function runOrganize(){
   run.note=(EN?`Found ${fmtN(groups.length-nv)} photos and ${fmtN(nv)} videos (${fmtSize(bytes)}). `:`Βρέθηκαν ${fmtN(groups.length-nv)} φωτογραφίες και ${fmtN(nv)} βίντεο (${fmtSize(bytes)}). `)+
     (space.every(x=>x===true)?(EN?`✅ Space checked: they fit (about ${fmtSize(need)} needed). `:`✅ Ο χώρος ελέγχθηκε: χωράνε (χρειάζονται ~${fmtSize(need)}). `):(EN?`⚠️ I couldn’t check the space — make sure at least ${fmtSize(need)} is free. `:`⚠️ Δεν μπόρεσα να ελέγξω τον χώρο — βεβαιώσου ότι υπάρχουν τουλάχιστον ${fmtSize(need)} ελεύθερα. `))+
     (EN?'Press «▶ Resume» to copy.':'Πάτα «▶ Συνέχεια» για αντιγραφή.');
+  if(S.autoGo&&space.every(x=>x===true)){run.paused=false;S.autoGo=false;}
   updProg(true);await run.wait();
   if(run.stop)return endRun(run,(EN?'Cancelled before copying — nothing was copied.':'Ακυρώθηκε πριν την αντιγραφή — δεν αντιγράφηκε τίποτα.'));
   run.note='';run.phase=(EN?'② Copy & 1st check':'② Αντιγραφή & 1ος έλεγχος');run.total=groups.length;run.i=0;run.t0=Date.now();
@@ -903,14 +1015,14 @@ async function runVerify(onlyNew){onlyNew=onlyNew===true;
   const list=[...S.photos.values()].filter(p=>!p.viewOnly&&!p.trashed&&p.files[0].rel&&(!onlyNew||needsVerify(p)));
   if(!list.length)return toast((EN?'There are no copied photos yet.':'Δεν υπάρχουν ακόμα αντιγραμμένες φωτογραφίες.'));
   const usedSrc=new Set();for(const p of list)for(const fl of p.files)for(const src of fl.srcs)if(!src.deleted)usedSrc.add(src.s);
-  const noPerm=[];for(const i of usedSrc){const s=S.sources[i];if(!s||!s.handle||s.removed)continue;if(await permState(s.handle)!=='granted'&&!await ensurePerm(s.handle))noPerm.push(s.name);}
+  const noPerm=[];for(const i of usedSrc){const s=S.sources[i];if(!s||!s.handle||s.removed||s.phone)continue;if(await permState(s.handle)!=='granted'&&!await ensurePerm(s.handle))noPerm.push(s.name);}
   if(noPerm.length&&!confirm((EN?`⚠️ I don’t have permission to read the ORIGINALS in:\n• ${noPerm.join('\n• ')}\n\nWithout it, these originals are NOT checked and you will NOT be able to delete them.\nPress «Cancel» and then the 🔓 buttons at the top (or connect the drive).\n\nContinue anyway?`:`⚠️ Δεν έχω άδεια να διαβάσω τα ΑΡΧΙΚΑ σε:\n• ${noPerm.join('\n• ')}\n\nΧωρίς αυτήν, αυτά τα αρχικά ΔΕΝ ελέγχονται και ΔΕΝ θα μπορείς να τα σβήσεις.\nΠάτα «Άκυρο» και μετά τα κουμπιά 🔓 στο πάνω μέρος (ή σύνδεσε τον δίσκο).\n\nΝα συνεχίσω παρ' όλα αυτά;`)))return render();
   const run=newRun((EN?'✅ 2nd check':'✅ 2ος έλεγχος'));if(!run)return;
   run.phase=(EN?'Verification':'Επαλήθευση');run.total=list.length;run.lines={[EN?'OK':'Εντάξει']:0,[EN?'Repaired':'Επισκευάστηκαν']:0,[EN?'Problems':'Προβλήματα']:0,[EN?'Originals not checked (no permission)':'Αρχικά που δεν ελέγχθηκαν (χωρίς άδεια)']:0};
   for(const p of list){await run.wait();if(run.stop)break;let photoOk=true;
     for(const fl of p.files){
       let srcBuf=null;
-      for(const src of fl.srcs){if(src.deleted)continue;const s=S.sources[src.s];if(!s||!s.handle||(s.suspicious&&!s.riskOk)||await permState(s.handle)!=='granted'){run.lines[(EN?'Originals not checked (no permission)':'Αρχικά που δεν ελέγχθηκαν (χωρίς άδεια)')]++;continue;}
+      for(const src of fl.srcs){if(src.deleted)continue;const s=S.sources[src.s];if(s&&s.phone)continue;if(!s||!s.handle||(s.suspicious&&!s.riskOk)||await permState(s.handle)!=='granted'){run.lines[(EN?'Originals not checked (no permission)':'Αρχικά που δεν ελέγχθηκαν (χωρίς άδεια)')]++;continue;}
         try{const f=await (await fileHandleAt(s.handle,src.p)).getFile();src.ok=f.size===fl.size&&(await hashFile(f))===fl.h;src.why=src.ok?'':(EN?'the original changed':'το αρχικό άλλαξε');if(src.ok&&!srcBuf)srcBuf=f;}
         catch(e){src.ok=false;src.why=e.name==='NotFoundError'?(EN?'missing':'λείπει'):(EN?'read error':'σφάλμα ανάγνωσης');if(e.name!=='NotFoundError')readError(s,src.p,e,null);}}
       let allOk=true;fl.v1=fl.v1||{};
@@ -1209,7 +1321,8 @@ function viewOrganize(m){setTitle((EN?'Collect & sort':'Πάρε & τακτοπ�
   for(const s of srcs)c2.append(el('div',{class:'row',style:'padding:8px 0;border-top:1px solid var(--line)'},el('span',{style:'flex:1'},'📂 ',el('b',{},s.name),' ',
       s.suspicious?el('span',{class:'bad'},(EN?`⚠️ ${s.errors} read errors — locked for deletion`:`⚠️ ${s.errors} σφάλματα ανάγνωσης — κλειδωμένος για διαγραφή`)):el('span',{class:'ok'},'✓'),CLOUD_RE.test(s.name)?el('span',{class:'warn'},' ☁️ cloud'):null),
     el('button',{class:'btn ghost',onclick:async()=>{s.removed=true;s.handle=null;await saveSources();render();}},'✕')));
-  c2.append(el('div',{class:'row',style:'margin-top:10px'},el('button',{class:'btn primary',onclick:pickSource},icon('folder-down'),(EN?'Add a folder or drive':'Πρόσθεσε φάκελο ή δίσκο'))));
+  c2.append(el('div',{class:'row',style:'margin-top:10px'},el('button',{class:'btn primary',onclick:pickSource},icon('folder-down'),(EN?'Add a folder or drive':'Πρόσθεσε φάκελο ή δίσκο')),
+    window.RTCPeerConnection?el('button',{class:'btn',onclick:phoneModal},'📱 ',(EN?'From the phone (Wi-Fi)':'Από κινητό (Wi-Fi)')):null));
   const c3=el('details',{class:'card'},el('summary',{},(EN?'🛡️ What it does to keep you safe (tap for details)':'🛡️ Τι κάνει για την ασφάλειά σου (πάτα για λεπτομέρειες)')),el('ul',{class:'locks'},[
     ['🩺',(EN?'Write-read test on the destination before starting. If it fails, it doesn’t start.':'Δοκιμή εγγραφής-ανάγνωσης στον προορισμό πριν ξεκινήσει. Αν αποτύχει, δεν ξεκινάει.')],
     ['📋',(EN?'Copy ONLY. The originals are not touched or moved.':'ΜΟΝΟ αντιγραφή. Τα αρχικά δεν αγγίζονται, ούτε μετακινούνται.')],
@@ -1420,22 +1533,22 @@ function creditLine(){return el('p',{class:'credit small muted'},COPY,el('br'),C
 const TERMS=EN?[
  ['What it is','Mnimes is a free app that copies your photos and videos from the folders and drives you choose into one library folder, sorted by year, month and place, and shows them in a calendar and a map. It runs entirely in your browser, on your own computer.'],
  ['Your data stays with you','Your photos and videos never leave your computer and the creator never sees or collects them. The app’s index stays in this browser (IndexedDB) and in the «Μνήμες/_PhotoApp» folder of your library. There is no account, no ads and no tracking.'],
- ['What is sent over the internet','• Place names: only coordinates rounded to 2 decimals (about 1 km) go to BigDataCloud and, if needed, to OpenStreetMap Nominatim. You can turn this off in Settings.\n• Map: map pieces come from Esri’s servers, which see your IP address and the area you look at.\n• Font and libraries: the Inter font comes from Google Fonts and the exifr and Leaflet libraries from jsDelivr and cdnjs, which see your IP address.\nNo photo, file name or folder name is ever sent.'],
+ ['What is sent over the internet','• Place names: only coordinates rounded to 2 decimals (about 1 km) go to BigDataCloud and, if needed, to OpenStreetMap Nominatim. You can turn this off in Settings.\n• Map: map pieces come from Esri’s servers, which see your IP address and the area you look at.\n• Font and libraries: the Inter font comes from Google Fonts and the exifr and Leaflet libraries from jsDelivr and cdnjs, which see your IP address.\n• «From the phone» (Wi-Fi): so that the phone can find the computer, two short connection notes pass through the meeting point mnimes-pair (Cloudflare), encrypted with a key that exists only inside the QR code; they are deleted after 15 minutes. A Cloudflare STUN server sees your IP address to open the connection. The photos go directly from the phone to the computer, encrypted (WebRTC), and do not pass through any server. Nothing is deleted on the phone.\nNo photo, file name or folder name is ever sent to a server.'],
  ['Your rights (GDPR)','The creator holds no personal data of yours. You can delete the app’s memory at any time from Settings → «Start over» (your photos are not touched). Questions: ktsiminakis@gmail.com. You may complain to the Hellenic Data Protection Authority (www.dpa.gr).'],
  ['Liability','The app is provided «as is», free of charge, without any warranty. The SHA-256 checks greatly reduce the risk but cannot remove it: drives fail, cables come loose, cloud folders sync. Before deleting originals, always keep a second copy on another drive. Deleting originals happens only after the double check and after the user types the word DELETE; it cannot be undone. Deleting from a cloud folder (OneDrive, Google Drive, iCloud, Dropbox) also deletes from your other devices. The creator is not liable for any loss or damage from its use. Dates, places and duplicates are detected automatically and may be wrong.'],
  ['Drives with errors','If a drive gives read errors, the app LOCKS it: its files can be copied (to rescue them) but nothing is deleted from it. Files that cannot be read are not copied, and a failing drive may give damaged data even without an error. Only the user can unlock a drive, after the copy, by ticking «I understand» and typing UNLOCK; from then on, deleting its originals (always only after the double check) is the user’s own responsibility. For precious photos on a failing drive, the app advises a data-recovery lab.'],
  ['Copyright','The app (code, design, texts, images, name, presentation and videos) belongs to its creator. Copying, republishing, changing or selling it, in whole or in part, without the creator’s written permission is forbidden. Your photos are yours. Mnimes is an independent app and is not connected with Microsoft, Google, Apple, Esri or any other company named in it.'],
- ['Third-party software and data','exifr (MIT, © Mike Kovařík) · Leaflet (BSD-2-Clause, © Volodymyr Agafonkin, © CloudMade) · Lucide icons (ISC, © Lucide Contributors; parts MIT, © Cole Bemis / Feather) · Inter font (SIL Open Font License 1.1, © The Inter Project Authors) · map: Powered by Esri — © Esri and its data providers · place names: BigDataCloud, © OpenStreetMap contributors (ODbL). They belong to their creators and are used under their licences.'],
+ ['Third-party software and data','exifr (MIT, © Mike Kovařík) · Leaflet (BSD-2-Clause, © Volodymyr Agafonkin, © CloudMade) · Lucide icons (ISC, © Lucide Contributors; parts MIT, © Cole Bemis / Feather) · Inter font (SIL Open Font License 1.1, © The Inter Project Authors) · qrcode-generator (MIT, © Kazuhiko Arase) · map: Powered by Esri — © Esri and its data providers · place names: BigDataCloud, © OpenStreetMap contributors (ODbL). They belong to their creators and are used under their licences.'],
  ['Contact','Creator and responsible for the app: Konstantinos Tsiminakis · ktsiminakis@gmail.com']]
 :[
  ['Τι είναι','Οι Μνήμες είναι δωρεάν εφαρμογή που αντιγράφει τις φωτογραφίες και τα βίντεό σου από τους φακέλους και τους δίσκους που διαλέγεις σε έναν φάκελο-βιβλιοθήκη, τακτοποιημένα ανά χρονιά, μήνα και μέρος, και τα δείχνει σε ημερολόγιο και χάρτη. Τρέχει ολόκληρη μέσα στον browser, στον δικό σου υπολογιστή.'],
  ['Τα δεδομένα σου μένουν σε σένα','Οι φωτογραφίες και τα βίντεό σου δεν φεύγουν ποτέ από τον υπολογιστή σου και ο δημιουργός δεν τα βλέπει ούτε τα συλλέγει. Το ευρετήριο της εφαρμογής μένει σε αυτόν τον browser (IndexedDB) και στον φάκελο «Μνήμες/_PhotoApp» της βιβλιοθήκης σου. Δεν υπάρχει λογαριασμός, διαφημίσεις ή παρακολούθηση.'],
- ['Τι στέλνεται στο ίντερνετ','• Ονόματα μερών: μόνο συντεταγμένες στρογγυλεμένες σε 2 δεκαδικά (περίπου 1 χλμ.) πάνε στο BigDataCloud και, αν χρειαστεί, στο OpenStreetMap Nominatim. Το κλείνεις από τις Ρυθμίσεις.\n• Χάρτης: τα κομμάτια του χάρτη έρχονται από τους servers της Esri, που βλέπουν τη διεύθυνση IP και την περιοχή που κοιτάς.\n• Γραμματοσειρά και βιβλιοθήκες: η γραμματοσειρά Inter έρχεται από το Google Fonts και οι βιβλιοθήκες exifr και Leaflet από τα jsDelivr και cdnjs, που βλέπουν τη διεύθυνση IP.\nΚαμία φωτογραφία, όνομα αρχείου ή φακέλου δεν στέλνεται ποτέ.'],
+ ['Τι στέλνεται στο ίντερνετ','• Ονόματα μερών: μόνο συντεταγμένες στρογγυλεμένες σε 2 δεκαδικά (περίπου 1 χλμ.) πάνε στο BigDataCloud και, αν χρειαστεί, στο OpenStreetMap Nominatim. Το κλείνεις από τις Ρυθμίσεις.\n• Χάρτης: τα κομμάτια του χάρτη έρχονται από τους servers της Esri, που βλέπουν τη διεύθυνση IP και την περιοχή που κοιτάς.\n• Γραμματοσειρά και βιβλιοθήκες: η γραμματοσειρά Inter έρχεται από το Google Fonts και οι βιβλιοθήκες exifr και Leaflet από τα jsDelivr και cdnjs, που βλέπουν τη διεύθυνση IP.\n• «Από κινητό» (Wi-Fi): για να βρει το κινητό τον υπολογιστή, περνούν από το σημείο συνάντησης mnimes-pair (Cloudflare) δύο μικρά σημειώματα σύνδεσης, κρυπτογραφημένα με κλειδί που υπάρχει μόνο μέσα στο QR· σβήνονται σε 15 λεπτά. Ένας server STUN της Cloudflare βλέπει τη διεύθυνση IP για να ανοίξει η σύνδεση. Οι φωτογραφίες πάνε απευθείας από το κινητό στον υπολογιστή, κρυπτογραφημένες (WebRTC), και δεν περνούν από κανέναν server. Στο κινητό δεν σβήνεται τίποτα.\nΚαμία φωτογραφία, όνομα αρχείου ή φακέλου δεν στέλνεται ποτέ σε server.'],
  ['Τα δικαιώματά σου (GDPR)','Ο δημιουργός δεν κρατά κανένα προσωπικό σου δεδομένο. Σβήνεις τη μνήμη της εφαρμογής όποτε θέλεις από Ρυθμίσεις → «Ξεκίνα από την αρχή» (οι φωτογραφίες σου δεν αγγίζονται). Για ερωτήσεις: ktsiminakis@gmail.com. Έχεις δικαίωμα καταγγελίας στην Αρχή Προστασίας Δεδομένων Προσωπικού Χαρακτήρα (www.dpa.gr).'],
  ['Ευθύνη','Η εφαρμογή δίνεται «ως έχει», δωρεάν, χωρίς καμία εγγύηση. Οι έλεγχοι SHA-256 μειώνουν πολύ τον κίνδυνο αλλά δεν τον μηδενίζουν: δίσκοι χαλάνε, καλώδια βγαίνουν, φάκελοι cloud συγχρονίζονται. Πριν σβήσεις αρχικά, κράτα πάντα δεύτερο αντίγραφο σε άλλον δίσκο. Το σβήσιμο των αρχικών γίνεται μόνο μετά τον διπλό έλεγχο και αφού ο χρήστης γράψει τη λέξη ΔΙΑΓΡΑΦΗ· δεν αναιρείται. Το σβήσιμο από φάκελο cloud (OneDrive, Google Drive, iCloud, Dropbox) σβήνει και από τις άλλες συσκευές σου. Ο δημιουργός δεν ευθύνεται για απώλεια ή ζημιά από τη χρήση της. Ημερομηνίες, μέρη και διπλότυπα βρίσκονται αυτόματα και μπορεί να είναι λάθος.'],
  ['Δίσκοι με σφάλματα','Αν ένας δίσκος βγάζει σφάλματα ανάγνωσης, η εφαρμογή τον ΚΛΕΙΔΩΝΕΙ: τα αρχεία του μπορούν να αντιγραφούν (για να σωθούν), αλλά δεν σβήνεται τίποτα από αυτόν. Όσα αρχεία δεν διαβάζονται δεν αντιγράφονται, και ένας δίσκος που χαλάει μπορεί να δώσει χαλασμένα δεδομένα ακόμα και χωρίς σφάλμα. Μόνο ο χρήστης μπορεί να ξεκλειδώσει έναν δίσκο, μετά την αντιγραφή, τσεκάροντας «Κατάλαβα» και γράφοντας ΞΕΚΛΕΙΔΩΜΑ· από εκεί και πέρα το σβήσιμο των αρχικών του (πάντα μόνο μετά τον διπλό έλεγχο) γίνεται με δική του ευθύνη. Για πολύτιμες φωτογραφίες σε δίσκο που χαλάει, η εφαρμογή συνιστά εργαστήριο ανάκτησης δεδομένων. Ο χρήστης μπορεί επίσης να σβήσει τα αρχικά μόνος του, με το χέρι, έξω από την εφαρμογή· αυτό γίνεται εξ ολοκλήρου με δική του ευθύνη.'],
  ['Πνευματικά δικαιώματα','Η εφαρμογή (κώδικας, σχέδιο, κείμενα, εικόνες, όνομα, παρουσίαση και βίντεο) ανήκει στον δημιουργό της. Απαγορεύεται η αντιγραφή, η αναδημοσίευση, η τροποποίηση ή η πώληση της εφαρμογής ή μέρους της χωρίς γραπτή άδεια του δημιουργού. Οι φωτογραφίες σου είναι δικές σου. Οι Μνήμες είναι ανεξάρτητη εφαρμογή και δεν συνδέονται με τη Microsoft, τη Google, την Apple, την Esri ή άλλη εταιρεία που αναφέρεται.'],
- ['Λογισμικό και δεδομένα τρίτων','exifr (MIT, © Mike Kovařík) · Leaflet (BSD-2-Clause, © Volodymyr Agafonkin, © CloudMade) · εικονίδια Lucide (ISC, © Lucide Contributors· τμήματα MIT, © Cole Bemis / Feather) · γραμματοσειρά Inter (SIL Open Font License 1.1, © The Inter Project Authors) · χάρτης: Powered by Esri — © Esri και οι πάροχοι δεδομένων της · ονόματα μερών: BigDataCloud, © OpenStreetMap contributors (ODbL). Ανήκουν στους δημιουργούς τους και χρησιμοποιούνται σύμφωνα με τις άδειές τους.'],
+ ['Λογισμικό και δεδομένα τρίτων','exifr (MIT, © Mike Kovařík) · Leaflet (BSD-2-Clause, © Volodymyr Agafonkin, © CloudMade) · εικονίδια Lucide (ISC, © Lucide Contributors· τμήματα MIT, © Cole Bemis / Feather) · γραμματοσειρά Inter (SIL Open Font License 1.1, © The Inter Project Authors) · qrcode-generator (MIT, © Kazuhiko Arase) · χάρτης: Powered by Esri — © Esri και οι πάροχοι δεδομένων της · ονόματα μερών: BigDataCloud, © OpenStreetMap contributors (ODbL). Ανήκουν στους δημιουργούς τους και χρησιμοποιούνται σύμφωνα με τις άδειές τους.'],
  ['Επικοινωνία','Δημιουργός και υπεύθυνος της εφαρμογής: Κωνσταντίνος Τσιμινάκης · ktsiminakis@gmail.com']];
 const LUCIDE_LICENSE=`ISC License
 
