@@ -79,7 +79,28 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 let pc = null, dc = null, sending = false, files = [];
 const fmt = n => n >= 1e9 ? (n / 1e9).toFixed(1) + ' GB' : (n / 1e6).toFixed(0) + ' MB';
 
+// owner 2026-11-21: from a phone's BROWSER the photos are not the originals (Android zeroes the location, iPhone may convert
+// them), so the browser on a phone/tablet does not send. The «Mnimes» Android app sends the originals (it sets window.MnimesApp).
+const MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+function noBrowserOnPhone() {
+  const android = /Android/i.test(navigator.userAgent);
+  status(android ? T('📲 Use the free «Mnimes» app for Android', '📲 Χρησιμοποίησε τη δωρεάν εφαρμογή «Μνήμες» για Android')
+    : T('🔌 For iPhone: with the cable', '🔌 Για iPhone: με το καλώδιο'), 'bad');
+  hint(android ? T('A phone browser cannot give the original photos: Android removes their location. The «Mnimes» app sends them complete, with the location. Get it from the Mnimes page (bottom of the page: «For the phone»), open it and scan the QR code again.',
+      'Ο browser του κινητού δεν μπορεί να δώσει τις αυθεντικές φωτογραφίες: το Android σβήνει την τοποθεσία τους. Η εφαρμογή «Μνήμες» τις στέλνει ολόκληρες, με την τοποθεσία. Πάρ’ την από τη σελίδα των Μνημών (κάτω κάτω: «Για το κινητό»), άνοιξέ την και σκάναρε ξανά το QR.')
+    : T('A phone browser cannot give the original photos. Connect the iPhone to the computer with the cable and in Mnimes press «📱 Phone» → iPhone.',
+      'Ο browser του κινητού δεν μπορεί να δώσει τις αυθεντικές φωτογραφίες. Σύνδεσε το iPhone στον υπολογιστή με καλώδιο και στις Μνήμες πάτα «📱 Κινητό» → iPhone.'));
+  if (android) {
+    // the app takes over this pairing (same pairing id + key, handed over inside the phone only); not installed → the download page
+    const fb = 'https://ktsiminakis.github.io/mnimes/' + (EN ? '?lang=en' : '') + '#kinito';
+    const a = document.createElement('a'); a.className = 'btn'; a.textContent = T('📲 Open in the «Mnimes» app', '📲 Άνοιξε στην εφαρμογή «Μνήμες»');
+    a.href = 'intent://pair#Intent;scheme=mnimes;package=gr.ktsiminakis.mnimes;S.r=' + encodeURIComponent(room) + ';S.k=' + encodeURIComponent(keyRaw) +
+      ';S.l=' + (EN ? 'en' : 'el') + ';S.browser_fallback_url=' + encodeURIComponent(fb) + ';end';
+    $('hint').after(a);
+  }
+}
 async function connect() {
+  if (MOBILE && !window.MnimesApp) { noBrowserOnPhone(); return; }
   if (!/^[A-Za-z0-9_-]{22,44}$/.test(room) || b64u.dec(keyRaw).length !== 32) {
     status(T('Open «Mnimes» on the computer and scan its QR code with this phone.', 'Άνοιξε τις «Μνήμες» στον υπολογιστή και σκάναρε το QR τους με αυτό το κινητό.'), 'bad'); return;
   }
@@ -108,6 +129,7 @@ function gathered(p) {
 function ready() {
   status(T('✅ Connected to the computer', '✅ Συνδέθηκε με τον υπολογιστή'), 'ok');
   hint(T('Now choose what to send. The best: the camera folder (DCIM), so everything comes.', 'Τώρα διάλεξε τι θα σταλεί. Το καλύτερο: τον φάκελο της κάμερας (DCIM), για να έρθουν όλα.'));
+  if (window.MnimesApp) { appButton(); return; }
   if (window.showDirectoryPicker) $('pickDir').hidden = false;
   else if ('webkitdirectory' in $('inFolder')) $('pickFolder').hidden = false;
   $('pickFiles').hidden = false;
@@ -118,6 +140,15 @@ function lost() {
   sending = false; try { lock && lock.release(); } catch {}
 }
 
+// ---------- inside the «Mnimes» Android app: the folders chosen in the app, read by the app as originals ----------
+function appButton() {
+  let a = []; try { a = JSON.parse(window.MnimesApp.list()); } catch {}
+  hint(T(`The folders you chose in the app: ${a.length} photos and videos.`, `Οι φάκελοι που διάλεξες στην εφαρμογή: ${a.length} φωτογραφίες και βίντεο.`));
+  const b = document.createElement('button'); b.className = 'btn'; b.textContent = T('📤 Send them to the computer', '📤 Στείλ’ τες στον υπολογιστή');
+  b.onclick = () => { b.remove(); chosen(a.filter(x => x && Array.isArray(x.p) && x.p.length && Number.isFinite(x.size)).map(x => ({ p: x.p, size: x.size, lm: x.lm,
+    get: async () => { const r = await fetch('/orig/' + encodeURIComponent(x.id)); if (!r.ok) throw new Error('read'); return await r.blob(); } }))); };
+  $('hint').after(b);
+}
 // ---------- choosing ----------
 const wanted = name => (IMG.test(name) || VID.test(name)) && !name.startsWith('.');
 async function walk(dir, path, out) {
@@ -146,7 +177,7 @@ async function chosen(list) {
   files = [];
   // the size and date of each file: 16 at a time (one by one is very slow on phones), with a counter so it never looks stuck
   for (let i = 0; i < list.length; i += 16) {
-    const got = await Promise.all(list.slice(i, i + 16).map(async x => { try { const f = await x.get(); return { ...x, size: f.size, lm: f.lastModified }; } catch { return null; } }));
+    const got = await Promise.all(list.slice(i, i + 16).map(async x => { if (Number.isFinite(x.size)) return x; try { const f = await x.get(); return { ...x, size: f.size, lm: f.lastModified }; } catch { return null; } }));
     for (const g of got) if (g) files.push(g);
     status(T(`Reading the list… ${Math.min(i + 16, list.length)} / ${list.length}`, `Διαβάζω τη λίστα… ${Math.min(i + 16, list.length)} / ${list.length}`));
   }
@@ -165,7 +196,11 @@ function prog(n, of, note) { $('count').textContent = `${n} / ${of}`; $('barFill
 let queue = Promise.resolve(), sentN = 0, done = false;
 function onMsg(e) {
   let m; try { m = JSON.parse(e.data); } catch { return; }
-  if (m.t === 'get' && Number.isInteger(m.i) && files[m.i]) queue = queue.then(() => sendFile(m.i, m.n)).catch(() => {});
+  if (m.t === 'get' && Number.isInteger(m.i)) {
+    const x = files[m.i], same = x && (!Array.isArray(m.p) || x.p.join('/') === m.p.join('/'));
+    if (same) queue = queue.then(() => sendFile(m.i, m.n)).catch(() => dc.send(JSON.stringify({ t: 'err', n: m.n })));
+    else dc.send(JSON.stringify({ t: 'err', n: m.n }));
+  }
   else if (m.t === 'prog') prog(m.done, m.of, m.note);
   else if (m.t === 'done') {
     done = true; sending = false; try { lock && lock.release(); } catch {}
