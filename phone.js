@@ -12,13 +12,13 @@ const q = new URLSearchParams(location.hash.slice(1));
 const EN = (q.get('l') || (navigator.language || '').slice(0, 2)) === 'en';
 const T = (en, el) => EN ? en : el;
 const IMG = /\.(jpe?g|png|heic|heif|webp|gif|bmp|tiff?|dng|raw|arw|cr2|cr3|nef|orf|rw2|raf|srw|avif)$/i;
-const VID = /\.(mp4|mov|m4v|3gp|3g2|avi|mkv|webm|mts|m2ts|wmv|mpg|mpeg)$/i;
+const VID = /\.(mp4|mov|m4v|3gp|3g2|avi|mkv|webm|mts|m2ts|mod|tod|wmv|mpg|mpeg)$/i;
 const CHUNK = 64 * 1024, HIGH = 8 * 1024 * 1024, SMALL = 128 * 1024 * 1024;
 
 // ---------- texts ----------
 if (EN) {
-  document.documentElement.lang = 'en'; document.title = 'Mnimes · From the phone';
-  $('appName').textContent = 'Mnimes'; $('h1').textContent = 'Photos from the phone to the computer';
+  document.documentElement.lang = 'en'; document.title = 'Mnimes for Life · From the phone';
+  $('appName').textContent = 'Mnimes for Life'; $('h1').textContent = 'Photos from the phone to the computer';
   $('pickDir').textContent = $('pickFolder').textContent = '📁 Choose a folder (e.g. DCIM)';
   $('pickFiles').textContent = '🖼️ Choose photos and videos';
   $('s1').innerHTML = '🔒 The photos go <b>directly</b> to your computer, encrypted. They are not uploaded to the internet.';
@@ -84,16 +84,16 @@ const fmt = n => n >= 1e9 ? (n / 1e9).toFixed(1) + ' GB' : (n / 1e6).toFixed(0) 
 const MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
 function noBrowserOnPhone() {
   const android = /Android/i.test(navigator.userAgent);
-  status(android ? T('📲 Use the free «Mnimes» app for Android', '📲 Χρησιμοποίησε τη δωρεάν εφαρμογή «Μνήμες» για Android')
+  status(android ? T('📲 Use the free «Mnimes for Life» app for Android', '📲 Χρησιμοποίησε τη δωρεάν εφαρμογή «Μνήμες για Πάντα» για Android')
     : T('🔌 For iPhone: with the cable', '🔌 Για iPhone: με το καλώδιο'), 'bad');
-  hint(android ? T('A phone browser cannot give the original photos: Android removes their location. The «Mnimes» app sends them complete, with the location. Get it from the Mnimes page (bottom of the page: «For the phone»), open it and scan the QR code again.',
-      'Ο browser του κινητού δεν μπορεί να δώσει τις αυθεντικές φωτογραφίες: το Android σβήνει την τοποθεσία τους. Η εφαρμογή «Μνήμες» τις στέλνει ολόκληρες, με την τοποθεσία. Πάρ’ την από τη σελίδα των Μνημών (κάτω κάτω: «Για το κινητό»), άνοιξέ την και σκάναρε ξανά το QR.')
+  hint(android ? T('A phone browser cannot give the original photos: Android removes their location. The «Mnimes for Life» app sends them complete, with the location. Get it from the Mnimes page (bottom of the page: «For the phone»), open it and scan the QR code again.',
+      'Ο browser του κινητού δεν μπορεί να δώσει τις αυθεντικές φωτογραφίες: το Android σβήνει την τοποθεσία τους. Η εφαρμογή «Μνήμες για Πάντα» τις στέλνει ολόκληρες, με την τοποθεσία. Πάρ’ την από τη σελίδα των Μνημών (κάτω κάτω: «Για το κινητό»), άνοιξέ την και σκάναρε ξανά το QR.')
     : T('A phone browser cannot give the original photos. Connect the iPhone to the computer with the cable and in Mnimes press «📱 Phone» → iPhone.',
       'Ο browser του κινητού δεν μπορεί να δώσει τις αυθεντικές φωτογραφίες. Σύνδεσε το iPhone στον υπολογιστή με καλώδιο και στις Μνήμες πάτα «📱 Κινητό» → iPhone.'));
   if (android) {
     // the app takes over this pairing (same pairing id + key, handed over inside the phone only); not installed → the download page
     const fb = 'https://ktsiminakis.github.io/mnimes/' + (EN ? '?lang=en' : '') + '#kinito';
-    const a = document.createElement('a'); a.className = 'btn'; a.textContent = T('📲 Open in the «Mnimes» app', '📲 Άνοιξε στην εφαρμογή «Μνήμες»');
+    const a = document.createElement('a'); a.className = 'btn'; a.textContent = T('📲 Open in the «Mnimes for Life» app', '📲 Άνοιξε στην εφαρμογή «Μνήμες για Πάντα»');
     a.href = 'intent://pair#Intent;scheme=mnimes;package=gr.ktsiminakis.mnimes;S.r=' + encodeURIComponent(room) + ';S.k=' + encodeURIComponent(keyRaw) +
       ';S.l=' + (EN ? 'en' : 'el') + ';S.browser_fallback_url=' + encodeURIComponent(fb) + ';end';
     $('hint').after(a);
@@ -111,9 +111,7 @@ async function connect() {
     if (!offer) await sleep(1500);
   }
   if (!offer) { status(T('The computer cannot be found. Press «📱 From the phone» again on the computer and scan the new QR.', 'Δεν βρίσκω τον υπολογιστή. Πάτα ξανά «📱 Από κινητό» στον υπολογιστή και σκάναρε το νέο QR.'), 'bad'); return; }
-  pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }] });
-  pc.ondatachannel = e => { dc = e.channel; dc.binaryType = 'arraybuffer'; dc.bufferedAmountLowThreshold = 1024 * 1024; dc.onopen = ready; dc.onmessage = onMsg; dc.onclose = lost; };
-  pc.onconnectionstatechange = () => { if (pc.connectionState === 'failed') lost(); };
+  pc = newPeer(ready);
   await pc.setRemoteDescription(offer);
   await pc.setLocalDescription(await pc.createAnswer());
   await gathered(pc);
@@ -121,6 +119,15 @@ async function connect() {
   if (!r.ok) { status(T('This QR code was already used. Press «📱 From the phone» again on the computer.', 'Αυτό το QR χρησιμοποιήθηκε ήδη. Πάτα ξανά «📱 Από κινητό» στον υπολογιστή.'), 'bad'); return; }
   status(T('Connecting…', 'Συνδέομαι…'));
   setTimeout(() => { if (!dc || dc.readyState !== 'open') hint(T('Taking long? Check that the phone is on the SAME Wi-Fi as the computer (not on mobile data).', 'Αργεί; Δες ότι το κινητό είναι στο ΙΔΙΟ Wi-Fi με τον υπολογιστή (όχι με δεδομένα κινητής).')); }, 12000);
+}
+// a peer whose losses are noticed only while it is the current one (an old one closing must not trigger anything)
+function newPeer(onOpen) {
+  const p = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.cloudflare.com:3478' }] });
+  p.ondatachannel = e => { if (pc !== p) return; dc = e.channel; dc.binaryType = 'arraybuffer'; dc.bufferedAmountLowThreshold = 1024 * 1024; dc.onopen = onOpen; dc.onmessage = onMsg; dc.onclose = () => { if (pc === p) lost(); }; };
+  let t = null;
+  p.onconnectionstatechange = () => { if (pc !== p) return; clearTimeout(t); const s = p.connectionState;
+    if (s === 'failed') lost(); else if (s === 'disconnected') t = setTimeout(() => { if (pc === p && p.connectionState === 'disconnected') lost(); }, 5000); };
+  return p;
 }
 function gathered(p) {
   return new Promise(res => { if (p.iceGatheringState === 'complete') return res();
@@ -130,12 +137,73 @@ function ready() {
   status(T('✅ Connected to the computer', '✅ Συνδέθηκε με τον υπολογιστή'), 'ok');
   hint(T('Now choose what to send. The best: the camera folder (DCIM), so everything comes.', 'Τώρα διάλεξε τι θα σταλεί. Το καλύτερο: τον φάκελο της κάμερας (DCIM), για να έρθουν όλα.'));
   if (window.MnimesApp) { appButton(); return; }
+  showPickers();
+  checkButton(() => { mode = 'check'; status(T('✔ Check: choose the same folder you want to check.', '✔ Έλεγχος: διάλεξε τον φάκελο που θες να ελεγχθεί.'), 'ok'); showPickers(); });
+}
+function showPickers() {
   if (window.showDirectoryPicker) $('pickDir').hidden = false;
   else if ('webkitdirectory' in $('inFolder')) $('pickFolder').hidden = false;
   $('pickFiles').hidden = false;
 }
+// owner 2026-11-21: «✔ Check with the computer» — after copying with a cable (or any way), before deleting from the phone.
+// Only the fingerprints (SHA-256) are sent, not the photos; the computer says which ones are safe in the library.
+let mode = 'send';
+function checkButton(go) {
+  const b = document.createElement('button'); b.className = 'btn ghost'; b.id = 'checkBtn';
+  b.textContent = T('✔ Only check (are they all on the computer?)', '✔ Μόνο έλεγχος (είναι όλες στον υπολογιστή;)');
+  b.onclick = () => { b.remove(); const s = document.getElementById('sendBtn'); if (s) s.remove(); go(); };
+  $('progBox').before(b);
+}
+async function checkAll(list) {
+  busy = true; sending = true; keepAwake(); ['pickDir', 'pickFolder', 'pickFiles'].forEach(id => $(id).hidden = true);
+  try { dc.send(JSON.stringify({ t: 'mode', m: 'check' })); } catch {}
+  $('h1').textContent = T('✔ Are they all on the computer?', '✔ Είναι όλες στον υπολογιστή;');
+  $('s1').textContent = T('🔒 No photo is sent: only their fingerprints (SHA-256), directly to your computer, encrypted.', '🔒 Δεν στέλνεται καμία φωτογραφία: μόνο τα αποτυπώματά τους (SHA-256), απευθείας στον υπολογιστή σου, κρυπτογραφημένα.');
+  hint(T('Nothing is sent or deleted: only the fingerprint of each photo is measured here and compared on the computer. Keep the screen on.', 'Δεν στέλνεται ούτε σβήνεται τίποτα: εδώ μετριέται μόνο το αποτύπωμα κάθε φωτογραφίας και συγκρίνεται στον υπολογιστή. Κράτα την οθόνη ανοιχτή.'));
+  $('progBox').hidden = false; const out = [];
+  for (let i = 0; i < list.length; i++) {
+    const x = list[i]; let h = null, size = x.size;
+    try { const f = await x.get(); size = f.size;
+      if (f.size <= SMALL) h = hex(await crypto.subtle.digest('SHA-256', await f.arrayBuffer()));
+      else { const hs = new Sha256(), r = f.stream().getReader(); for (;;) { const { done: d, value } = await r.read(); if (d) break; hs.update(value); } h = hs.hex(); } } catch {}
+    out.push({ p: x.p, size, h });
+    status(T(`✔ Measuring fingerprints… ${i + 1} / ${list.length}`, `✔ Μετράω αποτυπώματα… ${i + 1} / ${list.length}`)); prog(i + 1, list.length, '');
+    if (i % 10 === 9) try { if (dc && dc.readyState === 'open') dc.send(JSON.stringify({ t: 'cprog', i: i + 1, n: list.length })); } catch {}
+  }
+  for (let t0 = Date.now(); (healing || !dc || dc.readyState !== 'open') && Date.now() - t0 < 5 * 60000;) await sleep(500);
+  status(T('Asking the computer…', 'Ρωτάω τον υπολογιστή…'));
+  for (let i = 0; i < out.length; i += 400) dc.send(JSON.stringify({ t: 'check', files: out.slice(i, i + 400), last: i + 400 >= out.length }));
+}
+// owner 2026-11-21: the link heals itself when the phone changes Wi-Fi (e.g. 2.4 ↔ 5 GHz): a new handshake in the same pairing
+// (the computer writes slot o1, o2 …; the phone answers in a1, a2 …), then the computer asks again for what was on its way.
+let gen = 0, healing = false;
+async function heal() {
+  healing = true; const old = pc; pc = null; try { old && old.close(); } catch {}
+  status(T('📶 The link dropped (maybe the Wi-Fi changed). Reconnecting by itself…', '📶 Κόπηκε η σύνδεση (ίσως άλλαξε το Wi-Fi). Ξανασυνδέομαι μόνο μου…'));
+  hint(T('Keep this screen open. Nothing is lost: it continues from where it stopped.', 'Κράτα αυτή την οθόνη ανοιχτή. Δεν χάνεται τίποτα: συνεχίζει από εκεί που έμεινε.'));
+  for (const t0 = Date.now(); Date.now() - t0 < 4 * 60000 && !done;) {
+    for (let g = gen + 1; g <= gen + 3 && !done; g++) {
+      let offer = null; try { const r = await fetch(PAIR + '/p/' + room + '/o' + g, { cache: 'no-store' }); if (r.ok) offer = await open('o' + g, await r.text()); } catch {}
+      if (!offer) continue;
+      const p = newPeer(() => { healing = false; status(T('✅ Reconnected — continuing', '✅ Ξανασυνδέθηκε — συνεχίζω'), 'ok'); hint(''); keepAwake(); });
+      pc = p;
+      try { await p.setRemoteDescription(offer); await p.setLocalDescription(await p.createAnswer()); await gathered(p);
+        const w = await fetch(PAIR + '/p/' + room + '/a' + g, { method: 'PUT', body: await seal('a' + g, p.localDescription.toJSON()) }); gen = g; if (!w.ok) { pc = null; try { p.close(); } catch {} continue; } }
+      catch { pc = null; try { p.close(); } catch {} continue; }
+      for (let i = 0; i < 60 && healing; i++) await sleep(1000);
+      if (!healing) return;
+      pc = null; try { p.close(); } catch {}
+    }
+    await sleep(1500);
+  }
+  healing = false; showLost();
+}
 function lost() {
-  if (done) return;
+  if (done || healing) return;
+  if (sending) { heal(); return; }
+  showLost();
+}
+function showLost() {
   status(T('The connection was cut. Press «📱 From the phone» again on the computer and scan the new QR. What was sent is kept.', 'Η σύνδεση κόπηκε. Πάτα ξανά «📱 Από κινητό» στον υπολογιστή και σκάναρε το νέο QR. Όσα στάλθηκαν μένουν.'), 'bad');
   sending = false; try { lock && lock.release(); } catch {}
 }
@@ -143,11 +211,18 @@ function lost() {
 // ---------- inside the «Mnimes» Android app: the folders chosen in the app, read by the app as originals ----------
 function appButton() {
   let a = []; try { a = JSON.parse(window.MnimesApp.list()); } catch {}
-  hint(T(`The folders you chose in the app: ${a.length} photos and videos.`, `Οι φάκελοι που διάλεξες στην εφαρμογή: ${a.length} φωτογραφίες και βίντεο.`));
-  const b = document.createElement('button'); b.className = 'btn'; b.textContent = T('📤 Send them to the computer', '📤 Στείλ’ τες στον υπολογιστή');
-  b.onclick = () => { b.remove(); chosen(a.filter(x => x && Array.isArray(x.p) && x.p.length && Number.isFinite(x.size)).map(x => ({ p: x.p, size: x.size, lm: x.lm,
-    get: async () => { const r = await fetch('/orig/' + encodeURIComponent(x.id)); if (!r.ok) throw new Error('read'); return await r.blob(); } }))); };
+  let names = ''; try { names = window.MnimesApp.folders ? String(window.MnimesApp.folders()) : ''; } catch {}
+  hint(T(`Will be sent: ${names || a.length + ' photos and videos'}. (To change the folders: close this and press «Change folders» in the app.)`,
+    `Θα σταλούν: ${names || a.length + ' φωτογραφίες και βίντεο'}. (Για άλλους φακέλους: κλείσε αυτό και πάτα «Άλλαξε φακέλους» στην εφαρμογή.)`));
+  const items = () => a.filter(x => x && Array.isArray(x.p) && x.p.length && Number.isFinite(x.size)).map(x => ({ p: x.p, size: x.size, lm: x.lm,
+    get: async () => { const r = await fetch('/orig/' + encodeURIComponent(x.id)); if (!r.ok) throw new Error('read'); return await r.blob(); } }));
+  const b = document.createElement('button'); b.className = 'btn'; b.id = 'sendBtn'; b.textContent = T('📤 Send them to the computer', '📤 Στείλ’ τες στον υπολογιστή');
+  b.onclick = () => { b.remove(); const c = document.getElementById('checkBtn'); if (c) c.remove(); chosen(items()); };
   $('hint').after(b);
+  checkButton(() => checkAll(items()));
+  // the app's «Are they all on the computer?» button: straight to the check, nothing else to press
+  let m = 'send'; try { m = window.MnimesApp.mode ? String(window.MnimesApp.mode()) : 'send'; } catch {}
+  if (m === 'check') { b.remove(); const c = document.getElementById('checkBtn'); if (c) c.remove(); checkAll(items()); }
 }
 // ---------- choosing ----------
 const wanted = name => (IMG.test(name) || VID.test(name)) && !name.startsWith('.');
@@ -171,7 +246,9 @@ $('inFiles').onchange = e => chosen([...e.target.files].filter(f => wanted(f.nam
 
 let busy = false;   // a second tap while the list is read must not start a second list
 async function chosen(list) {
-  if (busy) return; busy = true;
+  if (busy) return;
+  if (mode === 'check') { if (list.length) { checkAll(list.map(x => ({ ...x, size: x.size || 0 }))); return; } }
+  busy = true;
   ['pickDir', 'pickFolder', 'pickFiles'].forEach(id => $(id).hidden = true);
   if (!list.length) { busy = false; ready(); status(T('No photos or videos there. Choose another folder.', 'Δεν βρέθηκαν φωτογραφίες ή βίντεο εκεί. Διάλεξε άλλον φάκελο.'), 'bad'); return; }
   files = [];
@@ -198,10 +275,21 @@ function onMsg(e) {
   let m; try { m = JSON.parse(e.data); } catch { return; }
   if (m.t === 'get' && Number.isInteger(m.i)) {
     const x = files[m.i], same = x && (!Array.isArray(m.p) || x.p.join('/') === m.p.join('/'));
-    if (same) queue = queue.then(() => sendFile(m.i, m.n)).catch(() => dc.send(JSON.stringify({ t: 'err', n: m.n })));
-    else dc.send(JSON.stringify({ t: 'err', n: m.n }));
+    const ch = dc, say = o => { try { if (ch.readyState === 'open') ch.send(JSON.stringify(o)); } catch {} };
+    if (same) queue = queue.then(() => sendFile(m.i, m.n, ch)).catch(() => say({ t: 'err', n: m.n }));
+    else say({ t: 'err', n: m.n });
   }
   else if (m.t === 'prog') prog(m.done, m.of, m.note);
+  else if (m.t === 'checked') {
+    done = true; sending = false; try { lock && lock.release(); } catch {}
+    $('progBox').hidden = true; const n = x => Number(x) || 0, all = n(m.ok) === n(m.total) && n(m.total) > 0;
+    status(all ? T(`✅ ${n(m.ok)} / ${n(m.total)}: all are on the computer, identical and double-checked.`, `✅ ${n(m.ok)} / ${n(m.total)}: όλες είναι στον υπολογιστή, ίδιες, με διπλό έλεγχο.`)
+      : T(`⚠️ ${n(m.ok)} / ${n(m.total)} are safe on the computer.`, `⚠️ ${n(m.ok)} / ${n(m.total)} είναι ασφαλείς στον υπολογιστή.`), all ? 'ok' : 'bad');
+    hint(all ? T('You can delete them from the phone (Gallery → they go to its Trash for 30 days). Best: first a 2nd copy on another drive. ⚠️ If the phone backs up to Google Photos (or another cloud), deleting on the phone deletes them THERE too — to keep them in the cloud use «Free up space» in Google Photos instead.', 'Μπορείς να τις σβήσεις από το κινητό (Συλλογή → πάνε στον Κάδο του για 30 μέρες). Το καλύτερο: πρώτα 2ο αντίγραφο σε άλλον δίσκο. ⚠️ Αν το κινητό κάνει αντίγραφο στο Google Photos (ή άλλο cloud), σβήνοντας στο κινητό σβήνονται και ΕΚΕΙ — για να μείνουν στο cloud, πάτα αντί γι’ αυτό «Απελευθέρωση χώρου» στο Google Photos.')
+      : (n(m.missN) ? T(`${n(m.missN)} are NOT on the computer — do not delete them. `, `${n(m.missN)} ΔΕΝ είναι στον υπολογιστή — μη τις σβήσεις. `) + (Array.isArray(m.miss) ? m.miss.slice(0, 20).map(String).join(', ') : '') + ' ' : '') +
+        (n(m.notv2) ? T(`${n(m.notv2)} are there but not double-checked yet (press «Double check» on the computer). `, `${n(m.notv2)} είναι εκεί αλλά χωρίς διπλό έλεγχο ακόμα (πάτα «Διπλός έλεγχος» στον υπολογιστή). `) : '') +
+        (n(m.unreadN) ? T(`${n(m.unreadN)} could not be read here.`, `${n(m.unreadN)} δεν διαβάστηκαν εδώ.`) : ''));
+  }
   else if (m.t === 'done') {
     done = true; sending = false; try { lock && lock.release(); } catch {}
     $('progBox').hidden = true;
@@ -209,18 +297,19 @@ function onMsg(e) {
     hint(m.note || '');
   }
 }
-async function room4(n) { while (dc.bufferedAmount > HIGH) await new Promise(r => { dc.onbufferedamountlow = r; }); }
-async function sendFile(i, n) {
+// every piece goes on the channel the request came from; if that channel closes, this file stops (the computer asks again)
+async function room4(ch) { while (ch.bufferedAmount > HIGH) { if (ch.readyState !== 'open') throw new Error('closed'); await new Promise(r => { ch.onbufferedamountlow = r; setTimeout(r, 1000); }); } if (ch.readyState !== 'open') throw new Error('closed'); }
+async function sendFile(i, n, dc) {
   const x = files[i]; const f = await x.get();
   dc.send(JSON.stringify({ t: 'hdr', n, size: f.size }));
   let h;
   if (f.size <= SMALL) {
     const buf = await f.arrayBuffer(); h = hex(await crypto.subtle.digest('SHA-256', buf));
-    for (let o = 0; o < buf.byteLength; o += CHUNK) { await room4(); dc.send(buf.slice(o, o + CHUNK)); }
+    for (let o = 0; o < buf.byteLength; o += CHUNK) { await room4(dc); dc.send(buf.slice(o, o + CHUNK)); }
   } else {
     const hs = new Sha256(), r = f.stream().getReader();
     for (;;) { const { done: d, value } = await r.read(); if (d) break; hs.update(value);
-      for (let o = 0; o < value.length; o += CHUNK) { await room4(); dc.send(value.slice(o, o + CHUNK)); } }
+      for (let o = 0; o < value.length; o += CHUNK) { await room4(dc); dc.send(value.slice(o, o + CHUNK)); } }
     h = hs.hex();
   }
   dc.send(JSON.stringify({ t: 'end', n, h }));
