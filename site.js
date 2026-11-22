@@ -30,7 +30,7 @@ const EN={
  k2:'<b>🔌 With a cable (Android and iPhone)</b><p>Connect the phone to the computer and copy the “DCIM” folder into “Ρίξ’ τα όλα εδώ” (drop it all here). For iPhone: Settings → Photos → “Keep Originals”.</p>',
  k3:'<b>Nothing is deleted</b><p>Nothing on the phone is changed or deleted. The drive the phone filled opens in Mnimes on the computer, with calendar and map.</p>',
  kdl:'Download the app (Android)',
- kn:'Android 8 or newer · free · 1.4 MB. If the phone asks about “install from unknown source”, tap “Allow” for this download only. SHA-256 fingerprint: 19936abddea3f851…',
+ kn:'Android 8 or newer · free · 1.4 MB. If the phone asks about “install from unknown source”, tap “Allow” for this download only. SHA-256 fingerprint: e870029503be8c56…',
  needh:'What you need',
  n1:'<td>Computer</td><td>Chrome or Edge (recent version): does everything, collecting, sorting, checking and deleting.</td>',
  n2:'<td>Safari, iPhone, Firefox</td><td>View only: calendar and map for the photos you choose. They cannot write to folders.</td>',

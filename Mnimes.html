@@ -259,6 +259,7 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
   <button id="backBtn" class="hbtn" aria-label="Πίσω" title="Πίσω" data-ic="arrow-left"></button>
   <div class="brand"><button id="homeBtn" class="logo" aria-label="Αρχική" title="Αρχική" style="border:0;cursor:pointer" data-ic="images"></button><h1 id="title">Μνήμες για Πάντα</h1></div>
   <form id="searchForm"><span data-ic="search"></span><input id="q" type="search" placeholder="Μέρος, χρονιά, μήνας…" autocomplete="off"></form>
+  <button id="helpBtn" class="hbtn" type="button" style="width:auto;padding:0 10px;font-size:18px" aria-label="Βοηθός" title="Βοηθός">🙋</button>
   <button id="langBtn" class="hbtn" style="width:auto;padding:0 12px;font-weight:700;font-size:14px" type="button"></button>
   <button id="selBtn" class="hbtn" aria-label="Επιλογή για σβήσιμο" title="Επιλογή φωτογραφιών/βίντεο για σβήσιμο" hidden data-ic="square-check"></button>
 </header>
@@ -313,7 +314,7 @@ const CLOUD_RE=/onedrive|google ?drive|icloud|dropbox|\bmega\b|pcloud|box ?sync|
 const FS_OK=typeof window.showDirectoryPicker==='function';
 /* owner 2026-11-21: downloading Mnimes again gives «Mnimes (1).html», «(2)»… — people must not end up running an old copy or
    making a second library. Every copy that opens is remembered (this browser only); an OLD copy may look but not copy/delete. */
-const MNIMES_VER='3.0';
+const MNIMES_VER='3.0.1';
 const verNum=v=>String(v||'0').split('.').map(Number).reduce((a,x,i)=>a+(x||0)/Math.pow(1000,i),0);
 const COPIES=(()=>{let m={};try{m=JSON.parse(localStorage.getItem('mnimes.files')||'{}')||{};}catch{}
   const here=location.href.split('#')[0].split('?')[0],now=Date.now();
@@ -1661,6 +1662,193 @@ async function renderBanner(){const b=$('#banner');b.innerHTML='';
   b.append(el('div',{class:'card warn'},el('b',{},(EN?'🔌 For safety, the browser asks again for permission to your folders.':'🔌 Για ασφάλεια, ο browser ζητά ξανά άδεια για τους φακέλους σου.')),el('p',{class:'small muted'},(EN?'Press the buttons one by one. (If it offers «Allow on every visit», choose it.)':'Πάτα ένα-ένα τα κουμπιά. (Αν σου δώσει επιλογή «Να επιτρέπεται σε κάθε επίσκεψη», διάλεξέ την.)')),
     el('div',{class:'row'},need.slice(0,8).map(n=>el('button',{class:'btn',onclick:async()=>{await ensurePerm(n.h,n.mode);render();maybeInbox();}},'🔓 '+n.name)))));}
 
+/* ===== 🙋 Βοηθός (owner 2026-11-22: a helper for all the apps, NOT AI — the same file ~/Downloads/voithos/voithos.js) ===== */
+/* © 2026 Κωνσταντίνος Τσιμινάκης · Με επιφύλαξη παντός δικαιώματος
+   «Βοηθός» — the same small helper for all the owner's apps (owner 2026-11-22: "a helper for all the apps, NOT AI").
+   Questions and answers written by us, searched right here on the device: no internet, no AI, nothing is sent anywhere.
+   It understands Greek, English and greeklish ("pos fernw fotografies"), with or without accents.
+   Use: Voithos.open({ lang:'el'|'en', app:'Μνήμες', ph:{el,en} (example in the search box), items:[{q:{el,en}, a:{el:[…],en:[…]}, k:{el,en}, go?:{el,en,fn}}],
+                       email:'…', top:[indexes of the first questions] }) */
+(function () {
+  'use strict';
+  const G = { 'α': 'a', 'β': 'v', 'γ': 'g', 'δ': 'd', 'ε': 'e', 'ζ': 'z', 'η': 'i', 'θ': 'th', 'ι': 'i', 'κ': 'k', 'λ': 'l', 'μ': 'm', 'ν': 'n', 'ξ': 'x', 'ο': 'o', 'π': 'p', 'ρ': 'r', 'σ': 's', 'ς': 's', 'τ': 't', 'υ': 'i', 'φ': 'f', 'χ': 'x', 'ψ': 'ps', 'ω': 'o' };
+  // everything (Greek, greeklish, English) becomes one simple Latin "skeleton", so «φωτογραφίες», «fotografies» and «fwtografies» meet
+  function skel(s) {
+    s = String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    s = s.replace(/αυ/g, 'av').replace(/ευ/g, 'ev').replace(/ηυ/g, 'iv').replace(/ου/g, 'u').replace(/αι/g, 'e').replace(/ει|οι|υι/g, 'i').replace(/μπ/g, 'b').replace(/ντ/g, 'd').replace(/γκ|γγ/g, 'g');
+    s = s.replace(/[α-ω]/g, c => G[c] || c);
+    s = s.replace(/au(?=[aeiouybdgzlmnrv])/g, 'av').replace(/eu(?=[aeiouybdgzlmnrv])/g, 'ev').replace(/au/g, 'af').replace(/eu/g, 'ef').replace(/ou/g, 'u').replace(/ai/g, 'e').replace(/ei|oi|yi/g, 'i').replace(/mp/g, 'b').replace(/nt/g, 'd').replace(/gk|gg/g, 'g')
+      .replace(/ch|kh|h(?=[aeiou])/g, 'x').replace(/ks|cs/g, 'x').replace(/8/g, 'th').replace(/3/g, 'x').replace(/w/g, 'o').replace(/[yh]/g, 'i')
+      .replace(/b/g, 'v').replace(/c/g, 'k').replace(/q/g, 'k').replace(/(.)\1+/g, '$1');
+    return s.replace(/[^a-z0-9]+/g, ' ').trim();
+  }
+  const STOP = new Set(['to', 'ta', 'ti', 'tin', 'tis', 'tu', 'tus', 'o', 'i', 'oi', 'kai', 'na', 'me', 'se', 'apo', 'gia', 'pos', 'pu', 'an', 'den', 'ena', 'mia', 'the', 'a', 'an', 'how', 'do', 'i', 'my', 'is', 'to', 'of', 'in', 'on', 'and', 'can', 'what', 'mu', 'su', 'ine', 'thelo']);
+  const toks = s => skel(s).split(' ').filter(t => t.length > 1 && !STOP.has(t));
+  function score(item, L, qt) {
+    if (!item._ix) item._ix = {};
+    if (!item._ix[L]) { const t = [item.q[L], ...(item.a[L] || []), item.k && item.k[L] || ''].join(' '); item._ix[L] = { q: toks(item.q[L]), all: toks(t) }; }
+    const ix = item._ix[L]; let s = 0;
+    // a word matches if one of ours starts with it; a word of 5+ letters may also differ in its ending (σβήσω / σβήνω, χώρο / χώρος)
+    const pre = (a, b) => { let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++; return i; };
+    const near = (w, t) => w.startsWith(t) || (t.length >= 4 && w.length >= 4 && pre(w, t) >= Math.max(4, Math.min(w.length, t.length) - 2));
+    for (const t of qt) {
+      if (ix.q.some(w => w.startsWith(t))) s += 4; else if (ix.q.some(w => near(w, t))) s += 3;
+      else if (ix.all.some(w => w.startsWith(t))) s += 2; else if (ix.all.some(w => near(w, t))) s += 1.5;
+      else if (t.length > 3 && ix.all.some(w => w.includes(t))) s += 1;
+    }
+    return s;
+  }
+  const el = (tag, at, ...kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(at || {})) { if (k === 'style') e.style.cssText = v; else if (k.startsWith('on')) e[k] = v; else e.setAttribute(k, v); }
+    for (const c of kids.flat()) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c))); return e; };
+  const CSS = `#voithos *{box-sizing:border-box}#voithos{position:fixed;inset:0;z-index:2147483000;background:rgba(10,12,18,.55);display:flex;align-items:flex-end;justify-content:center;font:16px/1.5 Inter,"Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+#voithos .vb{background:#fff;color:#0e1014;width:100%;max-width:640px;max-height:92vh;display:flex;flex-direction:column;border-radius:20px 20px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.25)}
+@media (min-width:700px){#voithos{align-items:center}#voithos .vb{border-radius:20px}}
+#voithos .vh{display:flex;align-items:center;gap:10px;padding:16px 18px 8px}#voithos .vh b{font-size:20px;flex:1}
+#voithos .vx{border:0;background:#f1f2f5;border-radius:12px;width:40px;height:40px;font-size:20px;cursor:pointer;color:inherit}
+#voithos input{display:block;width:calc(100% - 36px);max-width:none;min-height:0;margin:6px 18px 10px;padding:13px 14px;border:1px solid #d0d4dc;border-radius:14px;font:inherit;font-size:17px;background:#fff;color:inherit}
+#voithos .vl{overflow:auto;padding:0 18px 8px}#voithos .vs{font-size:13px;color:#5f6672;text-transform:uppercase;letter-spacing:.04em;margin:8px 0 4px}
+#voithos details{border:1px solid #e3e5ea;border-radius:14px;margin:8px 0;background:#fafbfc}#voithos summary{cursor:pointer;padding:12px 14px;font-weight:600;list-style:none}
+#voithos summary::-webkit-details-marker{display:none}#voithos summary::before{content:'❓ '}#voithos details[open] summary::before{content:'💡 '}
+#voithos ol,#voithos ul{margin:0 14px 12px 34px;padding:0}#voithos li{margin:4px 0}#voithos .vgo{margin:0 14px 12px;border:0;border-radius:12px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer;color:#fff;background:linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899)}
+#voithos .vf{padding:10px 18px 16px;font-size:14px;color:#5f6672;border-top:1px solid #e3e5ea}#voithos .vf a{color:#5b5bf0}
+#voithos .vn{padding:14px;border-radius:14px;background:#fff7ed;color:#7c2d12;margin:8px 0}
+@media (prefers-color-scheme:dark){#voithos .vb{background:#14161c;color:#f3f4f6}#voithos input{background:#0e1014;border-color:#353a46}#voithos .vx{background:#252832}
+#voithos details{background:#1b1e26;border-color:#2a2e38}#voithos .vf{border-color:#2a2e38;color:#9aa1ad}#voithos .vs{color:#9aa1ad}#voithos .vn{background:#3a2412;color:#fed7aa}}`;
+  function open(o) {
+    const L = o.lang === 'en' ? 'en' : 'el', T = (en, gr) => L === 'en' ? en : gr, items = o.items || [];
+    const old = document.getElementById('voithos'); if (old) old.remove();
+    if (!document.getElementById('voithos-css')) document.head.append(el('style', { id: 'voithos-css' }, CSS));
+    const list = el('div', { class: 'vl' });
+    const input = el('input', { type: 'search', placeholder: o.ph && o.ph[L] || T('Write what you need…', 'Γράψε τι χρειάζεσαι…'), autocomplete: 'off', 'aria-label': T('Search', 'Αναζήτηση') });
+    const close = () => { box.remove(); document.removeEventListener('keydown', esc); if (o.onClose) o.onClose(); };
+    const card = (it, openIt) => { const steps = it.a[L] || []; const d = el('details', openIt ? { open: '' } : {}, el('summary', {}, it.q[L]),
+        steps.length > 1 ? el('ol', {}, steps.map(s => el('li', {}, s))) : el('p', { style: 'margin:0 14px 12px' }, steps[0] || ''));
+      if (it.go && typeof it.go.fn === 'function') d.append(el('button', { class: 'vgo', onclick: () => { close(); it.go.fn(); } }, '→ ' + it.go[L]));
+      return d; };
+    function show() {
+      const q = input.value.trim(); list.replaceChildren();
+      if (!q) { list.append(el('div', { class: 'vs' }, T('Most asked', 'Οι πιο συχνές ερωτήσεις')));
+        const top = (o.top && o.top.length ? o.top.map(i => items[i]) : items).filter(Boolean); top.forEach(it => list.append(card(it, false)));
+        if (o.top && o.top.length < items.length) { list.append(el('div', { class: 'vs' }, T('All questions', 'Όλες οι ερωτήσεις'))); items.filter(it => !top.includes(it)).forEach(it => list.append(card(it, false))); }
+        return; }
+      const qt = toks(q); const r = items.map(it => [it, score(it, L, qt)]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      if (!r.length) { list.append(el('div', { class: 'vn' }, T('I did not find an answer to that. Try other words (e.g. «phone», «delete», «map»), or write to us below.', 'Δεν βρήκα απάντηση σε αυτό. Δοκίμασε άλλες λέξεις (π.χ. «κινητό», «σβήσιμο», «χάρτης») ή γράψε μας παρακάτω.'))); return; }
+      r.forEach(([it], i) => list.append(card(it, i === 0)));
+    }
+    let t = null; input.oninput = () => { clearTimeout(t); t = setTimeout(show, 120); };
+    const mail = o.email ? el('a', { href: 'mailto:' + o.email + '?subject=' + encodeURIComponent((o.app || '') + ' — ' + T('question', 'ερώτηση')) }, o.email) : null;
+    const box = el('div', { id: 'voithos', role: 'dialog', 'aria-modal': 'true', 'aria-label': T('Helper', 'Βοηθός'), onclick: e => { if (e.target === box) close(); } },
+      el('div', { class: 'vb' },
+        el('div', { class: 'vh' }, el('b', {}, '🙋 ' + T('Helper', 'Βοηθός') + (o.app ? ' · ' + o.app : '')), el('button', { class: 'vx', 'aria-label': T('Close', 'Κλείσιμο'), onclick: close }, '✕')),
+        input, list,
+        el('div', { class: 'vf' }, T('Answers written by the creator, found right here on your device — nothing is sent anywhere. ', 'Απαντήσεις γραμμένες από τον δημιουργό, που βρίσκονται εδώ στη συσκευή σου — δεν στέλνεται τίποτα πουθενά. '),
+          mail ? [T('Not found? Write to ', 'Δεν το βρήκες; Γράψε στο '), mail] : null)));
+    const esc = e => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', esc);
+    document.body.append(box); show(); setTimeout(() => input.focus(), 50);
+    return { close, search: q => { input.value = q; show(); } };
+  }
+  window.Voithos = { open, skel, toks, score };
+})();
+
+/* Βοηθός — Μνήμες για Πάντα (questions & answers, EL/EN). `go.r` = screen to open. */
+const VOITHOS_ITEMS = [
+ {q:{el:'Πώς βάζω τις φωτογραφίες μου σε σειρά;',en:'How do I put my photos in order?'},
+  a:{el:['Πάτα «📥 Ρίξ\' τα όλα εδώ» στην αρχική.','Την πρώτη φορά διάλεξε πού θα είναι οι Μνήμες σου (π.χ. εξωτερικός δίσκος).','Με την Εξερεύνηση αρχείων αντίγραψε ό,τι θες στον φάκελο «Μνήμες › Ρίξ\' τα όλα εδώ».','Μοιράζονται μόνα τους σε Χρονιά / Μήνα / Μέρος, με διπλό έλεγχο. Δεν χρειάζεται να πατήσεις τίποτα άλλο.'],
+     en:['Press «📥 Drop it all here» on the home page.','The first time, choose where your Mnimes will be (e.g. an external drive).','With File Explorer, copy anything into the folder «Μνήμες › Ρίξ\' τα όλα εδώ».','They sort themselves into Year / Month / Place, with a double check. Nothing else to press.']},
+  k:{el:'μάζεμα τακτοποίηση ταξινόμηση αρχή ξεκινώ ρίξε φάκελος βάλω',en:'start sort organise collect folder drop add'},go:{el:'Άνοιξε το «Ρίξ\' τα όλα εδώ»',en:'Open «Drop it all here»',r:'inbox'}},
+ {q:{el:'Πώς φέρνω φωτογραφίες από το κινητό με καλώδιο;',en:'How do I bring photos from the phone with a cable?'},
+  a:{el:['Σύνδεσε το κινητό με το καλώδιο. Στο κινητό πάτα την ειδοποίηση «USB» → «Μεταφορά αρχείων».','Στον υπολογιστή άνοιξε την Εξερεύνηση αρχείων → «Αυτός ο υπολογιστής» → το κινητό → DCIM.','Αντίγραψε τον φάκελο «Camera» (ή όλο το DCIM) μέσα στο «Ρίξ\' τα όλα εδώ».','Πριν σβήσεις κάτι από το κινητό, κάνε τον έλεγχο «✔ Είναι όλες στον υπολογιστή;» (δες την ερώτηση για το σβήσιμο).'],
+     en:['Connect the phone with the cable. On the phone tap the «USB» notification → «File transfer».','On the computer open File Explorer → «This PC» → the phone → DCIM.','Copy the «Camera» folder (or all of DCIM) into «Ρίξ\' τα όλα εδώ» (drop it all here).','Before deleting anything from the phone, do the «✔ Are they all on the computer?» check (see the question about deleting).']},
+  k:{el:'κινητό τηλέφωνο android usb dcim camera κάμερα μεταφορά',en:'phone mobile android usb dcim camera transfer'}},
+ {q:{el:'Γίνεται από το κινητό χωρίς καλώδιο;',en:'Can I do it from the phone without a cable?'},
+  a:{el:['Ναι, με τη δωρεάν εφαρμογή «Μνήμες για Πάντα» για Android (από τη σελίδα των Μνημών, κάτω κάτω).','Κινητό και υπολογιστής στο ίδιο Wi-Fi.','Στον υπολογιστή: «📥 Ρίξ\' τα όλα εδώ» → «📱 Από κινητό χωρίς καλώδιο» → Android. Βγαίνει ένα QR.','Στο κινητό: «💻 Στείλ\' τες στον υπολογιστή» → σκάναρε το QR. Έρχονται αυθεντικές, με την τοποθεσία τους, και ελέγχεται η κάθε μία.','Αν το κινητό αλλάξει Wi-Fi, ξανασυνδέεται μόνο του.'],
+     en:['Yes, with the free «Mnimes for Life» app for Android (from the Mnimes page, at the bottom).','Phone and computer on the same Wi-Fi.','On the computer: «📥 Drop it all here» → «📱 From the phone without a cable» → Android. A QR code appears.','On the phone: «💻 Send them to the computer» → scan the QR code. They come as originals, with their location, and each one is checked.','If the phone changes Wi-Fi, it reconnects by itself.']},
+  k:{el:'wifi ασύρματα qr εφαρμογή android χωρίς καλώδιο στείλε',en:'wifi wireless qr app android no cable send'},go:{el:'Άνοιξε το «Ρίξ\' τα όλα εδώ»',en:'Open «Drop it all here»',r:'inbox'}},
+ {q:{el:'Έχω iPhone. Τι κάνω;',en:'I have an iPhone. What do I do?'},
+  a:{el:['Μία φορά στο iPhone: Ρυθμίσεις → Φωτογραφίες → «Μεταφορά σε Mac ή PC» → «Διατήρηση αυθεντικών».','Σύνδεσέ το με καλώδιο και πάτα «Εμπιστεύομαι».','Windows: Εξερεύνηση αρχείων → «Apple iPhone» → Internal Storage → DCIM. Mac: πρόγραμμα «Λήψη εικόνων».','Αντίγραψε τα όλα μέσα στο «Ρίξ\' τα όλα εδώ».'],
+     en:['Once on the iPhone: Settings → Photos → «Transfer to Mac or PC» → «Keep Originals».','Connect it with a cable and tap «Trust».','Windows: File Explorer → «Apple iPhone» → Internal Storage → DCIM. Mac: the «Image Capture» program.','Copy everything into «Ρίξ\' τα όλα εδώ» (drop it all here).']},
+  k:{el:'iphone apple ios μακ mac',en:'iphone apple ios mac'}},
+ {q:{el:'Μπορώ να σβήσω τις φωτογραφίες από το κινητό;',en:'Can I delete the photos from the phone?'},
+  a:{el:['Πρώτα κάνε 2ο αντίγραφο σε άλλον δίσκο.','Στην εφαρμογή του κινητού πάτα «✔ Είναι όλες στον υπολογιστή;» και σκάναρε το QR του υπολογιστή. Αν γράψει «✅ όλες είναι στον υπολογιστή», είναι ασφαλές.','Σβήσ\' τες από τη Συλλογή: πάνε στον Κάδο του κινητού για 30 μέρες.','⚠️ Αν το κινητό κάνει αντίγραφο στο Google Photos (ή άλλο cloud), το σβήσιμο από το κινητό τις σβήνει ΚΑΙ από εκεί. Για να μείνουν στο cloud, χρησιμοποίησε την «Απελευθέρωση χώρου» του Google Photos.'],
+     en:['First make a 2nd copy on another drive.','In the phone app press «✔ Are they all on the computer?» and scan the computer\'s QR code. If it says «✅ all are on the computer», it is safe.','Delete them from the Gallery: they go to the phone\'s Trash for 30 days.','⚠️ If the phone backs up to Google Photos (or another cloud), deleting on the phone deletes them THERE too. To keep them in the cloud, use Google Photos\' «Free up space».']},
+  k:{el:'σβήσιμο διαγραφή χώρος γέμισε κινητό ελευθέρωσε google photos cloud έλεγχος',en:'delete remove space full phone free up google photos cloud check'}},
+ {q:{el:'Πού είναι οι φωτογραφίες μου;',en:'Where are my photos?'},
+  a:{el:['Στον φάκελο «Μνήμες» του δίσκου που διάλεξες, σε υποφακέλους: Χρονιά › Μήνας › Μέρος (π.χ. «Μνήμες › 2023 › 08-Αύγουστος › Νάξος»).','Είναι κανονικά αρχεία: ανοίγουν και χωρίς τις Μνήμες, από την Εξερεύνηση αρχείων.','Τον φάκελο «_PhotoApp» μην τον πειράζεις: εκεί είναι η λίστα, οι μικρογραφίες και ο Κάδος.'],
+     en:['In the «Μνήμες» folder of the drive you chose, in subfolders: Year › Month › Place (e.g. «Μνήμες › 2023 › 08-Αύγουστος › Νάξος»).','They are normal files: they open without Mnimes too, from File Explorer.','Do not touch the «_PhotoApp» folder: the list, the thumbnails and the Trash are there.']},
+  k:{el:'πού φάκελος βρίσκονται αρχεία δίσκος',en:'where folder files location drive'}},
+ {q:{el:'Έριξα φωτογραφίες αλλά δεν μοιράζονται',en:'I dropped photos but they are not sorted'},
+  a:{el:['Περίμενε λίγο: όσο οι Μνήμες είναι ανοιχτές, κοιτάνε τον φάκελο κάθε 30 δευτερόλεπτα και ξεκινάνε όταν τελειώσει η αντιγραφή.','Αν πάνω γράφει «🔓 … ζητά ξανά άδεια», πάτα το κουμπί. Όταν ο Chrome ρωτήσει, διάλεξε «Να επιτρέπεται σε κάθε επίσκεψη».','Ή πάτα «📥 Ρίξ\' τα όλα εδώ» → «▶ Μοίρασέ τα τώρα».','Αν είναι ανοιχτές σε δεύτερη καρτέλα, δουλεύει μόνο η πρώτη.'],
+     en:['Wait a little: while Mnimes is open it looks at the folder every 30 seconds and starts when the copy has finished.','If the top says «🔌 … asks again for permission», press the button. When Chrome asks, choose «Allow on every visit».','Or press «📥 Drop it all here» → «▶ Sort them now».','If it is open in a second tab, only the first one works.']},
+  k:{el:'δεν ξεκινάει δεν μοιράζονται κόλλησε άδεια chrome δεν δουλεύει',en:'not starting not sorted stuck permission chrome not working'},go:{el:'Άνοιξε το «Ρίξ\' τα όλα εδώ»',en:'Open «Drop it all here»',r:'inbox'}},
+ {q:{el:'Γιατί έμειναν αρχεία στο «Ρίξ\' τα όλα εδώ»;',en:'Why did some files stay in «Ρίξ\' τα όλα εδώ»?'},
+  a:{el:['Έγγραφα (Word, PDF…) και ό,τι δεν είναι φωτογραφία ή βίντεο μένουν εκεί, ανέγγιχτα.','Αρχεία που δεν διαβάστηκαν μένουν εκεί (δες την «Αναφορά» στις Προχωρημένες).','Φωτογραφίες που είχες σβήσει (είναι στον 🗑️ Κάδο): επανάφερέ τες από τον Κάδο αν τις θες.','Ό,τι υπήρχε ήδη (100% ίδιο) πάει στον «_PhotoApp › Κάδος διπλοτύπων» — δεν σβήνεται.'],
+     en:['Documents (Word, PDF…) and anything that is not a photo or video stay there, untouched.','Files that could not be read stay there (see the «Report» in Advanced).','Photos you had deleted (they are in the 🗑️ Trash): restore them from the Trash if you want them.','What was already there (100% identical) goes to «_PhotoApp › Κάδος διπλοτύπων» — it is not deleted.']},
+  k:{el:'έμειναν απέμειναν αρχεία φάκελος έγγραφα pdf word',en:'left stayed remaining files documents pdf word'}},
+ {q:{el:'Πώς κάνω 2ο αντίγραφο;',en:'How do I make a 2nd copy?'},
+  a:{el:['Σύνδεσε άλλον δίσκο ή στικάκι.','«📥 Ρίξ\' τα όλα εδώ» → «💾 2ο αντίγραφο σε ΑΛΛΟΝ δίσκο» και διάλεξέ τον.','Ο «Διπλός έλεγχος» τον γεμίζει μόνος του και τον κρατάει ενημερωμένο.','Είναι το πιο σημαντικό: αν χαλάσει ένας δίσκος, οι φωτογραφίες σώζονται από τον άλλον.'],
+     en:['Connect another drive or USB stick.','«📥 Drop it all here» → «💾 2nd copy on ANOTHER drive» and choose it.','The «Double check» fills it by itself and keeps it up to date.','It is the most important thing: if one drive breaks, the photos are saved on the other.']},
+  k:{el:'αντίγραφο ασφαλείας backup δεύτερο εξωτερικός δίσκος στικάκι',en:'backup second copy external drive stick'},go:{el:'Άνοιξε το «Ρίξ\' τα όλα εδώ»',en:'Open «Drop it all here»',r:'inbox'}},
+ {q:{el:'Θέλω τις Μνήμες σε άλλον υπολογιστή',en:'I want Mnimes on another computer'},
+  a:{el:['Το καλύτερο: τις Μνήμες τις έχεις πάνω στον δίσκο (αρχείο «Μνήμες › Μνήμες για Πάντα.html»). Σύνδεσε τον δίσκο και άνοιξε αυτό το αρχείο.','Την πρώτη φορά σε κάθε υπολογιστή πατάς «Διάλεξε τον φάκελο Μνήμες αυτού του δίσκου» — μετά όλα φορτώνουν μόνα τους.','Δύο υπολογιστές με τον ίδιο δίσκο δεν χαλάνε ο ένας τον άλλον: οι λίστες ενώνονται.'],
+     en:['Best: keep Mnimes on the drive itself (file «Μνήμες › Μνήμες για Πάντα.html»). Connect the drive and open that file.','The first time on each computer press «Choose the Μνήμες folder of this drive» — then everything loads by itself.','Two computers with the same drive do not spoil each other: the lists are joined.']},
+  k:{el:'άλλος υπολογιστής laptop δεύτερος μεταφορά βιβλιοθήκη ανοίγω',en:'another computer laptop second move library open'}},
+ {q:{el:'Πώς βάζω (ή ενημερώνω) τις Μνήμες πάνω στον δίσκο;',en:'How do I put (or update) Mnimes on the drive?'},
+  a:{el:['Όταν διαλέγεις τον δίσκο, σε ρωτάει «Να μπουν οι Μνήμες και πάνω στον δίσκο;» → ΟΚ (θέλει ίντερνετ).','Ή «📥 Ρίξ\' τα όλα εδώ» → «💽 Βάλε τις Μνήμες στον δίσκο».','Όταν βγει νέα έκδοση, πάνω εμφανίζεται «🆕 Ενημέρωσε τις Μνήμες στον δίσκο».'],
+     en:['When you choose the drive it asks «Put Mnimes on this drive too?» → OK (needs internet).','Or «📥 Drop it all here» → «💽 Put Mnimes on the drive».','When a new version is out, «🆕 Update the Mnimes on the drive» appears at the top.']},
+  k:{el:'ενημέρωση νέα έκδοση δίσκος αρχείο html κατέβασμα',en:'update new version drive file html download'}},
+ {q:{el:'Πώς βρίσκω και σβήνω διπλότυπα;',en:'How do I find and delete duplicates?'},
+  a:{el:['Προχωρημένες → «Διπλότυπα» → «Διάλεξε δίσκο ή φάκελο».','Βρίσκει μόνο τα 100% ίδια και δείχνει τι μένει και τι φεύγει. Από το καθένα μένει πάντα ΕΝΑ.','Πάτα «ΟΚ, σβήσ\' τα»: πάνε στον «Κάδο διπλοτύπων» του ίδιου δίσκου. Οριστικά σβήνονται μόνο με «Άδειασμα».'],
+     en:['Advanced → «Duplicates» → «Choose a drive or folder».','It finds only the 100% identical ones and shows what stays and what goes. ONE of each always stays.','Press «OK, move them to the bin»: they go to the «Κάδος διπλοτύπων» of the same drive. They are deleted for good only with «Empty».']},
+  k:{el:'διπλότυπα ίδιες διπλές δυο φορές αντίγραφα καθαρισμός',en:'duplicates same twice copies clean up'},go:{el:'Άνοιξε τα «Διπλότυπα»',en:'Open «Duplicates»',r:'dups'}},
+ {q:{el:'Πώς σβήνω μια φωτογραφία; Μπορώ να την επαναφέρω;',en:'How do I delete a photo? Can I get it back?'},
+  a:{el:['Άνοιξε τη φωτογραφία και πάτα το 🗑️ (ή πάνω δεξιά το κουμπί επιλογής για πολλές).','Πάει στον 🗑️ Κάδο: από εκεί την επαναφέρεις όποτε θες.','Οριστικά χάνεται μόνο με «Άδειασμα Κάδου» (Προχωρημένες → Κάδος).'],
+     en:['Open the photo and press 🗑️ (or the select button at the top right, for many).','It goes to the 🗑️ Trash: you can restore it from there whenever you like.','It is gone for good only with «Empty Trash» (Advanced → Trash).']},
+  k:{el:'σβήσιμο διαγραφή κάδος επαναφορά σβήστηκε κατά λάθος',en:'delete trash restore undo deleted by mistake'},go:{el:'Άνοιξε τον Κάδο',en:'Open the Trash',r:'trash'}},
+ {q:{el:'Βλέπω μαύρα κουτάκια ή λείπουν φωτογραφίες',en:'I see black squares or photos are missing'},
+  a:{el:['Συμβαίνει αν άλλαξες κάτι με το χέρι μέσα στον φάκελο «Μνήμες» (έβαλες, μετακίνησες ή έσβησες αρχεία).','Πάτα Προχωρημένες → «🔄 Ξανακοίτα τη βιβλιοθήκη»: διορθώνει τη λίστα χωρίς να αλλάξει τίποτα στον δίσκο.','Αν ο δίσκος δεν είναι συνδεδεμένος ή πάνω γράφει «🔓», σύνδεσέ τον και πάτα το κουμπί.'],
+     en:['It happens if you changed something by hand inside the «Μνήμες» folder (added, moved or deleted files).','Press Advanced → «🔄 Look at the library again»: it fixes the list without changing anything on the drive.','If the drive is not connected or the top says «🔌», connect it and press the button.']},
+  k:{el:'μαύρα κουτάκια λείπουν χάθηκαν δεν φαίνονται άδεια λάθος λίστα',en:'black squares missing gone not showing empty wrong list'},go:{el:'Ξανακοίτα τη βιβλιοθήκη',en:'Look at the library again',r:'rescan'}},
+ {q:{el:'Γιατί δεν βγαίνουν στον χάρτη;',en:'Why are they not on the map?'},
+  a:{el:['Στον χάρτη μπαίνουν μόνο φωτογραφίες που έχουν μέσα τους τοποθεσία (GPS). Πολλές κάμερες και σκαναρισμένες φωτογραφίες δεν έχουν.','Ο χάρτης και τα ονόματα των μερών θέλουν ίντερνετ.','Από κινητό: φέρ\' τες με καλώδιο ή με την εφαρμογή, όχι με αποστολή από browser (χάνεται η τοποθεσία).'],
+     en:['Only photos that contain a location (GPS) go on the map. Many cameras and scanned photos do not have one.','The map and the place names need internet.','From a phone: bring them with a cable or with the app, not by sending from a browser (the location is lost).']},
+  k:{el:'χάρτης μέρη τοποθεσία gps δεν φαίνονται',en:'map places location gps not showing'}},
+ {q:{el:'Λάθος ημερομηνία ή «Χωρίς ημερομηνία»',en:'Wrong date or «Χωρίς ημερομηνία» (no date)'},
+  a:{el:['Η ημερομηνία βγαίνει από μέσα από τη φωτογραφία (EXIF) ή από το όνομα (π.χ. IMG_20230812).','Αν δεν υπάρχει πουθενά, μπαίνει στον φάκελο «Χωρίς ημερομηνία».','Αν η κάμερα είχε λάθος ώρα/ημερομηνία, η φωτογραφία θα μπει με αυτήν.'],
+     en:['The date comes from inside the photo (EXIF) or from the name (e.g. IMG_20230812).','If there is none, it goes into the «Χωρίς ημερομηνία» (no date) folder.','If the camera had the wrong time/date, the photo goes in with that one.']},
+  k:{el:'ημερομηνία λάθος χρονιά μήνας χωρίς ημερομηνία',en:'date wrong year month no date'}},
+ {q:{el:'Ο δίσκος βγάζει σφάλματα. Τι κάνω;',en:'The drive shows errors. What do I do?'},
+  a:{el:['Οι Μνήμες σταματάνε και εξηγούν. Το πιο ασφαλές: «⛔ Σταμάτα».','Για πολύτιμες φωτογραφίες, πήγαινε τον δίσκο σε εργαστήριο ανάκτησης δεδομένων.','Αλλιώς έλεγξε καλώδιο/θύρα και την «Υγεία δίσκων» στις Προχωρημένες.'],
+     en:['Mnimes stops and explains. The safest: «⛔ Stop».','For precious photos, take the drive to a data-recovery lab.','Otherwise check the cable/port and «Drive health» in Advanced.']},
+  k:{el:'σφάλματα χαλασμένος δίσκος bad sectors δεν διαβάζεται',en:'errors failing drive bad sectors cannot read'},go:{el:'Άνοιξε την «Υγεία δίσκων»',en:'Open «Drive health»',r:'health'}},
+ {q:{el:'Είναι ασφαλές; Ανεβαίνουν κάπου οι φωτογραφίες;',en:'Is it safe? Are my photos uploaded anywhere?'},
+  a:{el:['Οι φωτογραφίες ΔΕΝ ανεβαίνουν πουθενά: όλα γίνονται στον υπολογιστή σου.','Κάθε αρχείο ελέγχεται με ψηφιακό αποτύπωμα (SHA-256): μένει ίδιο byte-προς-byte, ίδια ποιότητα.','Για τα ονόματα των μερών στέλνονται μόνο στρογγυλεμένες συντεταγμένες (κλείνει από τις Ρυθμίσεις).'],
+     en:['The photos are NOT uploaded anywhere: everything happens on your computer.','Every file is checked with a digital fingerprint (SHA-256): it stays identical byte for byte, same quality.','For place names only rounded coordinates are sent (can be turned off in Settings).']},
+  k:{el:'ασφάλεια ιδιωτικό ίντερνετ cloud ανέβασμα ποιότητα συμπίεση',en:'safe private internet cloud upload quality compression'}},
+ {q:{el:'Πόσο χρόνο θέλει;',en:'How long does it take?'},
+  a:{el:['Το ρίξιμο από τον ίδιο δίσκο: δευτερόλεπτα. Από άλλο δίσκο: όσο η αντιγραφή (π.χ. 100 GB ≈ 20–30 λεπτά σε USB 3).','Το μοίρασμα διαβάζει κάθε αρχείο δύο φορές (έλεγχος): περίπου 1 ώρα για 100 GB σε κανονικό δίσκο.','Η μπάρα δείχνει πόσο μένει. Αν το κλείσεις, συνεχίζει από εκεί που έμεινε.'],
+     en:['Dropping from the same drive: seconds. From another drive: as long as the copy (e.g. 100 GB ≈ 20–30 minutes on USB 3).','Sorting reads each file twice (checks): about 1 hour for 100 GB on a normal drive.','The bar shows how much is left. If you close it, it continues from where it stopped.']},
+  k:{el:'χρόνος πόση ώρα αργεί γρήγορα ταχύτητα',en:'time how long slow fast speed'}},
+ {q:{el:'Γιατί σε iPhone, Safari ή Firefox κάνει μόνο προβολή;',en:'Why does it only show photos on iPhone, Safari or Firefox?'},
+  a:{el:['Αυτοί οι browsers δεν επιτρέπουν σε σελίδες να γράφουν σε φακέλους.','Για αντιγραφή και ταξινόμηση άνοιξε τις Μνήμες με Chrome ή Edge σε υπολογιστή.'],
+     en:['These browsers do not let pages write into folders.','For copying and sorting, open Mnimes with Chrome or Edge on a computer.']},
+  k:{el:'safari firefox iphone ipad προβολή δεν γράφει browser',en:'safari firefox iphone ipad view only browser'}},
+ {q:{el:'Έχω παλιό ή ύποπτο δίσκο. Πώς τον μαζεύω με ασφάλεια;',en:'I have an old or suspicious drive. How do I collect it safely?'},
+  a:{el:['Προχωρημένες → «Πάρε & μοίρασε»: διαλέγεις από πού και πού, και ΑΝΤΙΓΡΑΦΕΙ (τα αρχικά μένουν).','Κάθε αντίγραφο συγκρίνεται με το αρχικό. Αν ο δίσκος βγάλει σφάλμα, σταματάει.','Τα αρχικά σβήνονται μόνο αν το ζητήσεις (Σβήσιμο αρχικών), μετά τον διπλό έλεγχο.'],
+     en:['Advanced → «Take & sort»: choose from where and where to, and it COPIES (the originals stay).','Every copy is compared with the original. If the drive gives an error, it stops.','Originals are deleted only if you ask (Delete originals), after the double check.']},
+  k:{el:'παλιός δίσκος ύποπτος αντιγραφή αρχικά πάρε μοίρασε',en:'old drive suspicious copy originals take sort'},go:{el:'Άνοιξε το «Πάρε & μοίρασε»',en:'Open «Take & sort»',r:'organize'}},
+ {q:{el:'Γράφει «ήδη ανοιχτές σε άλλη καρτέλα»',en:'It says «already open in another tab»'},
+  a:{el:['Οι Μνήμες δουλεύουν σε μία καρτέλα κάθε φορά, για να μη γράφουν δύο μαζί.','Κλείσε τη δεύτερη καρτέλα ή παράθυρο και δούλεψε στην πρώτη.'],
+     en:['Mnimes works in one tab at a time, so that two do not write together.','Close the second tab or window and work in the first one.']},
+  k:{el:'καρτέλα παράθυρο ανοιχτές δύο φορές',en:'tab window open twice'}}
+];
+const VOITHOS_TOP = [0, 1, 2, 4, 6, 8];
+
+var VOITHOS_PH={el:'Γράψε τι χρειάζεσαι, π.χ. «πώς φέρνω φωτογραφίες από το κινητό»',en:'Write what you need, e.g. «how do I bring photos from the phone»'};
+
+function openHelp(q){const h=Voithos.open({lang:EN?'en':'el',app:APPNAME(),ph:VOITHOS_PH,email:'ktsiminakis@gmail.com',top:VOITHOS_TOP,
+  items:VOITHOS_ITEMS.map(it=>it.go?Object.assign({},it,{go:Object.assign({},it.go,{fn:()=>nav(it.go.r)})}):it)});if(q)h.search(q);return h;}
+$('#helpBtn').onclick=()=>openHelp();$('#helpBtn').title=$('#helpBtn').ariaLabel=EN?'Helper':'Βοηθός';
 /* is there a newer Mnimes on the official page? (one small file, at most once a day; nothing about you is sent) */
 async function checkUpdate(){try{const last=+localStorage.getItem('mnimes.updT')||0;let v=localStorage.getItem('mnimes.updV');
   if(Date.now()-last>864e5){const r=await fetch('https://ktsiminakis.github.io/mnimes/version.json',{cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'});
@@ -1710,6 +1898,7 @@ function viewHome(m){
     T('b-cal','calendar-days','#6366f1',(EN?'Calendar':'Ημερολόγιο'),(EN?'Day, month, year':'Μέρα, μήνας, χρονιά'),'cal'),
     T('b-map','map','#10b981',(EN?'Map':'Χάρτης'),I.places.size?fmtN(I.places.size)+(EN?' places':' μέρη'):(EN?'Where they were taken':'Πού τραβήχτηκαν'),'places'),
     T('b-more','layout-grid','#64748b',(EN?'Advanced':'Προχωρημένες'),(EN?'Trash, verification, report':'Κάδος, επαλήθευση, αναφορά'),'more')));
+  m.append(el('p',{style:'margin:10px 2px 0'},el('button',{class:'link',onclick:()=>openHelp()},EN?'🙋 Have a question? Ask the Helper':'🙋 Έχεις απορία; Ρώτα τον Βοηθό')));
   if(n){m.append(el('div',{class:'sech'},el('h3',{class:'sec'},(EN?'Recent':'Πρόσφατες')),el('button',{class:'link',onclick:()=>nav('photos')},(EN?'All →':'Όλες →'))));m.append(gallery(I.all.slice(-24).reverse()));}
   m.append(creditLine());}
 function viewMore(m){setTitle((EN?'Advanced':'Προχωρημένες'));
@@ -2083,7 +2272,7 @@ const TERMS=EN?[
  ['What it is','Mnimes for Life (Mnimes) is a free app that copies your photos and videos from the folders and drives you choose into one library folder, sorted by year, month and place, and shows them in a calendar and a map. It runs entirely in your browser, on your own computer.'],
  ['Your data stays with you','Your photos and videos never leave your computer and the creator never sees or collects them. The app’s index stays in this browser (IndexedDB) and in the «Μνήμες/_PhotoApp» folder of your library. There is no account, no ads and no tracking.'],
  ['What is sent over the internet','• Place names: only coordinates rounded to 2 decimals (about 1 km) go to BigDataCloud and, if needed, to OpenStreetMap Nominatim. You can turn this off in Settings.\n• Map: map pieces come from Esri’s servers, which see your IP address and the area you look at.\n• Font and libraries: the Inter font comes from Google Fonts and the exifr and Leaflet libraries from jsDelivr and cdnjs, which see your IP address.\n• «From the phone» (Wi-Fi): so that the phone can find the computer, two short connection notes pass through the meeting point mnimes-pair (Cloudflare), encrypted with a key that exists only inside the QR code; they are deleted after 15 minutes. A Cloudflare STUN server sees your IP address to open the connection. The photos go directly from the phone to the computer, encrypted (WebRTC), and do not pass through any server. Nothing is deleted on the phone.\n• New version: the downloaded app asks, at most once a day, for one small file (version.json) from the Mnimes page on GitHub, to tell you if a new version is out. GitHub sees your IP address.\nNo photo, file name or folder name is ever sent to a server.'],
- ['New in 3.0 — what they do',"• «Drop it all here» (the folder «Ρίξ' τα όλα εδώ» inside your library): whatever you put in it is MOVED into Year/Month/Place on the same drive (not copied: the bytes stay the same and no extra space is used). After that the files are no longer in that folder, and if you moved them there from the same drive, the library is their ONLY copy — keep a 2nd copy on another drive. Files that are not photos/videos, or cannot be read, stay where they are. A copy made with File Explorer is not checked against its original; for old or suspicious drives use «Take & sort» (Advanced).\n• «Find duplicates»: only files identical byte for byte; one always stays; the others are moved into a «Κάδος διπλοτύπων» folder on the same drive and are deleted for good only when you press «Empty».\n• «Look at the library again»: only reads the drive and corrects the list; it changes nothing on the drive.\n• «Only check» / «Are they all on the computer?»: the phone sends to the computer ONLY the SHA-256 fingerprints of its photos (directly, encrypted, like the photos), not the photos. Before deleting from a phone that backs up to Google Photos or another cloud: deleting on the phone may delete them from that cloud too.\n• If the phone changes Wi-Fi, the connection is opened again by itself with new sealed notes through the same meeting point (mnimes-pair).\n• «Put Mnimes on the drive» / «Update»: the official file is downloaded from ktsiminakis.github.io (GitHub, which sees your IP address), checked, and written into your «Μνήμες» folder. Each copy of the app keeps its own memory in the browser."],
+ ['New in 3.0 — what they do',"• «Drop it all here» (the folder «Ρίξ' τα όλα εδώ» inside your library): whatever you put in it is MOVED into Year/Month/Place on the same drive (not copied: the bytes stay the same and no extra space is used). After that the files are no longer in that folder, and if you moved them there from the same drive, the library is their ONLY copy — keep a 2nd copy on another drive. Files that are not photos/videos, or cannot be read, stay where they are. A copy made with File Explorer is not checked against its original; for old or suspicious drives use «Take & sort» (Advanced).\n• «Find duplicates»: only files identical byte for byte; one always stays; the others are moved into a «Κάδος διπλοτύπων» folder on the same drive and are deleted for good only when you press «Empty».\n• «Look at the library again»: only reads the drive and corrects the list; it changes nothing on the drive.\n• «Only check» / «Are they all on the computer?»: the phone sends to the computer ONLY the SHA-256 fingerprints of its photos (directly, encrypted, like the photos), not the photos. Before deleting from a phone that backs up to Google Photos or another cloud: deleting on the phone may delete them from that cloud too.\n• If the phone changes Wi-Fi, the connection is opened again by itself with new sealed notes through the same meeting point (mnimes-pair).\n• «Put Mnimes on the drive» / «Update»: the official file is downloaded from ktsiminakis.github.io (GitHub, which sees your IP address), checked, and written into your «Μνήμες» folder. Each copy of the app keeps its own memory in the browser.\n• «🙋 Helper»: questions and answers written by the creator, inside the app; it uses no AI and no internet, and sends nothing."],
  ['Your rights (GDPR)','The creator holds no personal data of yours. You can delete the app’s memory at any time from Settings → «Start over» (your photos are not touched). Questions: ktsiminakis@gmail.com. You may complain to the Hellenic Data Protection Authority (www.dpa.gr).'],
  ['Liability','The app is provided «as is», free of charge, without any warranty. The SHA-256 checks greatly reduce the risk but cannot remove it: drives fail, cables come loose, cloud folders sync. Before deleting originals, always keep a second copy on another drive. Deleting originals happens only after the double check and after the user types the word DELETE; it cannot be undone. Deleting from a cloud folder (OneDrive, Google Drive, iCloud, Dropbox) also deletes from your other devices. The creator is not liable for any loss or damage from its use. Dates, places and duplicates are detected automatically and may be wrong.'],
  ['Drives with errors','If a drive gives read errors, the app LOCKS it: its files can be copied (to rescue them) but nothing is deleted from it. Files that cannot be read are not copied, and a failing drive may give damaged data even without an error. Only the user can unlock a drive, after the copy, by ticking «I understand» and typing UNLOCK; from then on, deleting its originals (always only after the double check) is the user’s own responsibility. For precious photos on a failing drive, the app advises a data-recovery lab.'],
@@ -2095,7 +2284,7 @@ const TERMS=EN?[
  ['Τι είναι','Οι Μνήμες για Πάντα (Μνήμες) είναι δωρεάν εφαρμογή που αντιγράφει τις φωτογραφίες και τα βίντεό σου από τους φακέλους και τους δίσκους που διαλέγεις σε έναν φάκελο-βιβλιοθήκη, τακτοποιημένα ανά χρονιά, μήνα και μέρος, και τα δείχνει σε ημερολόγιο και χάρτη. Τρέχει ολόκληρη μέσα στον browser, στον δικό σου υπολογιστή.'],
  ['Τα δεδομένα σου μένουν σε σένα','Οι φωτογραφίες και τα βίντεό σου δεν φεύγουν ποτέ από τον υπολογιστή σου και ο δημιουργός δεν τα βλέπει ούτε τα συλλέγει. Το ευρετήριο της εφαρμογής μένει σε αυτόν τον browser (IndexedDB) και στον φάκελο «Μνήμες/_PhotoApp» της βιβλιοθήκης σου. Δεν υπάρχει λογαριασμός, διαφημίσεις ή παρακολούθηση.'],
  ['Τι στέλνεται στο ίντερνετ','• Ονόματα μερών: μόνο συντεταγμένες στρογγυλεμένες σε 2 δεκαδικά (περίπου 1 χλμ.) πάνε στο BigDataCloud και, αν χρειαστεί, στο OpenStreetMap Nominatim. Το κλείνεις από τις Ρυθμίσεις.\n• Χάρτης: τα κομμάτια του χάρτη έρχονται από τους servers της Esri, που βλέπουν τη διεύθυνση IP και την περιοχή που κοιτάς.\n• Γραμματοσειρά και βιβλιοθήκες: η γραμματοσειρά Inter έρχεται από το Google Fonts και οι βιβλιοθήκες exifr και Leaflet από τα jsDelivr και cdnjs, που βλέπουν τη διεύθυνση IP.\n• «Από κινητό» (Wi-Fi): για να βρει το κινητό τον υπολογιστή, περνούν από το σημείο συνάντησης mnimes-pair (Cloudflare) δύο μικρά σημειώματα σύνδεσης, κρυπτογραφημένα με κλειδί που υπάρχει μόνο μέσα στο QR· σβήνονται σε 15 λεπτά. Ένας server STUN της Cloudflare βλέπει τη διεύθυνση IP για να ανοίξει η σύνδεση. Οι φωτογραφίες πάνε απευθείας από το κινητό στον υπολογιστή, κρυπτογραφημένες (WebRTC), και δεν περνούν από κανέναν server. Στο κινητό δεν σβήνεται τίποτα.\n• Νέα έκδοση: η κατεβασμένη εφαρμογή ζητά το πολύ μία φορά τη μέρα ένα μικρό αρχείο (version.json) από τη σελίδα των Μνημών στο GitHub, για να σου πει αν βγήκε νέα έκδοση. Το GitHub βλέπει τη διεύθυνση IP.\nΚαμία φωτογραφία, όνομα αρχείου ή φακέλου δεν στέλνεται ποτέ σε server.'],
- ['Νέα στην 3.0 — τι κάνουν',"• «Ρίξ' τα όλα εδώ» (ο φάκελος μέσα στη βιβλιοθήκη σου): ό,τι βάζεις εκεί ΜΕΤΑΚΙΝΕΙΤΑΙ σε Χρονιά/Μήνα/Μέρος στον ίδιο δίσκο (δεν αντιγράφεται: τα bytes μένουν ίδια και δεν πιάνεται επιπλέον χώρος). Μετά τα αρχεία δεν είναι πια σε εκείνον τον φάκελο, και αν τα μετακίνησες εκεί από τον ίδιο δίσκο, η βιβλιοθήκη είναι το ΜΟΝΑΔΙΚΟ αντίγραφό τους — κράτα 2ο αντίγραφο σε άλλον δίσκο. Όσα δεν είναι φωτογραφίες/βίντεο ή δεν διαβάζονται μένουν εκεί που είναι. Η αντιγραφή με την Εξερεύνηση αρχείων δεν ελέγχεται με το αρχικό· για παλιούς ή ύποπτους δίσκους χρησιμοποίησε το «Πάρε & μοίρασε» (Προχωρημένες).\n• «Βρες διπλότυπα»: μόνο αρχεία ίδια byte-προς-byte· ένα μένει πάντα· τα άλλα μετακινούνται σε φάκελο «Κάδος διπλοτύπων» στον ίδιο δίσκο και σβήνονται οριστικά μόνο όταν πατήσεις «Άδειασμα».\n• «Ξανακοίτα τη βιβλιοθήκη»: μόνο διαβάζει τον δίσκο και διορθώνει τη λίστα· στον δίσκο δεν αλλάζει τίποτα.\n• «Μόνο έλεγχος» / «Είναι όλες στον υπολογιστή;»: το κινητό στέλνει στον υπολογιστή ΜΟΝΟ τα αποτυπώματα SHA-256 των φωτογραφιών του (απευθείας, κρυπτογραφημένα, όπως και τις φωτογραφίες), όχι τις φωτογραφίες. Πριν σβήσεις από κινητό που κάνει αντίγραφο στο Google Photos ή σε άλλο cloud: το σβήσιμο στο κινητό μπορεί να τις σβήσει και από εκεί.\n• Αν το κινητό αλλάξει Wi-Fi, η σύνδεση ξανανοίγει μόνη της με νέα σφραγισμένα σημειώματα μέσω του ίδιου σημείου συνάντησης (mnimes-pair).\n• «Βάλε τις Μνήμες στον δίσκο» / «Ενημέρωση»: το επίσημο αρχείο κατεβαίνει από το ktsiminakis.github.io (GitHub, που βλέπει τη διεύθυνση IP), ελέγχεται και γράφεται στον φάκελο «Μνήμες» σου. Κάθε αντίγραφο της εφαρμογής κρατά δική του μνήμη στον browser."],
+ ['Νέα στην 3.0 — τι κάνουν',"• «Ρίξ' τα όλα εδώ» (ο φάκελος μέσα στη βιβλιοθήκη σου): ό,τι βάζεις εκεί ΜΕΤΑΚΙΝΕΙΤΑΙ σε Χρονιά/Μήνα/Μέρος στον ίδιο δίσκο (δεν αντιγράφεται: τα bytes μένουν ίδια και δεν πιάνεται επιπλέον χώρος). Μετά τα αρχεία δεν είναι πια σε εκείνον τον φάκελο, και αν τα μετακίνησες εκεί από τον ίδιο δίσκο, η βιβλιοθήκη είναι το ΜΟΝΑΔΙΚΟ αντίγραφό τους — κράτα 2ο αντίγραφο σε άλλον δίσκο. Όσα δεν είναι φωτογραφίες/βίντεο ή δεν διαβάζονται μένουν εκεί που είναι. Η αντιγραφή με την Εξερεύνηση αρχείων δεν ελέγχεται με το αρχικό· για παλιούς ή ύποπτους δίσκους χρησιμοποίησε το «Πάρε & μοίρασε» (Προχωρημένες).\n• «Βρες διπλότυπα»: μόνο αρχεία ίδια byte-προς-byte· ένα μένει πάντα· τα άλλα μετακινούνται σε φάκελο «Κάδος διπλοτύπων» στον ίδιο δίσκο και σβήνονται οριστικά μόνο όταν πατήσεις «Άδειασμα».\n• «Ξανακοίτα τη βιβλιοθήκη»: μόνο διαβάζει τον δίσκο και διορθώνει τη λίστα· στον δίσκο δεν αλλάζει τίποτα.\n• «Μόνο έλεγχος» / «Είναι όλες στον υπολογιστή;»: το κινητό στέλνει στον υπολογιστή ΜΟΝΟ τα αποτυπώματα SHA-256 των φωτογραφιών του (απευθείας, κρυπτογραφημένα, όπως και τις φωτογραφίες), όχι τις φωτογραφίες. Πριν σβήσεις από κινητό που κάνει αντίγραφο στο Google Photos ή σε άλλο cloud: το σβήσιμο στο κινητό μπορεί να τις σβήσει και από εκεί.\n• Αν το κινητό αλλάξει Wi-Fi, η σύνδεση ξανανοίγει μόνη της με νέα σφραγισμένα σημειώματα μέσω του ίδιου σημείου συνάντησης (mnimes-pair).\n• «Βάλε τις Μνήμες στον δίσκο» / «Ενημέρωση»: το επίσημο αρχείο κατεβαίνει από το ktsiminakis.github.io (GitHub, που βλέπει τη διεύθυνση IP), ελέγχεται και γράφεται στον φάκελο «Μνήμες» σου. Κάθε αντίγραφο της εφαρμογής κρατά δική του μνήμη στον browser.\n• «🙋 Βοηθός»: ερωτήσεις και απαντήσεις γραμμένες από τον δημιουργό, μέσα στην εφαρμογή· δεν χρησιμοποιεί AI ούτε ίντερνετ και δεν στέλνει τίποτα."],
  ['Τα δικαιώματά σου (GDPR)','Ο δημιουργός δεν κρατά κανένα προσωπικό σου δεδομένο. Σβήνεις τη μνήμη της εφαρμογής όποτε θέλεις από Ρυθμίσεις → «Ξεκίνα από την αρχή» (οι φωτογραφίες σου δεν αγγίζονται). Για ερωτήσεις: ktsiminakis@gmail.com. Έχεις δικαίωμα καταγγελίας στην Αρχή Προστασίας Δεδομένων Προσωπικού Χαρακτήρα (www.dpa.gr).'],
  ['Ευθύνη','Η εφαρμογή δίνεται «ως έχει», δωρεάν, χωρίς καμία εγγύηση. Οι έλεγχοι SHA-256 μειώνουν πολύ τον κίνδυνο αλλά δεν τον μηδενίζουν: δίσκοι χαλάνε, καλώδια βγαίνουν, φάκελοι cloud συγχρονίζονται. Πριν σβήσεις αρχικά, κράτα πάντα δεύτερο αντίγραφο σε άλλον δίσκο. Το σβήσιμο των αρχικών γίνεται μόνο μετά τον διπλό έλεγχο και αφού ο χρήστης γράψει τη λέξη ΔΙΑΓΡΑΦΗ· δεν αναιρείται. Το σβήσιμο από φάκελο cloud (OneDrive, Google Drive, iCloud, Dropbox) σβήνει και από τις άλλες συσκευές σου. Ο δημιουργός δεν ευθύνεται για απώλεια ή ζημιά από τη χρήση της. Ημερομηνίες, μέρη και διπλότυπα βρίσκονται αυτόματα και μπορεί να είναι λάθος.'],
  ['Δίσκοι με σφάλματα','Αν ένας δίσκος βγάζει σφάλματα ανάγνωσης, η εφαρμογή τον ΚΛΕΙΔΩΝΕΙ: τα αρχεία του μπορούν να αντιγραφούν (για να σωθούν), αλλά δεν σβήνεται τίποτα από αυτόν. Όσα αρχεία δεν διαβάζονται δεν αντιγράφονται, και ένας δίσκος που χαλάει μπορεί να δώσει χαλασμένα δεδομένα ακόμα και χωρίς σφάλμα. Μόνο ο χρήστης μπορεί να ξεκλειδώσει έναν δίσκο, μετά την αντιγραφή, τσεκάροντας «Κατάλαβα» και γράφοντας ΞΕΚΛΕΙΔΩΜΑ· από εκεί και πέρα το σβήσιμο των αρχικών του (πάντα μόνο μετά τον διπλό έλεγχο) γίνεται με δική του ευθύνη. Για πολύτιμες φωτογραφίες σε δίσκο που χαλάει, η εφαρμογή συνιστά εργαστήριο ανάκτησης δεδομένων. Ο χρήστης μπορεί επίσης να σβήσει τα αρχικά μόνος του, με το χέρι, έξω από την εφαρμογή· αυτό γίνεται εξ ολοκλήρου με δική του ευθύνη.'],
