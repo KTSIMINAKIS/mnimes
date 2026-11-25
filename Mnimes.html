@@ -5,7 +5,7 @@
 <meta name="color-scheme" content="light dark">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <!-- Ασφάλεια: η σελίδα επιτρέπεται να μιλήσει ΜΟΝΟ με αυτές τις διευθύνσεις (τίποτα άλλο δεν μπορεί να φορτωθεί ή να σταλεί αλλού) -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://server.arcgisonline.com https://cdnjs.cloudflare.com; media-src 'self' blob:; connect-src 'self' blob: data: https://api.bigdatacloud.net https://nominatim.openstreetmap.org https://mnimes-pair.ktsiminakis.workers.dev https://ktsiminakis.github.io; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-0Ha2uiKa0CjgE8k8EKtsR8Bk7AYu+xCl/dKq5nn5IBk=' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://server.arcgisonline.com https://cdnjs.cloudflare.com; media-src 'self' blob:; connect-src 'self' blob: data: https://api.bigdatacloud.net https://nominatim.openstreetmap.org https://mnimes-pair.ktsiminakis.workers.dev https://ktsiminakis.github.io; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Μνήμες για Πάντα</title>
 <!-- Μνήμες · © 2026 Κωνσταντίνος Τσιμινάκης (Konstantinos Tsiminakis). Με επιφύλαξη παντός δικαιώματος / All rights reserved.
@@ -302,6 +302,10 @@ th{color:var(--muted);font-weight:600;font-size:13px}
 @media (max-width:520px){.simrow{grid-template-columns:repeat(2,1fr);gap:10px}}
 .simh{margin:0 0 12px;font-size:1rem}.simbar{position:sticky;top:8px;z-index:5}.simg .link{margin-top:12px}
 @media (prefers-reduced-motion:reduce){.simf .thumb{transition:none}}
+/* 3.2: στην οθόνη αφής κάθε κουμπί τουλάχιστον 44×44 (οδηγίες προσβασιμότητας) */
+@media (pointer:coarse){.btn,.tile,.btile,.link,#lb button,.sdots button{min-block-size:44px}.btn.ghost,.link{min-inline-size:44px}}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.28s}
+@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}
 .path{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:12.5px;word-break:break-all;color:var(--muted)}
 details summary{cursor:pointer;font-weight:600;padding:6px 0}
 
@@ -420,7 +424,7 @@ const CLOUD_RE=/onedrive|google ?drive|icloud|dropbox|\bmega\b|pcloud|box ?sync|
 const FS_OK=typeof window.showDirectoryPicker==='function';
 /* owner 2026-11-21: downloading Mnimes again gives «Mnimes (1).html», «(2)»… — people must not end up running an old copy or
    making a second library. Every copy that opens is remembered (this browser only); an OLD copy may look but not copy/delete. */
-const MNIMES_VER='3.2';
+const MNIMES_VER='3.2.1';
 const verNum=v=>String(v||'0').split('.').map(Number).reduce((a,x,i)=>a+(x||0)/Math.pow(1000,i),0);
 const COPIES=(()=>{let m={};try{m=JSON.parse(localStorage.getItem('mnimes.files')||'{}')||{};}catch{}
   const here=location.href.split('#')[0].split('?')[0],now=Date.now();
@@ -1813,7 +1817,40 @@ let MAP=null;
 function closeMap(){if(MAP){MAP.remove();MAP=null;}}
 function nav(h){if(location.hash.slice(1)===h)render();else location.hash=h;}
 const navTo=(...parts)=>nav(parts.map(x=>encodeURIComponent(x)).join('/'));
-window.addEventListener('hashchange',()=>{closeLB(true);render();});
+/* 2026-11-25 (3.2): ΚΛΕΙΣΙΜΟ με «Πίσω» (κινητό) και Esc. Κάθε παράθυρο κλείνει πατώντας το δικό του «Άκυρο/Κλείσιμο»,
+   ώστε να γίνεται και ο σωστός καθαρισμός. ΟΧΙ στο diskAlarm: εκεί η απόφαση πρέπει να είναι συνειδητή. */
+const CLOSABLE=new Set(['askModal','phoneModal','cableGuide','phoneChooser','phoneCheck']);
+function closeBtnOf(box){const bs=[...box.querySelectorAll('button')].filter(b=>/^(✕\s*)?(Άκυρο|Κλείσιμο|Κλείσε|Cancel|Close|Πίσω|Back)(?!\p{L})/iu.test(b.textContent.trim()));return bs[bs.length-1]||null;}
+function onCloseRequest(box,fn){let w=null;
+  if('CloseWatcher' in window){try{w=new CloseWatcher();w.onclose=()=>{if(box.isConnected)fn();};}catch{w=null;}}
+  const esc=e=>{if(e.key==='Escape'&&box.isConnected&&!w){e.preventDefault();fn();}};if(!w)document.addEventListener('keydown',esc);
+  const mo=new MutationObserver(()=>{if(!box.isConnected){mo.disconnect();if(w)w.destroy();document.removeEventListener('keydown',esc);}});mo.observe(document.body,{childList:true});}
+new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes){if(n.nodeType!==1||!CLOSABLE.has(n.id))continue;
+  n.setAttribute('role','dialog');n.setAttribute('aria-modal','true');const h=n.querySelector('h2');if(h){h.id=h.id||n.id+'T';n.setAttribute('aria-labelledby',h.id);}
+  onCloseRequest(n,()=>{const b=closeBtnOf(n);if(b)b.click();else n.remove();});
+  // το πίσω μέρος «παγώνει» (inert) όσο είναι ανοιχτό, και μετά η επιλογή γυρίζει στο κουμπί που το άνοιξε
+  const opener=document.activeElement,frozen=[...document.body.children].filter(c=>c!==n&&c.id!=='toast'&&!c.inert&&c.tagName!=='SCRIPT');frozen.forEach(c=>c.inert=true);
+  const back=new MutationObserver(()=>{if(n.isConnected)return;back.disconnect();frozen.forEach(c=>c.inert=false);if(opener&&opener.isConnected&&opener.focus)opener.focus({preventScroll:true});});
+  back.observe(document.body,{childList:true});
+  requestAnimationFrame(()=>{const f=n.querySelector('input,button:not([disabled])');if(f&&!n.contains(document.activeElement))f.focus({preventScroll:true});});}})
+  .observe(document.body,{childList:true});
+// Η μεγάλη προβολή φωτογραφίας κλείνει κι αυτή με «Πίσω» (στο Esc υπάρχει ήδη δικός της χειρισμός)
+{const lb=$('#lb');let w=null;new MutationObserver(()=>{if(!lb.hidden&&!w&&'CloseWatcher' in window){try{w=new CloseWatcher();w.onclose=()=>{w=null;closeLB();};}catch{}}
+  else if(lb.hidden&&w){const x=w;w=null;x.destroy();}}).observe(lb,{attributes:true,attributeFilter:['hidden']});}
+/* Ομαλή κίνηση ανάμεσα στα βήματα του «Πώς ξεκινάω» (View Transitions) — μόνο αν ο χρήστης δεν ζήτησε λιγότερη κίνηση */
+let lastHash=location.hash;
+const smoothRender=()=>{const from=lastHash,to=location.hash;lastHash=to;
+  if(document.startViewTransition&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&from.startsWith('#inbox')&&to.startsWith('#inbox')&&from!==to){
+    try{document.startViewTransition(()=>render());return;}catch{}}
+  render();};
+/* Εγκατάσταση σαν εφαρμογή (μόνο από τη σελίδα στο ίντερνετ· το αρχείο στον υπολογιστή δεν χρειάζεται) */
+let INSTALL=null;
+if(location.protocol==='https:'&&location.hostname==='ktsiminakis.github.io'){
+  document.head.append(el('link',{rel:'manifest',href:'manifest.webmanifest'}));
+  addEventListener('beforeinstallprompt',e=>{e.preventDefault();INSTALL=e;if(location.hash.startsWith('#more'))render();});
+  addEventListener('appinstalled',()=>{INSTALL=null;toast(EN?'✅ Installed: you will find «Mnimes for Life» with your apps.':'✅ Εγκαταστάθηκε: θα βρεις τις «Μνήμες για Πάντα» στις εφαρμογές σου.');});}
+async function doInstall(){if(!INSTALL)return;const e=INSTALL;INSTALL=null;try{await e.prompt();}catch{}render();}
+window.addEventListener('hashchange',()=>{closeLB(true);smoothRender();});
 /* εικονίδια στα σταθερά κουμπιά */
 document.querySelectorAll('[data-ic]').forEach(b=>b.append(icon(b.dataset.ic)));
 if(EN){const at=(s,k,v)=>{const e=$(s);if(e)e.setAttribute(k,v);};
@@ -2275,6 +2312,8 @@ function viewMore(m){setTitle((EN?'Settings & more':'Ρυθμίσεις & άλλ
     ['images',(EN?'Similar photos':'Παρόμοιες φωτογραφίες'),(EN?'Same photo in another size, bursts — you choose':'Ίδια σε άλλο μέγεθος, ριπές — εσύ διαλέγεις'),'similar','#8b5cf6'],
     ['settings',(EN?'Settings':'Ρυθμίσεις'),(EN?'Language, 2nd copy, videos':'Γλώσσα, 2ο αντίγραφο, βίντεο'),'settings','#64748b'],
     ['file-chart-column',EN?'Terms & licences':'Όροι & άδειες',EN?'Copyright, privacy, licences':'Πνευματικά δικαιώματα, απόρρητο, άδειες','terms','#475569']]));
+  if(INSTALL)m.append(card(el('b',{},EN?'📲 Put it with your apps':'📲 Βάλ\' το στις εφαρμογές σου'),el('p',{class:'small muted',style:'margin:4px 0 10px'},EN?'It opens in its own window, like a normal program, with its own icon. Your photos stay exactly where they are.':'Ανοίγει στο δικό του παράθυρο, σαν κανονικό πρόγραμμα, με δικό του εικονίδιο. Οι φωτογραφίες σου μένουν ακριβώς εκεί που είναι.'),
+    el('button',{class:'btn primary',onclick:doInstall},EN?'Install':'Εγκατάσταση')));
   m.append(el('p',{style:'margin:14px 2px'},el('button',{class:'link',onclick:()=>openHelp()},EN?'🙋 Have a question? Ask the Helper':'🙋 Έχεις απορία; Ρώτα τον Βοηθό')));
   // everything that now happens by itself, or is needed only in special cases
   const ex=el('details',{class:'card'},el('summary',{},EN?'🔧 For experts (you normally never need these)':'🔧 Για ειδικούς (κανονικά δεν τα χρειάζεσαι ποτέ)'),

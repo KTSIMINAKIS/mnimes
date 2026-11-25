@@ -39,7 +39,7 @@ const EN={
  b6h:'On the drive itself', b6:'Mnimes lives on the drive: plug it into any computer and it is always the right library.',
  b7h:'Always in agreement', b7:'Two computers with the same drive never spoil each other. Whatever you change by hand is fixed with one button.',
  sph:'Fast, even on an old computer', sps:'The work is done by a helper in the background, so the page never freezes, even with videos of many GB.',
- sec:'sec', dk:'stays', db:'to the bin',
+ sec:'sec', inst:'Install as an app', dk:'stays', db:'to the bin',
  sp1:'the longest page freeze with huge videos (it was 4.7 sec)', sp2:'to notice by itself the new files you dropped in (it was 25 sec)', sp3:'to find the similar ones again among 841 photos (5.5 sec the first time)',
  spn:'Measured with real photos on a 2012 laptop with an old hard disk.',
  safes:'Every photo goes through these steps. If something differs by even one byte, it stops and deletes nothing.',
@@ -64,7 +64,7 @@ const EN={
  g9h:'Something is not right', g9:'<li><span><b>Not sorting?</b> If the top says «🔓 … asks for permission again», press the button and choose «Allow on every visit».</span></li><li><span><b>Black squares or missing photos?</b> «Settings & more» → «For experts» → «Look at the library again».</span></li><li><span><b>«Already open in another tab»?</b> Close the second tab. Mnimes works in one at a time.</span></li><li><span><b>The drive shows errors?</b> Press «⛔ Stop». For precious photos, take the drive to a data recovery lab.</span></li><li><span><b>Wrong date?</b> It comes from inside the photo or from its name. If the camera had the wrong time, it goes in with that.</span></li>',
  ch:'Found it useful?', cp:'Mnimes is free and will stay free. If you like, buy me a coffee.', cb:'Buy me a coffee',
  dh:'Thank you! ☕', dp:'Open your bank app → <b>IRIS</b> → send to mobile number, and enter:', cpy:'Copy', copied:'Copied ✓', dq:'Or scan the QR with your camera to get the number. (IRIS works with Greek banks.)', dc:'Close',
- foot:'Mnimes for Life 3.2 · The photos in the pictures are examples.', copy:'© 2026 Konstantinos Tsiminakis · All rights reserved', credit:'Created by Konstantinos Tsiminakis, son of Alexandros', terms:'Terms of use and licences',
+ foot:'Mnimes for Life 3.2.1 · The photos in the pictures are examples.', copy:'© 2026 Konstantinos Tsiminakis · All rights reserved', credit:'Created by Konstantinos Tsiminakis, son of Alexandros', terms:'Terms of use and licences',
  shot:'The Mnimes home screen with tiles for Photos, Videos, Calendar and Map'
 };
 const EL={};document.querySelectorAll('[data-t]').forEach(e=>EL[e.dataset.t]=e.innerHTML);
@@ -105,3 +105,9 @@ dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close();});
 document.getElementById('copyBtn').addEventListener('click',async e=>{const b=e.currentTarget,en=document.documentElement.lang==='en';
   try{await navigator.clipboard.writeText('6936324466');b.textContent=en?EN.copied:'Αντιγράφηκε ✓';}
   catch(x){const r=document.createRange();r.selectNodeContents(document.getElementById('phoneNum'));const s=getSelection();s.removeAllRanges();s.addRange(r);}});
+
+/* Εγκατάσταση σαν εφαρμογή: το κουμπί φαίνεται ΜΟΝΟ όταν ο browser το επιτρέπει (Chrome/Edge) */
+let instEv=null;const ib=document.getElementById('installBtn');
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEv=e;ib.hidden=false;});
+addEventListener('appinstalled',()=>{ib.hidden=true;instEv=null;});
+ib.addEventListener('click',async()=>{if(!instEv)return;const e=instEv;instEv=null;ib.hidden=true;try{await e.prompt();}catch(x){}});
