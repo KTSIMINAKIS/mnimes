@@ -8,7 +8,18 @@
 <title>Μνήμες για Πάντα · όλες οι φωτογραφίες σου, σε σειρά</title>
 <meta name="author" content="Κωνσταντίνος Τσιμινάκης">
 <meta name="copyright" content="© 2026 Κωνσταντίνος Τσιμινάκης">
-<meta name="description" content="Δωρεάν εφαρμογή που μαζεύει και τακτοποιεί φωτογραφίες και βίντεο ανά χρονιά, μήνα και μέρος. Τίποτα δεν ανεβαίνει στο ίντερνετ.">
+<meta name="description" content="Δωρεάν εφαρμογή που μαζεύει και τακτοποιεί φωτογραφίες και βίντεο ανά χρονιά, μήνα και μέρος, βρίσκει διπλότυπα και παρόμοιες φωτογραφίες, με τριπλό έλεγχο. Τίποτα δεν ανεβαίνει στο ίντερνετ.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x2=%271%27 y2=%271%27%3E%3Cstop stop-color=%27%236366f1%27/%3E%3Cstop offset=%27.5%27 stop-color=%27%238b5cf6%27/%3E%3Cstop offset=%271%27 stop-color=%27%23ec4899%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%279%27 fill=%27url(%23g)%27/%3E%3Crect x=%2710%27 y=%276%27 width=%2715%27 height=%2715%27 rx=%273%27 fill=%27none%27 stroke=%27white%27 stroke-width=%272%27/%3E%3Cpath d=%27M7 11v13a2 2 0 0 0 2 2h13%27 fill=%27none%27 stroke=%27white%27 stroke-width=%272%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
+<meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0b0f" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://ktsiminakis.github.io/mnimes/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Μνήμες για Πάντα · όλες οι φωτογραφίες σου, σε σειρά">
+<meta property="og:description" content="Δωρεάν. Χωρίς λογαριασμό. Τίποτα δεν ανεβαίνει στο ίντερνετ.">
+<meta property="og:image" content="https://ktsiminakis.github.io/mnimes/othoni.png">
+<meta property="og:url" content="https://ktsiminakis.github.io/mnimes/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Μνήμες για Πάντα","alternateName":"Mnimes for Life","applicationCategory":"MultimediaApplication","operatingSystem":"Windows, macOS, Linux, Android","softwareVersion":"3.2","inLanguage":["el","en"],"isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"author":{"@type":"Person","name":"Κωνσταντίνος Τσιμινάκης"},"url":"https://ktsiminakis.github.io/mnimes/","image":"https://ktsiminakis.github.io/mnimes/othoni.png","description":"Μαζεύει και τακτοποιεί φωτογραφίες και βίντεο ανά χρονιά, μήνα και μέρος, με τριπλό έλεγχο. Τίποτα δεν ανεβαίνει στο ίντερνετ."}</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
 html,body{margin:0}
@@ -101,6 +112,85 @@ dialog .close{border:1px solid var(--line);background:var(--soft);color:var(--in
 .sdots{display:flex;align-items:center;gap:8px}
 .sdots button{width:9px;height:9px;padding:0;border:0;border-radius:999px;background:var(--line);cursor:pointer;transition:width .3s,background .3s}
 .sdots button.on{width:26px;background:var(--ink)}
+
+/* ---------- 3.2 (2026-11-25): bento, ταχύτητα, ασφάλεια σε βήματα, αναλυτικός οδηγός ---------- */
+:root{--g1:#6366f1;--g2:#8b5cf6;--g3:#ec4899}
+.hero{position:relative;isolation:isolate}
+.hero::before{content:"";position:absolute;z-index:-1;inset:-80px 0 auto 35%;block-size:520px;border-radius:50%;
+  background:radial-gradient(closest-side,color-mix(in oklab,var(--g2) 30%,transparent),transparent);filter:blur(20px);pointer-events:none}
+h1 .gr{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.trust{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0;padding:0;list-style:none}
+.trust li{display:inline-flex;align-items:center;gap:7px;font:600 13.5px var(--font);padding:7px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+.trust svg{width:16px;height:16px;color:var(--ok)}
+.kick{display:inline-block;font:700 12.5px var(--font);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.sub{color:var(--muted);margin:-8px 0 22px;max-width:62ch}
+/* bento */
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+.bx{position:relative;background:var(--card);border:1px solid var(--line);border-radius:26px;corner-shape:squircle;padding:24px;box-shadow:var(--shadow);overflow:hidden;min-width:0;grid-column:span 2}
+.bx.w3{grid-column:span 3}.bx.w4{grid-column:span 4}
+.bx h3{margin:14px 0 6px;font-size:19px;letter-spacing:-.02em;line-height:1.25}
+.bx p{margin:0;color:var(--muted);font-size:15px}
+.ic{inline-size:46px;block-size:46px;border-radius:14px;corner-shape:squircle;display:grid;place-items:center;color:#fff;background:var(--c,var(--grad))}
+.ic svg{width:23px;height:23px}
+.new{position:absolute;inset:18px 18px auto auto;font:800 11.5px var(--font);letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--grad);padding:5px 10px;border-radius:999px}
+.path{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:16px;font:600 13px var(--font)}
+.path span{padding:6px 10px;border-radius:10px;background:var(--soft)}
+.path i{font-style:normal;color:var(--muted)}
+.path span.drop{background:var(--grad);color:#fff}
+/* «φωτογραφίες» ζωγραφισμένες με CSS (καμία πραγματική φωτογραφία ανθρώπου στη σελίδα) */
+.pics{display:flex;margin-top:18px;block-size:96px}
+.pic{inline-size:96px;block-size:96px;border-radius:16px;border:4px solid var(--card);box-shadow:0 8px 20px rgba(16,18,24,.18);flex:none;
+  background:radial-gradient(circle at 72% 30%,#fde68a 0 11%,transparent 12%),linear-gradient(transparent 55%,#3f7d4e 55%),linear-gradient(#7cc4f5,#cfe8fb);position:relative}
+.pic::after{content:"";position:absolute;inset:auto 0 0;block-size:58%;background:#2f6b3f;clip-path:polygon(0 100%,0 55%,28% 20%,52% 60%,74% 30%,100% 70%,100% 100%)}
+.pic:nth-child(2){margin-inline-start:-34px;rotate:4deg;filter:saturate(.8) brightness(.97)}
+.pic:nth-child(3){margin-inline-start:-34px;rotate:9deg;filter:saturate(.6) brightness(.94)}
+.dups{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:6px;font-size:13.5px}
+.dups li{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border-radius:12px;background:var(--soft);min-width:0}
+.dups b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dups span{color:var(--muted);flex:none}.dups li:not(.keep){opacity:.7;text-decoration:line-through;text-decoration-color:color-mix(in oklab,var(--ink) 40%,transparent)}
+.dups li.keep span{color:var(--ok);font-weight:700}
+.pic.star{outline:3px solid #f5b041;outline-offset:-3px}
+/* ταχύτητα */
+.speed{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.num{background:var(--card);border:1px solid var(--line);border-radius:26px;corner-shape:squircle;padding:24px;box-shadow:var(--shadow)}
+.num b{display:block;font-size:clamp(34px,4.4vw,48px);line-height:1;letter-spacing:-.04em;font-weight:800;font-variant-numeric:tabular-nums;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:10px}
+.num span{color:var(--muted);font-size:15px}
+.num small{font-size:.38em;letter-spacing:0;margin-inline-start:6px;font-weight:700}
+.note{font-size:13.5px;color:var(--muted);margin-top:12px}
+/* ασφάλεια σε βήματα */
+.vault{background:#0d0e14;color:#eef0f5;border-radius:30px;corner-shape:squircle;padding:clamp(24px,4vw,44px);position:relative;overflow:hidden;isolation:isolate}
+.vault::before{content:"";position:absolute;z-index:-1;inset:-30% -10% auto auto;inline-size:520px;block-size:520px;border-radius:50%;background:radial-gradient(closest-side,rgba(139,92,246,.35),transparent)}
+.vault h2{color:#fff}.vault .sub{color:#a7adbb}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;list-style:none;padding:0;margin:8px 0 26px;counter-reset:f}
+.flow li{position:relative;padding:18px 16px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09)}
+.flow li::before{counter-increment:f;content:counter(f);display:grid;place-items:center;inline-size:30px;block-size:30px;border-radius:50%;background:var(--grad);font-weight:800;font-size:14px;margin-bottom:10px;color:#fff}
+.flow b{display:block;font-size:15.5px;margin-bottom:4px;color:#fff}
+.flow span{font-size:13.5px;color:#a7adbb;line-height:1.5;display:block}
+.vault .safe li{border-color:rgba(255,255,255,.09)}.vault .safe span{color:#a7adbb}.vault .safe b{color:#fff}.vault .safe svg{color:#4ade80}
+/* αναλυτικός οδηγός */
+.guide{display:grid;gap:10px}
+.guide details{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+.guide summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:14px;padding:16px 18px;font-weight:700;font-size:16.5px;letter-spacing:-.01em;min-block-size:44px}
+.guide summary::-webkit-details-marker{display:none}
+.guide summary .ic{inline-size:38px;block-size:38px;border-radius:12px;flex:none}.guide summary .ic svg{width:19px;height:19px}
+.guide summary::after{content:"";margin-inline-start:auto;inline-size:10px;block-size:10px;border:solid var(--muted);border-width:0 2px 2px 0;rotate:45deg;translate:0 -3px;transition:rotate .2s;flex:none}
+.guide details[open] summary::after{rotate:225deg;translate:0 3px}
+.guide summary:focus-visible{outline-offset:-3px}
+.guide ol{margin:0;padding:4px 22px 20px 22px;list-style:none;counter-reset:g;display:grid;gap:12px}
+.guide ol li{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;color:var(--muted);font-size:15.5px}
+.guide ol li::before{counter-increment:g;content:counter(g);display:grid;place-items:center;inline-size:28px;block-size:28px;border-radius:50%;background:var(--soft);color:var(--ink);font-weight:800;font-size:13.5px}
+.guide ol li b{color:var(--ink)}
+.guide .tip{margin:0 18px 18px;padding:12px 14px;border-radius:14px;background:color-mix(in oklab,var(--accent) 10%,var(--card));font-size:14.5px}
+.helpnote{margin-top:14px;color:var(--muted);font-size:15px}
+.kbd{display:inline-block;font:600 13px var(--font);padding:2px 8px;border-radius:8px;background:var(--soft);border:1px solid var(--line);color:var(--ink);white-space:nowrap}
+/* εμφάνιση με το scroll — μόνο CSS, και ΠΟΤΕ αν ο επισκέπτης ζήτησε λιγότερη κίνηση */
+@media (prefers-reduced-motion:no-preference){@supports (animation-timeline:view()){
+  .rv{animation:rv linear both;animation-timeline:view();animation-range:entry 0% entry 60%}
+  @keyframes rv{from{opacity:0;translate:0 28px}}
+  .guide summary::after{transition:rotate .2s}}}
+@media (max-width:900px){.bento{grid-template-columns:repeat(2,1fr)}.bx,.bx.w3,.bx.w4{grid-column:span 1}.bx.wide{grid-column:1/-1}.flow{grid-template-columns:1fr 1fr}.speed{grid-template-columns:1fr}}
+@media (max-width:560px){.bento{grid-template-columns:1fr}.bx.wide{grid-column:auto}.flow{grid-template-columns:1fr}}
 @media (max-width:820px){.hero{grid-template-columns:1fr;gap:30px}.steps{grid-template-columns:1fr}.safe{grid-template-columns:1fr}.wrap{gap:44px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -113,13 +203,14 @@ dialog .close{border:1px solid var(--line);background:var(--soft);color:var(--in
 
   <section class="hero">
     <div>
-      <h1 data-t="h1">Όλες οι φωτογραφίες σου, σε σειρά.</h1>
+      <h1 data-t="h1">Όλες οι φωτογραφίες σου, <span class="gr">σε σειρά.</span></h1>
       <p class="lead" data-t="lead">Ρίχνεις όλες τις φωτογραφίες και τα βίντεό σου σε έναν φάκελο, και μπαίνουν μόνα τους σε σειρά ανά χρονιά, μήνα και μέρος. Με ημερολόγιο και χάρτη. Δωρεάν, χωρίς λογαριασμό, και τίποτα δεν ανεβαίνει στο ίντερνετ.</p>
       <div class="cta">
         <a class="dl" href="Mnimes.html" download="Mnimes.html"><svg viewBox="0 0 24 24"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg><span data-t="dl">Κατέβασε τις Μνήμες για Πάντα</span></a>
         <a class="dl alt" href="Mnimes.html" data-t="online">Άνοιξέ το online</a>
       </div>
       <p class="meta" style="margin-top:14px" data-t="meta">Ένα αρχείο · Windows, Mac, Linux · Ελληνικά &amp; Αγγλικά. Το «online» δουλεύει και σε iPhone, για προβολή.</p>
+      <ul class="trust"><li><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span data-t="t1">Τίποτα δεν ανεβαίνει</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg><span data-t="t2">Τριπλός έλεγχος</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg><span data-t="t3">Δωρεάν για πάντα</span></li></ul>
     </div>
     <div class="shot">
       <img src="othoni.png" data-en="othoni-en.png" data-alt="shot" alt="Η αρχική οθόνη της εφαρμογής Μνήμες με κουτιά για Φωτογραφίες, Βίντεο, Ημερολόγιο και Χάρτη">
@@ -148,31 +239,88 @@ dialog .close{border:1px solid var(--line);background:var(--soft);color:var(--in
     </div>
   </section>
 
-  <section>
-    <h2 data-t="whath">Τι κάνει</h2>
-    <ul class="safe">
-      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-t="w1"><b>📥 Ρίξ' τα όλα εδώ.</b> Ένας φάκελος για όλα: ό,τι ρίχνεις μπαίνει μόνο του σε Χρονιά / Μήνα / Μέρος, με διπλό έλεγχο.</span></li>
-      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-t="w2"><b>📅 Ημερολόγιο &amp; χάρτης.</b> Βρες κάθε στιγμή: πότε και πού τραβήχτηκε.</span></li>
-      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-t="w3"><b>🔍 Διπλότυπα.</b> Βρίσκει μόνο τα 100% ίδια, κρατάει πάντα ένα, και τα άλλα πάνε σε κάδο — δεν σβήνεται τίποτα χωρίς εσένα.</span></li>
-      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-t="w4"><b>📱 Από το κινητό, και χωρίς καλώδιο.</b> Με την εφαρμογή Android μέσω Wi-Fi, και με το «✔ Είναι όλες στον υπολογιστή;» ξέρεις πότε μπορείς να τις σβήσεις από το κινητό.</span></li>
-      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-t="w5"><b>💽 Πάνω στον δίσκο.</b> Οι Μνήμες μπαίνουν στον ίδιο τον δίσκο: τον συνδέεις σε όποιον υπολογιστή, ανοίγεις, και είναι πάντα η σωστή βιβλιοθήκη.</span></li>
-      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-t="w6"><b>🔄 Πάντα σε συμφωνία.</b> Δύο υπολογιστές με τον ίδιο δίσκο δεν χαλάνε ο ένας τον άλλον, και ό,τι αλλάξεις με το χέρι στον φάκελο διορθώνεται με ένα κουμπί.</span></li>
-    </ul>
+  <section class="rv" id="ti-kanei">
+    <span class="kick" data-t="whatk">Τι κάνει</span>
+    <h2 data-t="whath">Μία βιβλιοθήκη για όλη σου τη ζωή</h2>
+    <div class="bento">
+      <article class="bx w4 wide"><span class="ic" style="--c:linear-gradient(135deg,#6366f1,#8b5cf6)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><path d="M12 10v6"/><path d="m15 13-3 3-3-3"/></svg></span><h3 data-t="b1h">Ρίξ' τα όλα εδώ</h3><p data-t="b1">Ένας φάκελος για όλα. Ό,τι ρίχνεις μπαίνει μόνο του σε Χρονιά / Μήνα / Μέρος, με διπλό έλεγχο. Δεν πατάς τίποτα άλλο.</p>
+        <div class="path" aria-hidden="true"><span class="drop" data-t="pdrop">Ρίξ' τα όλα εδώ</span><i>→</i><span>2023</span><i>›</i><span data-t="pmon">08-Αύγουστος</span><i>›</i><span data-t="pplace">Νάξος</span></div></article>
+      <article class="bx"><span class="ic" style="--c:linear-gradient(135deg,#0ea5e9,#6366f1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span><h3 data-t="b2h">Ημερολόγιο &amp; χάρτης</h3><p data-t="b2">Βρες κάθε στιγμή: πότε και πού τραβήχτηκε.</p></article>
+      <article class="bx w3"><span class="new" data-t="newb">Νέο</span><span class="ic" style="--c:linear-gradient(135deg,#8b5cf6,#ec4899)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/></svg></span><h3 data-t="b3h">Παρόμοιες φωτογραφίες</h3><p data-t="b3">Βρίσκει την ίδια φωτογραφία σε άλλο μέγεθος (π.χ. από Viber) και τις ριπές της ίδιας στιγμής. Σου δείχνει την καλύτερη με ⭐ και διαλέγεις εσύ.</p>
+        <div class="pics" aria-hidden="true"><span class="pic star"></span><span class="pic"></span><span class="pic"></span></div></article>
+      <article class="bx w3"><span class="ic" style="--c:linear-gradient(135deg,#14b8a6,#0ea5e9)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></span><h3 data-t="b4h">Διπλότυπα</h3><p data-t="b4">Βρίσκει μόνο τα 100% ίδια, κρατάει πάντα ένα, και τα άλλα πάνε σε κάδο. Δεν σβήνεται τίποτα χωρίς εσένα.</p>
+        <ul class="dups" aria-hidden="true"><li class="keep"><b>IMG_2041.jpg</b><span data-t="dk">μένει</span></li><li><b>IMG_2041 (1).jpg</b><span data-t="db">στον κάδο</span></li><li><b>Αντίγραφο IMG_2041.jpg</b><span data-t="db">στον κάδο</span></li></ul></article>
+      <article class="bx"><span class="ic" style="--c:linear-gradient(135deg,#f59e0b,#ec4899)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg></span><h3 data-t="b5h">Από το κινητό</h3><p data-t="b5">Και χωρίς καλώδιο, με την εφαρμογή Android μέσω Wi-Fi. Αυθεντικές, με την τοποθεσία τους.</p></article>
+      <article class="bx"><span class="ic" style="--c:linear-gradient(135deg,#475569,#0f172a)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><path d="M6 16h.01"/><path d="M10 16h.01"/></svg></span><h3 data-t="b6h">Πάνω στον δίσκο</h3><p data-t="b6">Οι Μνήμες ζουν μέσα στον δίσκο: τον συνδέεις σε όποιον υπολογιστή και είναι πάντα η σωστή βιβλιοθήκη.</p></article>
+      <article class="bx"><span class="ic" style="--c:linear-gradient(135deg,#22c55e,#14b8a6)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></span><h3 data-t="b7h">Πάντα σε συμφωνία</h3><p data-t="b7">Δύο υπολογιστές με τον ίδιο δίσκο δεν χαλάνε ο ένας τον άλλον. Ό,τι αλλάξεις με το χέρι διορθώνεται με ένα κουμπί.</p></article>
+    </div>
   </section>
 
-  <section>
+  <section class="rv">
+    <span class="kick" data-t="spk">Γρήγορο</span>
+    <h2 data-t="sph">Γρήγορο ακόμα και σε παλιό υπολογιστή</h2>
+    <p class="sub" data-t="sps">Η δουλειά γίνεται από βοηθό στο παρασκήνιο, οπότε η σελίδα δεν «κολλάει» ποτέ, ακόμα και με βίντεο πολλών GB.</p>
+    <div class="speed">
+      <div class="num"><b>0,55<small data-t="sec">δευτ.</small></b><span data-t="sp1">το μεγαλύτερο «πάγωμα» της σελίδας με τεράστια βίντεο (ήταν 4,7 δευτ.)</span></div>
+      <div class="num"><b>4<small data-t="sec">δευτ.</small></b><span data-t="sp2">για να δει μόνο του τα καινούργια αρχεία που έριξες (ήταν 25 δευτ.)</span></div>
+      <div class="num"><b>0,04<small data-t="sec">δευτ.</small></b><span data-t="sp3">για να ξαναβρεί τις παρόμοιες ανάμεσα σε 841 φωτογραφίες (την πρώτη φορά 5,5 δευτ.)</span></div>
+    </div>
+    <p class="note" data-t="spn">Μετρημένο με αληθινές φωτογραφίες σε laptop του 2012, με παλιό σκληρό δίσκο.</p>
+  </section>
+
+  <section class="vault rv">
+    <span class="kick" data-t="safek">Ασφάλεια</span>
     <h2 data-t="safeh">Φτιαγμένο για να μη χαθεί τίποτα</h2>
+    <p class="sub" data-t="safes">Κάθε φωτογραφία περνάει από αυτά τα βήματα. Αν κάτι δεν ταιριάζει έστω και κατά ένα byte, σταματάει και δεν σβήνει τίποτα.</p>
+    <ol class="flow">
+      <li data-t="v1"><b>Αντιγραφή</b><span>Ίδια ανάλυση, ίδια ποιότητα, καμία συμπίεση.</span></li>
+      <li data-t="v2"><b>Αποτύπωμα</b><span>Κάθε αρχείο παίρνει ψηφιακό αποτύπωμα (SHA-256).</span></li>
+      <li data-t="v3"><b>2ος έλεγχος</b><span>Στο τέλος ξαναδιαβάζεται και συγκρίνεται.</span></li>
+      <li data-t="v4"><b>3ος έλεγχος</b><span>Πριν από κάθε σβήσιμο, ξανά.</span></li>
+      <li data-t="v5"><b>Κάδος</b><span>Ό,τι σβήνεις πάει πρώτα εκεί και επανέρχεται.</span></li>
+    </ol>
     <ul class="safe">
-      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-t="f1"><b>Μόνο αντιγραφή.</b> Ίδια ανάλυση, ίδια ποιότητα, καμία συμπίεση, ούτε στα βίντεο.</span></li>
-      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-t="f2"><b>Τριπλός έλεγχος.</b> Κάθε αρχείο συγκρίνεται με ψηφιακό αποτύπωμα (SHA-256) μετά την αντιγραφή, ξανά στο τέλος, και πριν από κάθε σβήσιμο.</span></li>
-      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-t="f3"><b>Τα αρχικά σβήνονται μόνο αν το ζητήσεις</b>, και μόνο αφού επαληθευτούν τα αντίγραφα.</span></li>
-      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-t="f4"><b>Κάδος.</b> Ό,τι σβήνεις πάει πρώτα εκεί. Οριστικά χάνεται μόνο με «Άδειασμα Κάδου».</span></li>
-      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-t="f5"><b>Διπλότυπα και χαλασμένοι δίσκοι.</b> Ό,τι υπάρχει ήδη δεν μπαίνει δεύτερη φορά. Αν ένας δίσκος βγάζει σφάλματα, σταματάει.</span></li>
-      <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span data-t="f6"><b>Ιδιωτικό.</b> Οι φωτογραφίες δεν φεύγουν από τον υπολογιστή σου.</span></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="f3"><b>Τα αρχικά σβήνονται μόνο αν το ζητήσεις</b>, και μόνο αφού επαληθευτούν τα αντίγραφα.</span></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="f5"><b>Διπλότυπα και χαλασμένοι δίσκοι.</b> Ό,τι υπάρχει ήδη δεν μπαίνει δεύτερη φορά. Αν ένας δίσκος βγάζει σφάλματα, σταματάει.</span></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="f6"><b>Ιδιωτικό.</b> Οι φωτογραφίες δεν φεύγουν από τον υπολογιστή σου. Δεν υπάρχει λογαριασμός, ούτε διαφημίσεις.</span></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-t="f7"><b>Κανονικά αρχεία.</b> Οι φωτογραφίες μένουν απλά αρχεία σε φακέλους: ανοίγουν και χωρίς τις Μνήμες, για πάντα.</span></li>
     </ul>
   </section>
 
-  <section class="need">
+  <section class="rv" id="odigos">
+    <span class="kick" data-t="gk">Οδηγός</span>
+    <h2 data-t="gh">Βήμα βήμα, για όλα</h2>
+    <p class="sub" data-t="gs">Πάτα ένα θέμα για να ανοίξει. Τα ίδια θα τα βρεις και μέσα στην εφαρμογή, στον «🙋 Βοηθό».</p>
+    <div class="guide">
+      <details name="odigos"><summary><span class="ic" style="--c:linear-gradient(135deg,#6366f1,#8b5cf6)"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg></span><span data-t="g1h">Η πρώτη φορά</span></summary>
+        <ol data-t="g1"><li><span>Πάτα <b>«Κατέβασε τις Μνήμες για Πάντα»</b> εδώ πάνω. Κατεβαίνει ένα αρχείο, το «Mnimes.html».</span></li><li><span>Άνοιξέ το με διπλό κλικ. Πρέπει να ανοίξει σε <b>Chrome ή Edge</b>. Αν ανοίξει άλλος browser: δεξί κλικ → «Άνοιγμα με» → Chrome.</span></li><li><span>Σύνδεσε τον δίσκο όπου θέλεις να ζουν οι φωτογραφίες σου (π.χ. έναν εξωτερικό δίσκο).</span></li><li><span>Πάτα <b>«➕ Πρόσθεσε φωτογραφίες»</b> και διάλεξε τον δίσκο. Όταν ο Chrome ρωτήσει, πάτα <b>«Να επιτρέπεται σε κάθε επίσκεψη»</b>.</span></li><li><span>Στην ερώτηση «Να μπουν οι Μνήμες και πάνω στον δίσκο;» πάτα <b>ΟΚ</b>. Έτσι τις ανοίγεις από τον δίσκο σε όποιον υπολογιστή.</span></li></ol>
+        <p class="tip" data-t="g1t">💡 Φτιάχνεται ο φάκελος «Μνήμες» και μέσα του ο φάκελος «Ρίξ' τα όλα εδώ». Αυτό ήταν.</p></details>
+      <details name="odigos"><summary><span class="ic" style="--c:linear-gradient(135deg,#0ea5e9,#6366f1)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><path d="M12 10v6"/><path d="m15 13-3 3-3-3"/></svg></span><span data-t="g2h">Βάζω φωτογραφίες από στικάκι ή παλιό δίσκο</span></summary>
+        <ol data-t="g2"><li><span>Σύνδεσε το στικάκι ή τον παλιό δίσκο.</span></li><li><span>Άνοιξε την <b>Εξερεύνηση αρχείων</b> και βρες τις φωτογραφίες.</span></li><li><span>Αντίγραψέ τες (ή ολόκληρους φακέλους) μέσα στο <b>«Μνήμες › Ρίξ' τα όλα εδώ»</b>.</span></li><li><span>Με τις Μνήμες ανοιχτές, το βλέπουν μόνες τους μέσα σε λίγα δευτερόλεπτα και τα μοιράζουν σε Χρονιά / Μήνα / Μέρος.</span></li><li><span>Η μπάρα δείχνει πόσο μένει. Αν το κλείσεις, συνεχίζει από εκεί που έμεινε.</span></li></ol>
+        <p class="tip" data-t="g2t">💡 Έγγραφα και ό,τι δεν είναι φωτογραφία ή βίντεο μένουν ανέγγιχτα. Για παλιό ή ύποπτο δίσκο: «Ρυθμίσεις & άλλα» → «Για ειδικούς» → «Πάρε & μοίρασε» (αντιγράφει και δεν πειράζει τα αρχικά).</p></details>
+      <details name="odigos"><summary><span class="ic" style="--c:linear-gradient(135deg,#f59e0b,#ec4899)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg></span><span data-t="g3h">Φέρνω τις φωτογραφίες του κινητού</span></summary>
+        <ol data-t="g3"><li><span><b>Χωρίς καλώδιο (Android):</b> κατέβασε την εφαρμογή «Μνήμες για Πάντα» από αυτή τη σελίδα. Κινητό και υπολογιστής στο ίδιο Wi-Fi.</span></li><li><span>Στον υπολογιστή: «➕ Πρόσθεσε φωτογραφίες» → <b>«📱 Δείξε το QR»</b> → Android.</span></li><li><span>Στο κινητό: <b>«💻 Στείλ' τες στον υπολογιστή»</b> και σκάναρε το QR. Έρχονται αυθεντικές, με την τοποθεσία τους.</span></li><li><span><b>Με καλώδιο (Android):</b> στο κινητό πάτα την ειδοποίηση «USB» → «Μεταφορά αρχείων». Στον υπολογιστή αντίγραψε τον φάκελο <b>DCIM</b> μέσα στο «Ρίξ' τα όλα εδώ».</span></li><li><span><b>iPhone:</b> μία φορά, Ρυθμίσεις → Φωτογραφίες → «Μεταφορά σε Mac ή PC» → <b>«Διατήρηση αυθεντικών»</b>. Μετά καλώδιο, «Εμπιστεύομαι», και αντιγραφή του DCIM.</span></li></ol>
+        <p class="tip" data-t="g3t">💡 Πριν σβήσεις οτιδήποτε από το κινητό, κάνε τον έλεγχο «✔ Είναι όλες στον υπολογιστή;» στην εφαρμογή. Αν το κινητό κρατάει αντίγραφο στο cloud, το σβήσιμο από το κινητό τις σβήνει και από εκεί.</p></details>
+      <details name="odigos"><summary><span class="ic" style="--c:linear-gradient(135deg,#14b8a6,#0ea5e9)"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span><span data-t="g4h">Βρίσκω μια φωτογραφία</span></summary>
+        <ol data-t="g4"><li><span><b>Ημερολόγιο:</b> διάλεξε χρονιά και μήνα, και δες τις μέρες με φωτογραφίες.</span></li><li><span><b>Χάρτης:</b> δες πού τραβήχτηκαν. Μπαίνουν όσες έχουν τοποθεσία (GPS) μέσα τους.</span></li><li><span><b>Αναζήτηση</b> πάνω: γράψε μέρος (Νάξος), χρονιά (2019) ή μήνα (Αύγουστος 2023).</span></li><li><span>Πάτα μια φωτογραφία για να ανοίξει μεγάλη. Με τα βελάκια πας στην επόμενη.</span></li></ol>
+        <p class="tip" data-t="g4t">💡 Οι φωτογραφίες είναι και κανονικά αρχεία στον φάκελο «Μνήμες › Χρονιά › Μήνας › Μέρος»: ανοίγουν και χωρίς τις Μνήμες.</p></details>
+      <details name="odigos"><summary><span class="ic" style="--c:linear-gradient(135deg,#8b5cf6,#ec4899)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/></svg></span><span data-t="g5h">Καθαρίζω τις παρόμοιες φωτογραφίες</span></summary>
+        <ol data-t="g5"><li><span>Πάτα <b>«⚙️ Ρυθμίσεις & άλλα»</b> → <b>«Παρόμοιες φωτογραφίες»</b>.</span></li><li><span>Πάτα <b>«Βρες παρόμοιες φωτογραφίες»</b>. Την πρώτη φορά θέλει λίγα λεπτά για πολλές χιλιάδες, μετά είναι στιγμιαίο.</span></li><li><span>Σε κάθε ομάδα, η φωτογραφία με το <b>⭐</b> είναι αυτή με την καλύτερη ποιότητα. Με τον φακό τη βλέπεις μεγάλη.</span></li><li><span>Πάτα <b>«Κράτα / Στον Κάδο»</b> σε όποια θέλεις, ή <b>«Κράτα μόνο το ⭐»</b> για όλη την ομάδα.</span></li><li><span>Στο τέλος πάτα <b>«Τα σημειωμένα στον Κάδο»</b>.</span></li></ol>
+        <p class="tip" data-t="g5t">💡 Τίποτα δεν σβήνεται μόνο του, και ό,τι πάει στον Κάδο επανέρχεται.</p></details>
+      <details name="odigos"><summary><span class="ic" style="--c:linear-gradient(135deg,#ef4444,#f59e0b)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></span><span data-t="g6h">Σβήνω και επαναφέρω</span></summary>
+        <ol data-t="g6"><li><span>Άνοιξε τη φωτογραφία και πάτα το <b>🗑️</b>. Για πολλές μαζί: το κουμπί επιλογής πάνω δεξιά.</span></li><li><span>Πάει στον <b>Κάδο</b>, μαζί με τα αρχικά της. Πρώτα επαληθεύεται το αντίγραφο στον Κάδο.</span></li><li><span>Για επαναφορά: «⚙️ Ρυθμίσεις & άλλα» → <b>«Κάδος»</b> → «Επαναφορά».</span></li><li><span>Οριστικά χάνεται <b>μόνο</b> με «Άδειασμα Κάδου».</span></li></ol></details>
+      <details name="odigos"><summary><span class="ic" style="--c:linear-gradient(135deg,#22c55e,#14b8a6)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg></span><span data-t="g7h">Κάνω 2ο αντίγραφο ασφαλείας</span></summary>
+        <ol data-t="g7"><li><span>Σύνδεσε <b>άλλον</b> δίσκο ή στικάκι.</span></li><li><span>«⚙️ Ρυθμίσεις & άλλα» → «Ρυθμίσεις» → <b>«💾 2ο αντίγραφο σε ΑΛΛΟΝ δίσκο»</b>, και διάλεξέ τον.</span></li><li><span>Γεμίζει μόνο του και μένει πάντα ενημερωμένο.</span></li></ol>
+        <p class="tip" data-t="g7t">💡 Είναι το πιο σημαντικό απ' όλα: αν χαλάσει ένας δίσκος, οι φωτογραφίες σώζονται από τον άλλον.</p></details>
+      <details name="odigos"><summary><span class="ic" style="--c:linear-gradient(135deg,#475569,#0f172a)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5a2 2 0 0 1 2 2v8.526a2 2 0 0 0 .212.897l1.068 2.127a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45l1.068-2.127A2 2 0 0 0 4 15.526V7a2 2 0 0 1 2-2z"/><path d="M20.054 15.987H3.946"/></svg></span><span data-t="g8h">Σε άλλον υπολογιστή</span></summary>
+        <ol data-t="g8"><li><span>Σύνδεσε τον δίσκο στον άλλον υπολογιστή.</span></li><li><span>Άνοιξε το αρχείο <b>«Μνήμες › Μνήμες για Πάντα.html»</b> πάνω στον δίσκο, με Chrome ή Edge.</span></li><li><span>Την πρώτη φορά πάτα <b>«Διάλεξε τον φάκελο Μνήμες αυτού του δίσκου»</b>. Μετά όλα φορτώνουν μόνα τους.</span></li></ol>
+        <p class="tip" data-t="g8t">💡 Δύο υπολογιστές με τον ίδιο δίσκο δεν χαλάνε ο ένας τον άλλον: οι λίστες ενώνονται.</p></details>
+      <details name="odigos"><summary><span class="ic" style="--c:linear-gradient(135deg,#0ea5e9,#22c55e)"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span><span data-t="g9h">Κάτι δεν πάει καλά</span></summary>
+        <ol data-t="g9"><li><span><b>Δεν μοιράζονται;</b> Αν πάνω γράφει «🔓 … ζητά ξανά άδεια», πάτα το κουμπί και διάλεξε «Να επιτρέπεται σε κάθε επίσκεψη».</span></li><li><span><b>Μαύρα κουτάκια ή λείπουν φωτογραφίες;</b> «Ρυθμίσεις & άλλα» → «Για ειδικούς» → «Ξανακοίτα τη βιβλιοθήκη».</span></li><li><span><b>«Ήδη ανοιχτές σε άλλη καρτέλα»;</b> Κλείσε τη δεύτερη καρτέλα. Οι Μνήμες δουλεύουν σε μία κάθε φορά.</span></li><li><span><b>Ο δίσκος βγάζει σφάλματα;</b> Πάτα «⛔ Σταμάτα». Για πολύτιμες φωτογραφίες, πήγαινε τον δίσκο σε εργαστήριο ανάκτησης δεδομένων.</span></li><li><span><b>Λάθος ημερομηνία;</b> Βγαίνει από μέσα από τη φωτογραφία ή από το όνομά της. Αν η κάμερα είχε λάθος ώρα, μπαίνει με αυτήν.</span></li></ol></details>
+    </div>
+  </section>
+
+  <section class="need rv">
     <h2 data-t="needh">Τι χρειάζεται</h2>
     <div class="tbl"><table>
       <tr data-t="n1"><td>Υπολογιστής</td><td>Chrome ή Edge (νέα έκδοση): κάνει τα πάντα, δηλαδή μάζεμα, ταξινόμηση, έλεγχο και σβήσιμο.</td></tr>
@@ -181,7 +329,7 @@ dialog .close{border:1px solid var(--line);background:var(--soft);color:var(--in
     </table></div>
   </section>
 
-  <section id="kinito">
+  <section id="kinito" class="rv">
     <h2 data-t="kh">Για το κινητό</h2>
     <p data-t="kl">Οι φωτογραφίες του κινητού, <b>αυθεντικές με την τοποθεσία τους</b>, με δύο τρόπους.</p>
     <div class="steps">
@@ -200,7 +348,7 @@ dialog .close{border:1px solid var(--line);background:var(--soft);color:var(--in
     <button class="cbtn" id="coffeeBtn" type="button"><svg viewBox="0 0 24 24"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></svg><span data-t="cb">Κέρασέ με έναν καφέ</span></button>
   </section>
 
-  <footer><p data-t="copy">© 2026 Κωνσταντίνος Τσιμινάκης · Με επιφύλαξη παντός δικαιώματος</p><p data-t="credit">Δημιουργία του Τσιμινάκη Κωνσταντίνου του Αλεξάνδρου</p><p><a href="terms.html" data-t="terms">Όροι χρήσης και άδειες</a> · <span data-t="foot">Μνήμες για Πάντα 3.0 · Οι φωτογραφίες στις εικόνες είναι παραδείγματα.</span></p></footer>
+  <footer><p data-t="copy">© 2026 Κωνσταντίνος Τσιμινάκης · Με επιφύλαξη παντός δικαιώματος</p><p data-t="credit">Δημιουργία του Τσιμινάκη Κωνσταντίνου του Αλεξάνδρου</p><p><a href="terms.html" data-t="terms">Όροι χρήσης και άδειες</a> · <span data-t="foot">Μνήμες για Πάντα 3.2 · Οι φωτογραφίες στις εικόνες είναι παραδείγματα.</span></p></footer>
 </div>
 
 <dialog id="coffee">

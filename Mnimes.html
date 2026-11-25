@@ -2,6 +2,7 @@
 <html lang="el">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <!-- Ασφάλεια: η σελίδα επιτρέπεται να μιλήσει ΜΟΝΟ με αυτές τις διευθύνσεις (τίποτα άλλο δεν μπορεί να φορτωθεί ή να σταλεί αλλού) -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://server.arcgisonline.com https://cdnjs.cloudflare.com; media-src 'self' blob:; connect-src 'self' blob: data: https://api.bigdatacloud.net https://nominatim.openstreetmap.org https://mnimes-pair.ktsiminakis.workers.dev https://ktsiminakis.github.io; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
@@ -26,6 +27,7 @@
   --shadow:0 1px 2px rgba(16,18,24,.04),0 8px 24px rgba(16,18,24,.06);--shadow-lg:0 20px 50px rgba(16,18,24,.16);
   --r:22px;--font:"Inter","Segoe UI Variable","Segoe UI",system-ui,-apple-system,Roboto,"Noto Sans",sans-serif;
 }
+:root{color-scheme:light dark}:root[data-theme="light"]{color-scheme:light}:root[data-theme="dark"]{color-scheme:dark}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0a0b0f;--card:#14161c;--ink:#f3f4f6;--muted:#9aa1ad;--line:#252832;--soft:#1b1e26;--glass:rgba(20,22,28,.72);
   --accent:#8b8cff;--accent-ink:#0a0b0f;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--shadow:0 1px 0 rgba(255,255,255,.03);--shadow-lg:0 20px 50px rgba(0,0,0,.5)}}
@@ -287,6 +289,19 @@ th{color:var(--muted);font-weight:600;font-size:13px}
 .kpi span{color:var(--muted);font-size:13.5px}
 .list .item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
 .list .item .thumb{width:90px;flex:none}
+.simrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.simf{margin:0;display:grid;gap:8px;align-content:start}
+.simf .thumb{corner-shape:squircle;border-radius:22px;transition:opacity .2s,filter .2s}
+.simf.off .thumb{opacity:.4;filter:grayscale(1)}
+.simf.off .thumb::after{content:"🗑️";position:absolute;inset:auto auto 8px 8px;font-size:1.3rem}
+.simlook{position:absolute;inset:8px 8px auto auto;inline-size:44px;block-size:44px;border-radius:50%;border:0;display:grid;place-items:center;
+  background:color-mix(in oklab,#000 45%,transparent);color:#fff;cursor:zoom-in;backdrop-filter:blur(6px)}
+.simlook:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.simf figcaption{display:grid;gap:2px;font-size:.9rem}.simstar{min-block-size:1.3em}
+.simf .simt{inline-size:100%;justify-content:center;min-block-size:44px}
+@media (max-width:520px){.simrow{grid-template-columns:repeat(2,1fr);gap:10px}}
+.simh{margin:0 0 12px;font-size:1rem}.simbar{position:sticky;top:8px;z-index:5}.simg .link{margin-top:12px}
+@media (prefers-reduced-motion:reduce){.simf .thumb{transition:none}}
 .path{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:12.5px;word-break:break-all;color:var(--muted)}
 details summary{cursor:pointer;font-weight:600;padding:6px 0}
 
@@ -373,7 +388,7 @@ details summary{cursor:pointer;font-weight:600;padding:6px 0}
   <div class="bar"><i id="progBar"></i></div>
   <div id="progText" class="small"></div>
   <div id="progNote"></div>
-  <div class="row"><button id="progPause" class="btn">Παύση</button><button id="progStop" class="btn ghost">Διακοπή</button></div>
+  <div class="row"><button id="progPause" class="btn">Παύση</button><button id="progStop" class="btn ghost">Διακοπή</button><button id="progPip" class="btn ghost" hidden>🗗 Μικρό παράθυρο</button></div>
 </div></div>
 <div id="toast"></div>
 
@@ -395,7 +410,7 @@ const MONTHS=[(EN?'January':'Ιανουάριος'),(EN?'February':'Φεβρου
 const MONTHS_GEN=[(EN?'January':'Ιανουαρίου'),(EN?'February':'Φεβρουαρίου'),(EN?'March':'Μαρτίου'),(EN?'April':'Απριλίου'),(EN?'May':'Μαΐου'),(EN?'June':'Ιουνίου'),(EN?'July':'Ιουλίου'),(EN?'August':'Αυγούστου'),(EN?'September':'Σεπτεμβρίου'),(EN?'October':'Οκτωβρίου'),(EN?'November':'Νοεμβρίου'),(EN?'December':'Δεκεμβρίου')];
 const MONTHS_SHORT=[(EN?'Jan':'Ιαν'),(EN?'Feb':'Φεβ'),(EN?'Mar':'Μαρ'),(EN?'Apr':'Απρ'),(EN?'May':'Μάι'),(EN?'Jun':'Ιούν'),(EN?'Jul':'Ιούλ'),(EN?'Aug':'Αύγ'),(EN?'Sep':'Σεπ'),(EN?'Oct':'Οκτ'),(EN?'Nov':'Νοέ'),(EN?'Dec':'Δεκ')];
 const WEEKDAYS=[(EN?'Mon':'Δευ'),(EN?'Tue':'Τρί'),(EN?'Wed':'Τετ'),(EN?'Thu':'Πέμ'),(EN?'Fri':'Παρ'),(EN?'Sat':'Σάβ'),(EN?'Sun':'Κυρ')];
-const IMG_EXT=new Set(['jpg','jpeg','jpe','png','heic','heif','webp','avif','tif','tiff','bmp','gif','dng','cr2','cr3','nef','nrw','arw','orf','rw2','raf','srw','pef']);
+const IMG_EXT=new Set(['jpg','jpeg','jpe','jxl','png','heic','heif','webp','avif','tif','tiff','bmp','gif','dng','cr2','cr3','nef','nrw','arw','orf','rw2','raf','srw','pef']);
 const VID_EXT=new Set(['mp4','mov','m4v','3gp','3g2','avi','mkv','mts','m2ts','mod','tod','webm','wmv','mpg','mpeg']);
 const SIDE_EXT=new Set(['xmp','aae']);
 const DECODE_EXT=new Set(['jpg','jpeg','jpe','png','webp','gif','bmp','avif']);
@@ -405,7 +420,7 @@ const CLOUD_RE=/onedrive|google ?drive|icloud|dropbox|\bmega\b|pcloud|box ?sync|
 const FS_OK=typeof window.showDirectoryPicker==='function';
 /* owner 2026-11-21: downloading Mnimes again gives «Mnimes (1).html», «(2)»… — people must not end up running an old copy or
    making a second library. Every copy that opens is remembered (this browser only); an OLD copy may look but not copy/delete. */
-const MNIMES_VER='3.1';
+const MNIMES_VER='3.2';
 const verNum=v=>String(v||'0').split('.').map(Number).reduce((a,x,i)=>a+(x||0)/Math.pow(1000,i),0);
 const COPIES=(()=>{let m={};try{m=JSON.parse(localStorage.getItem('mnimes.files')||'{}')||{};}catch{}
   const here=location.href.split('#')[0].split('?')[0],now=Date.now();
@@ -479,7 +494,22 @@ class Sha256{constructor(){this.H=new Uint32Array([0x6a09e667,0xbb67ae85,0x3c6ef
     p[n-8]=hi>>>24;p[n-7]=hi>>>16&255;p[n-6]=hi>>>8&255;p[n-5]=hi&255;p[n-4]=lo>>>24;p[n-3]=lo>>>16&255;p[n-2]=lo>>>8&255;p[n-1]=lo&255;
     this.update(p);this.len=L;return Array.from(this.H,x=>(x>>>0).toString(16).padStart(8,'0')).join('');}}
 let BIG=256*1024*1024; // πάνω από αυτό: διάβασμα σε κομμάτια
-async function hashFile(f){if(f.size<BIG)return sha256(await f.arrayBuffer());const hs=new Sha256(),r=f.stream().getReader();for(;;){const {done,value}=await r.read();if(done)break;hs.update(value);}return hs.hex();}
+/* 2026-11-24: big files (videos of many GB) are hashed by a background helper (Web Worker), so the page never freezes while it works.
+   The helper carries the very same Sha256 code; it is checked against crypto.subtle when Mnimes opens (selfTestWorker) and is not used
+   if anything differs or the browser does not allow it — then the page does it itself, as before. */
+let HW=null,HWok=false,HWid=0;const HWwait=new Map();
+function hashWorker(){if(HW!==null)return HW;try{
+  const src='const SHA_K=new Uint32Array(['+Array.from(SHA_K).join(',')+']);'+Sha256.toString()+
+    ';onmessage=async e=>{const {id,f}=e.data;try{const hs=new Sha256(),r=f.stream().getReader();for(;;){const {done,value}=await r.read();if(done)break;hs.update(value);}postMessage({id,h:hs.hex()});}catch(x){postMessage({id,err:String(x&&x.message||x)});}};';
+  const u=URL.createObjectURL(new Blob([src],{type:'text/javascript'}));HW=new Worker(u);
+  HW.onmessage=e=>{const w=HWwait.get(e.data.id);if(!w)return;HWwait.delete(e.data.id);e.data.err?w.no(new Error(e.data.err)):w.ok(e.data.h);};
+  HW.onerror=()=>{HWok=false;for(const w of HWwait.values())w.no(new Error('worker'));HWwait.clear();};}catch{HW=false;}return HW;}
+function hashInWorker(f){return new Promise((ok,no)=>{const w=hashWorker();if(!w)return no(new Error('no worker'));const id=++HWid;HWwait.set(id,{ok,no});w.postMessage({id,f});});}
+async function selfTestWorker(){try{const d=new Uint8Array(3*1024*1024+17);for(let i=0;i<d.length;i+=65536)crypto.getRandomValues(d.subarray(i,Math.min(d.length,i+65536)));
+  HWok=true;const a=await hashInWorker(new Blob([d]));HWok=a===await sha256(d);}catch{HWok=false;}return HWok;}
+async function hashFile(f){if(f.size<BIG)return sha256(await f.arrayBuffer());
+  if(HWok){try{return await hashInWorker(f);}catch(e){console.warn('worker hash failed, doing it here',e);}}
+  const hs=new Sha256(),r=f.stream().getReader();for(;;){const {done,value}=await r.read();if(done)break;hs.update(value);if(self.scheduler&&scheduler.yield)await scheduler.yield();}return hs.hex();}
 async function selfTestSha(){try{for(const n of [0,3,55,56,63,64,65,1000,200003]){const d=new Uint8Array(n);for(let i=0;i<n;i+=65536)crypto.getRandomValues(d.subarray(i,Math.min(n,i+65536)));
   const hs=new Sha256();hs.update(d.subarray(0,Math.floor(n/3)));hs.update(d.subarray(Math.floor(n/3)));if(hs.hex()!==await sha256(d))throw 0;}return true;}catch{BIG=Infinity;return false;}}
 let toastT;function toast(msg,ms=4200){const t=$('#toast');t.textContent=msg;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',ms);}
@@ -728,17 +758,39 @@ function notMain(){if(MAIN)return false;toast(EN?'Mnimes is already open in anot
 function newRun(title){if(notMain())return null;
   if(S.run&&!S.run.done){toast((EN?'A task is already running. Wait for it to finish.':'Τρέχει ήδη μια εργασία. Περίμενε να τελειώσει.'));return null;}
   const run={title,paused:false,stop:false,done:false,t0:Date.now(),total:0,i:0,note:'',phase:'',lines:{},consecErr:0};
-  run.wait=async()=>{while(run.paused&&!run.stop)await sleep(250);};
+  run.wait=async()=>{while(run.paused&&!run.stop)await sleep(250);if(run.slow&&!run.stop)await sleep(run.slow);};
+  watchPressure(run);
   S.run=run;$('#prog').hidden=false;$('#progTitle').textContent=title;$('#progPause').hidden=false;$('#progStop').textContent=(EN?'Stop':'Διακοπή');
   keepAwake(true);watchBattery(run);updProg(true);return run;}
-function endRun(run,msg){run.done=true;autoSaveReport();keepAwake(false);$('#progPause').hidden=true;$('#progStop').textContent=(EN?'Close':'Κλείσιμο');run.note=msg||'';run.i=run.total;updProg(true);S.ver++;S.fver++;}
+function endRun(run,msg){run.done=true;try{run.pres&&run.pres.disconnect();}catch{}autoSaveReport();keepAwake(false);$('#progPause').hidden=true;$('#progStop').textContent=(EN?'Close':'Κλείσιμο');run.note=msg||'';run.i=run.total;updProg(true);S.ver++;S.fver++;}
 let progT=0;
+/* 2026-11-24 (new browser features, all optional):
+   · Compute Pressure — on an old or hot laptop Mnimes slows down a little by itself, so the computer never freezes or overheats.
+   · Document Picture-in-Picture — «🗗 Small window»: a little progress window that stays on top while you use other programs. */
+function watchPressure(run){try{if(!('PressureObserver' in self))return;const o=new PressureObserver(recs=>{const st=recs[recs.length-1].state;
+    const was=run.slow||0;run.slow=st==='critical'?160:st==='serious'?40:0;
+    if(run.slow&&!was){run.slowNote=true;run.note=(EN?'🌡️ The computer is working hard — I go a little slower so that it does not freeze.':'🌡️ Ο υπολογιστής δουλεύει πολύ — πάω λίγο πιο αργά για να μην κολλήσει.');updProg(true);}
+    else if(!run.slow&&was&&run.slowNote){run.slowNote=false;run.note='';updProg(true);}});
+  o.observe('cpu',{sampleInterval:2000}).catch(()=>{});run.pres=o;}catch{}}
+let pipWin=null;
+function pipUpdate(){const w=pipWin,r=S.run;if(!w||w.closed||!r)return;const d=w.document,pc=r.total?Math.min(100,Math.round(r.i/r.total*100)):(r.done?100:0);
+  d.getElementById('t').textContent=r.title||'';d.getElementById('b').style.width=pc+'%';
+  d.getElementById('p').textContent=(r.done?(EN?'✅ Done':'✅ Τέλος'):(r.paused?(EN?'⏸ Paused':'⏸ Παύση'):pc+'%'))+(r.total?` · ${fmtN(r.i)} / ${fmtN(r.total)}`:'');
+  d.getElementById('n').textContent=r.phase||'';}
+async function openPip(){try{if(pipWin&&!pipWin.closed){pipWin.focus();return;}
+  pipWin=await documentPictureInPicture.requestWindow({width:340,height:140});const d=pipWin.document;
+  d.title=APPNAME();d.body.innerHTML='<div style="font:600 14px system-ui,sans-serif;color:#fff;background:#111827;position:fixed;inset:0;padding:14px 16px;box-sizing:border-box">'+
+    '<div id="t" style="font-weight:800;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>'+
+    '<div style="height:10px;border-radius:6px;background:#374151;overflow:hidden"><i id="b" style="display:block;height:100%;width:0;background:linear-gradient(90deg,#6366f1,#ec4899);transition:width .4s"></i></div>'+
+    '<div id="p" style="margin-top:8px;font-size:18px;font-weight:800"></div><div id="n" style="margin-top:2px;color:#9ca3af;font-size:12px"></div></div>';
+  pipUpdate();}catch(e){console.warn('pip',e);toast(EN?'The small window cannot open in this browser.':'Το μικρό παράθυρο δεν ανοίγει σε αυτόν τον browser.');}}
+if('documentPictureInPicture' in self){$('#progPip').hidden=false;$('#progPip').textContent=EN?'🗗 Small window':'🗗 Μικρό παράθυρο';$('#progPip').onclick=openPip;}
 function updProg(force){const now=Date.now();if(!force&&now-progT<250)return;progT=now;const r=S.run;if(!r)return;
   $('#progBar').style.width=(r.total?Math.min(100,r.i/r.total*100):(r.done?100:3))+'%';
   let eta='';if(r.total&&r.i>5&&!r.done&&!r.paused){const sec=(now-r.t0)/1000;eta=(EN?' · about ':' · απομένουν ~')+fmtDur(sec/r.i*(r.total-r.i));}
   $('#progText').innerHTML=(r.phase?`<b>${esc(r.phase)}</b> · `:'')+(r.total?`${fmtN(r.i)} / ${fmtN(r.total)}`:'')+eta+'<br>'+
     Object.entries(r.lines).map(([k,v])=>`${esc(k)}: <b>${esc(typeof v==='number'?fmtN(v):v)}</b>`).join(' · ');
-  $('#progNote').textContent=r.note||'';$('#progPause').textContent=r.paused?(EN?'Resume':'Συνέχεια'):(EN?'Pause':'Παύση');}
+  $('#progNote').textContent=r.note||'';$('#progPause').textContent=r.paused?(EN?'Resume':'Συνέχεια'):(EN?'Pause':'Παύση');pipUpdate();}
 function watchBattery(run){if(!navigator.getBattery)return;navigator.getBattery().then(b=>{const chk=()=>{if(run.done)return;
   if(!b.charging&&b.level<0.2&&!run.paused){run.paused=true;run.autoPaused=true;run.note=(EN?'🔋 Low battery — paused for safety. Plug in the charger.':'🔋 Χαμηλή μπαταρία — έγινε παύση για ασφάλεια. Σύνδεσε τον φορτιστή.');updProg(true);}
   else if(b.charging&&run.autoPaused){run.paused=false;run.autoPaused=false;run.note='';updProg(true);}};
@@ -864,7 +916,7 @@ async function pickDest(role){if(notMain())return;
   // the drive may already hold a library (made on another computer, or by the «Mnimes» phone app): load what it holds
   if(isLib||await hasDir(lib,META))await importIndex(d);
   if(role==='primary'&&ok)try{await lib.getDirectoryHandle(INBOX,{create:true});}catch{}
-  render();if(role==='primary'&&ok){maybeInbox();
+  render();if(role==='primary'&&ok){maybeInbox();watchInbox();
     if(navigator.onLine&&!onDisk(COPIES.here)&&!await relExists(lib,DISK_FILE)&&confirm(EN?`Put Mnimes ON this drive too (inside «Μνήμες»)?\n\nThen on any computer you just open «${DISK_FILE}» from the drive and it is always the right library.`:`Να μπουν οι Μνήμες και ΠΑΝΩ σε αυτόν τον δίσκο (μέσα στις «Μνήμες»);\n\nΈτσι σε όποιον υπολογιστή, ανοίγεις απλώς το «${DISK_FILE}» από τον δίσκο και είναι πάντα η σωστή βιβλιοθήκη.`))putOnDisk(d,false);}}
 async function pickSource(){if(notMain())return;
   let h;try{h=await showDirectoryPicker({id:'mnimessrc',mode:'read'});}
@@ -1401,7 +1453,7 @@ async function runInbox(auto){if(oldGuard())return;
       for(const d of others)if(await checkSpace(d,need)===false)return endRun(run,(EN?`💽 They don’t fit on the 2nd copy «${d.name}» (about ${fmtSize(need)} needed). Nothing was moved.`:`💽 Δεν χωράνε στο 2ο αντίγραφο «${d.name}» (χρειάζονται ~${fmtSize(need)}). Δεν μετακινήθηκε τίποτα.`));}
     run.phase=(EN?'② Sorting & 1st check':'② Μοίρασμα & 1ος έλεγχος');run.note=what+(EN?'They go into Year / Month / Place…':'Μπαίνουν σε Χρονιά / Μήνα / Μέρος…');
     run.total=groups.length;run.i=0;run.t0=Date.now();run.lines={[IK.new()]:0,[IK.dup()]:0,[IK.left()]:0,[IK.err()]:0};
-    for(const g of groups){await run.wait();if(run.stop)break;
+    for(const g of groups){await run.wait();if(run.stop)break;if(self.scheduler&&scheduler.yield)await scheduler.yield();
       try{await processInbox(g,run,lib,inbox,others);}catch(e){logErr((EN?'Error in ':'Σφάλμα στο ')+g.main.name,e);run.lines[IK.err()]++;}
       run.i++;updProg();}
   }finally{src.handle=null;src.removed=true;await saveSources();}
@@ -1419,7 +1471,9 @@ async function runInbox(auto){if(oldGuard())return;
   if(goVerify)setTimeout(()=>{if(S.run&&S.run.done){$('#prog').hidden=true;S.run=null;}runVerify(true);},1500);
   endRun(run,msg);}
 /* when Mnimes opens (or permission was just given): if there is something new in the folder, sort it — nothing to press */
-async function maybeInbox(){try{if(!MAIN||!FS_OK||COPIES.newer||(S.run&&!S.run.done))return;const lib=libDest();if(!lib||!lib.handle)return;
+/* 2026-11-24: ask the browser to keep our stored data (the index, the folder links) — it is never cleaned up to free space */
+let persistAsked=false;function askPersist(){if(persistAsked)return;persistAsked=true;try{navigator.storage&&navigator.storage.persist&&navigator.storage.persisted().then(p=>{if(!p)navigator.storage.persist().catch(()=>{});}).catch(()=>{});}catch{}}
+async function maybeInbox(){askPersist();try{if(!MAIN||!FS_OK||COPIES.newer||(S.run&&!S.run.done))return;const lib=libDest();if(!lib||!lib.handle)return;
   try{await syncIndex(lib);}catch(e){console.warn(e);}
   for(const d of S.dests)if(await permState(d.handle,'readwrite')!=='granted')return;
   const inbox=await inboxDir(lib,true);if(!inbox)return;const n=await inboxCount(inbox);let left=NaN;try{left=+(localStorage.getItem(LSK('mnimes.inboxLeft'))??'NaN');}catch{}
@@ -1428,7 +1482,21 @@ async function maybeInbox(){try{if(!MAIN||!FS_OK||COPIES.newer||(S.run&&!S.run.d
    (names only, nothing is read) and when something new has arrived and the copy has finished, it starts by itself. */
 async function inboxNames(dir){let n=0;const st=[dir];while(st.length&&n<200000){const d=st.pop();try{for await(const [name,c] of d.entries()){if(c.kind==='directory'){if(!name.startsWith('.')&&name.toLowerCase()!=='_photoapp')st.push(c);}else{const e=extOf(name);if(!name.startsWith('._')&&(IMG_EXT.has(e)||VID_EXT.has(e)))n++;}}}catch{}}return n;}
 let inboxWatchN=-1;
-setInterval(async()=>{try{if(!FS_OK||COPIES.newer||document.hidden||(S.run&&!S.run.done))return;const lib=libDest();if(!lib||!lib.handle||await permState(lib.handle,'readwrite')!=='granted')return;
+/* 2026-11-24: Chrome can now WATCH a folder (FileSystemObserver). The drop folder is watched: the moment something new lands in it,
+   Mnimes knows (no 30-second glances, nothing re-read). It still waits until the copy has finished (inboxQuiet) before touching anything.
+   Browsers without it keep the 30-second glance below. */
+let inboxObs=null,inboxObsFor=null,inboxObsT=0;
+async function watchInbox(){try{
+  if(!('FileSystemObserver' in self)||!FS_OK||COPIES.newer)return;const lib=libDest();if(!lib||!lib.handle)return;
+  if(inboxObs&&inboxObsFor===lib.handle)return;
+  if(await permState(lib.handle,'readwrite')!=='granted')return;const inbox=await inboxDir(lib,true);if(!inbox)return;
+  if(inboxObs)try{inboxObs.disconnect();}catch{}
+  inboxObs=new FileSystemObserver(recs=>{if(!recs||!recs.length)return;clearTimeout(inboxObsT);
+    inboxObsT=setTimeout(async()=>{try{if(S.run&&!S.run.done)return;const i2=await inboxDir(lib,false);if(!i2)return;const n=await inboxNames(i2);inboxWatchN=n;
+      if(n&&n>((+localStorage.getItem(LSK('mnimes.inboxLeft')))||0))maybeInbox();}catch{}},4000);});
+  await inboxObs.observe(inbox,{recursive:true});inboxObsFor=lib.handle;}catch(e){inboxObs=null;inboxObsFor=null;console.warn('watch',e);}}
+setInterval(async()=>{try{watchInbox();if(inboxObs&&!document.hidden)return;   // watched: the glance is only the fallback
+  if(!FS_OK||COPIES.newer||document.hidden||(S.run&&!S.run.done))return;const lib=libDest();if(!lib||!lib.handle||await permState(lib.handle,'readwrite')!=='granted')return;
   const inbox=await inboxDir(lib,false);if(!inbox)return;const n=await inboxNames(inbox);if(n===inboxWatchN)return;const was=inboxWatchN;inboxWatchN=n;if(was<0&&!n)return;
   if(n&&n>((+localStorage.getItem(LSK('mnimes.inboxLeft')))||0))maybeInbox();}catch{}},30000);
 /* owner 2026-11-22 (3.0): Mnimes lives ON the drive, inside the «Μνήμες» folder, next to its photos: plug the drive into any
@@ -1761,14 +1829,14 @@ $('#searchForm').onsubmit=e=>{e.preventDefault();const q=$('#q').value.trim();if
 
 function render(){
   const parts=location.hash.slice(1).split('/').map(x=>{try{return decodeURIComponent(x);}catch{return x;}});
-  const [v,a,b,c]=parts;const m=$('#main');closeMap();m.innerHTML='';PAGE=[];updSel();$('#backBtn').style.display=v?'':'none';window.scrollTo(0,0);
+  const [v,a,b,c]=parts;const m=$('#main');closeMap();m.replaceChildren();PAGE=[];updSel();$('#backBtn').style.display=v?'':'none';window.scrollTo(0,0);
   renderBanner();
-  try{({'':viewHome,cal:viewCalendar,places:viewPlaces,place:viewPlace,dups:viewDups,videos:viewVideos,photos:viewPhotos,more:viewMore,trash:viewTrash,organize:viewOrganize,inbox:(m)=>viewStart(m,'2'),start:viewStart,all:viewAll,oldinbox:viewInbox,rescan:viewRescan,verify:viewVerify,clean:viewClean,health:viewHealth,report:viewReport,
+  try{({'':viewHome,cal:viewCalendar,places:viewPlaces,place:viewPlace,dups:viewDups,similar:viewSimilar,videos:viewVideos,photos:viewPhotos,more:viewMore,trash:viewTrash,organize:viewOrganize,inbox:(m)=>viewStart(m,'2'),start:viewStart,all:viewAll,oldinbox:viewInbox,rescan:viewRescan,verify:viewVerify,clean:viewClean,health:viewHealth,report:viewReport,
      settings:viewSettings,terms:viewTerms,open:viewOpen,view:viewOpenFiles,search:viewSearch}[v||'']||viewHome)(m,a,b,c);}
   catch(e){console.error(e);m.append(el('div',{class:'card bad'},(EN?'Error: ':'Σφάλμα: ')+e.message));}}
 const empty=(m,msg)=>m.append(card(el('p',{},msg||(EN?'There are no photos here yet.':'Δεν υπάρχουν ακόμα φωτογραφίες εδώ.')),el('button',{class:'btn primary',onclick:()=>nav(FS_OK?'start/'+(libDest()?'2':'1'):'view')},icon('folder-down'),FS_OK?(EN?'Add photos':'Πρόσθεσε φωτογραφίες'):(EN?'Open photos':'Άνοιξε φωτογραφίες'))));
 
-async function renderBanner(){const b=$('#banner');b.innerHTML='';
+async function renderBanner(){const b=$('#banner');b.replaceChildren();
   if(!MAIN)b.append(el('div',{class:'card warn'},el('b',{},EN?'ℹ️ Mnimes is already open in another tab or window.':'ℹ️ Οι Μνήμες είναι ήδη ανοιχτές σε άλλη καρτέλα ή παράθυρο.'),el('p',{class:'small muted'},EN?'Work there (only one may copy and sort at a time). Here you can only look at photos. You can close this one.':'Δούλεψε εκεί (μόνο μία μπορεί να αντιγράφει και να μοιράζει κάθε φορά). Εδώ μόνο βλέπεις φωτογραφίες. Αυτήν μπορείς να την κλείσεις.')));
   if(COPIES.newer){b.append(el('div',{class:'card bad'},el('b',{},(EN?`⛔ This is an OLD Mnimes file (version ${MNIMES_VER}).`:`⛔ Αυτό είναι ΠΑΛΙΟ αρχείο Μνημών (έκδοση ${MNIMES_VER}).`)),
       el('p',{class:'small'},(EN?`You have already opened a newer one: «${COPIES.newer.name}» (${COPIES.newer.v}). Use that one. From this old file nothing is copied or deleted, for safety. Your library and photos are not affected.`:`Έχεις ήδη ανοίξει νεότερο: «${COPIES.newer.name}» (${COPIES.newer.v}). Χρησιμοποίησε εκείνο. Από αυτό το παλιό δεν γίνεται αντιγραφή ή σβήσιμο, για ασφάλεια. Η βιβλιοθήκη και οι φωτογραφίες σου δεν επηρεάζονται.`)),
@@ -1943,6 +2011,10 @@ const VOITHOS_ITEMS = [
   a:{el:['«⚙️ Ρυθμίσεις & άλλα» → «🔧 Για ειδικούς» → «Διπλότυπα σε άλλον δίσκο» → «Διάλεξε δίσκο ή φάκελο».','Βρίσκει μόνο τα 100% ίδια και δείχνει τι μένει και τι φεύγει. Από το καθένα μένει πάντα ΕΝΑ.','Πάτα «ΟΚ, σβήσ\' τα»: πάνε στον «Κάδο διπλοτύπων» του ίδιου δίσκου. Οριστικά σβήνονται μόνο με «Άδειασμα».'],
      en:['«⚙️ Settings & more» → «🔧 For experts» → «Duplicates on another drive» → «Choose a drive or folder».','It finds only the 100% identical ones and shows what stays and what goes. ONE of each always stays.','Press «OK, move them to the bin»: they go to the «Κάδος διπλοτύπων» of the same drive. They are deleted for good only with «Empty».']},
   k:{el:'διπλότυπα ίδιες διπλές δυο φορές αντίγραφα καθαρισμός',en:'duplicates same twice copies clean up'},go:{el:'Άνοιξε τα «Διπλότυπα»',en:'Open «Duplicates»',r:'dups'}},
+ {q:{el:'Έχω την ίδια φωτογραφία πολλές φορές (από Viber, ριπές). Πώς τις βρίσκω;',en:'I have the same photo many times (from Viber, bursts). How do I find them?'},
+  a:{el:['«⚙️ Ρυθμίσεις & άλλα» → «Παρόμοιες φωτογραφίες» → «Βρες παρόμοιες φωτογραφίες».','Βρίσκει την ίδια φωτογραφία σε άλλο μέγεθος ή ποιότητα και τις ριπές της ίδιας στιγμής. Με ⭐ δείχνει αυτή με την καλύτερη ποιότητα.','Πάτα «Κράτα / Στον Κάδο» σε όποια θέλεις (ή «Κράτα μόνο το ⭐») και μετά «Τα σημειωμένα στον Κάδο». Τίποτα δεν σβήνεται μόνο του και όλα ξαναφέρνονται από τον Κάδο.'],
+     en:['«⚙️ Settings & more» → «Similar photos» → «Find similar photos».','It finds the same photo in another size or quality and bursts of the same moment. The ⭐ marks the best quality one.','Press «Keep / To the Trash» on the ones you want (or «Keep only the ⭐») and then «Ticked to the Trash». Nothing is deleted by itself and everything comes back from the Trash.']},
+  k:{el:'παρόμοιες ίδιες μοιάζουν ριπή ριπές viber μικρότερη ποιότητα πολλές φορές σχεδόν ίδιες paromoies',en:'similar same look alike burst bursts viber smaller quality many times near duplicates'},go:{el:'Άνοιξε τις «Παρόμοιες»',en:'Open «Similar photos»',r:'similar'}},
  {q:{el:'Πώς σβήνω μια φωτογραφία; Μπορώ να την επαναφέρω;',en:'How do I delete a photo? Can I get it back?'},
   a:{el:['Άνοιξε τη φωτογραφία και πάτα το 🗑️ (ή πάνω δεξιά το κουμπί επιλογής για πολλές).','Πάει στον 🗑️ Κάδο: από εκεί την επαναφέρεις όποτε θες.','Οριστικά χάνεται μόνο με «Άδειασμα Κάδου» (Ρυθμίσεις & άλλα → Κάδος).'],
      en:['Open the photo and press 🗑️ (or the select button at the top right, for many).','It goes to the 🗑️ Trash: you can restore it from there whenever you like.','It is gone for good only with «Empty Trash» (Settings & more → Trash).']},
@@ -2200,6 +2272,7 @@ function viewMore(m){setTitle((EN?'Settings & more':'Ρυθμίσεις & άλλ
   const tn=[...S.photos.values()].filter(p=>p.trashed&&!p.purged).length;
   if(!FS_OK){m.append(tiles([['images',(EN?'Open photos':'Άνοιγμα φωτογραφιών'),(EN?'View only':'Μόνο προβολή'),'view','#6366f1'],['settings',(EN?'Settings':'Ρυθμίσεις'),'','settings','#64748b']]));return;}
   m.append(tiles([['trash-2',(EN?'Trash':'Κάδος'),tn?fmtN(tn)+(EN?' deleted · restore or delete for good':' σβησμένα · επαναφορά ή οριστικό σβήσιμο'):(EN?'Empty':'Άδειος'),'trash','#dc2626'],
+    ['images',(EN?'Similar photos':'Παρόμοιες φωτογραφίες'),(EN?'Same photo in another size, bursts — you choose':'Ίδια σε άλλο μέγεθος, ριπές — εσύ διαλέγεις'),'similar','#8b5cf6'],
     ['settings',(EN?'Settings':'Ρυθμίσεις'),(EN?'Language, 2nd copy, videos':'Γλώσσα, 2ο αντίγραφο, βίντεο'),'settings','#64748b'],
     ['file-chart-column',EN?'Terms & licences':'Όροι & άδειες',EN?'Copyright, privacy, licences':'Πνευματικά δικαιώματα, απόρρητο, άδειες','terms','#475569']]));
   m.append(el('p',{style:'margin:14px 2px'},el('button',{class:'link',onclick:()=>openHelp()},EN?'🙋 Have a question? Ask the Helper':'🙋 Έχεις απορία; Ρώτα τον Βοηθό')));
@@ -2235,12 +2308,12 @@ async function trashLeftovers(list){ // αρχικά που έμειναν επ�
   await saveIndex();toast((EN?`✅ Deleted ${fmtN(n)} more originals.`:`✅ Σβήστηκαν ακόμα ${fmtN(n)} αρχικά.`));render();}
 function viewPhotos(m){setTitle((EN?'Photos':'Φωτογραφίες'));const I=getIdx();const list=I.all.filter(p=>!p.video);
   if(!list.length)return empty(m);
-  const rev=list.slice().reverse(),byM=new Map();for(const p of rev){const k=p.date?`${MONTHS[+p.date.slice(5,7)-1]} ${p.date.slice(0,4)}`:(EN?'No date':'Χωρίς ημερομηνία');if(!byM.has(k))byM.set(k,[]);byM.get(k).push(p);}
+  const rev=list.toReversed(),byM=new Map();for(const p of rev){const k=p.date?`${MONTHS[+p.date.slice(5,7)-1]} ${p.date.slice(0,4)}`:(EN?'No date':'Χωρίς ημερομηνία');if(!byM.has(k))byM.set(k,[]);byM.get(k).push(p);}
   m.append(el('p',{class:'muted'},(EN?`${fmtN(list.length)} photos · most recent first`:`${fmtN(list.length)} φωτογραφίες · οι πιο πρόσφατες πρώτα`)));
   let off=0;for(const [k,l] of byM){m.append(el('h3',{class:'sec'},`${k} · ${fmtN(l.length)}`));m.append(gallery(l,rev,off));off+=l.length;}}
 function viewAll(m){setTitle((EN?'Photos & videos':'Φωτογραφίες & βίντεο'));const I=getIdx();const list=I.all;
   if(!list.length)return empty(m);const nv=list.filter(p=>p.video).length;
-  const rev=list.slice().reverse(),byM=new Map();for(const p of rev){const k=p.date?`${MONTHS[+p.date.slice(5,7)-1]} ${p.date.slice(0,4)}`:(EN?'No date':'Χωρίς ημερομηνία');if(!byM.has(k))byM.set(k,[]);byM.get(k).push(p);}
+  const rev=list.toReversed(),byM=new Map();for(const p of rev){const k=p.date?`${MONTHS[+p.date.slice(5,7)-1]} ${p.date.slice(0,4)}`:(EN?'No date':'Χωρίς ημερομηνία');if(!byM.has(k))byM.set(k,[]);byM.get(k).push(p);}
   m.append(el('p',{class:'muted'},(EN?`${fmtN(list.length-nv)} photos · ${fmtN(nv)} videos · most recent first · `:`${fmtN(list.length-nv)} φωτογραφίες · ${fmtN(nv)} βίντεο · οι πιο πρόσφατες πρώτα · `),
     el('button',{class:'link',onclick:()=>nav('photos')},EN?'only photos':'μόνο φωτογραφίες'),' · ',el('button',{class:'link',onclick:()=>nav('videos')},EN?'only videos':'μόνο βίντεο')));
   let off=0;for(const [k,l] of byM){m.append(el('h3',{class:'sec'},`${k} · ${fmtN(l.length)}`));m.append(gallery(l,rev,off));off+=l.length;}}
@@ -2248,7 +2321,7 @@ function viewVideos(m){setTitle((EN?'Videos':'Βίντεο'));const I=getIdx();c
   if(!list.length)return empty(m,(EN?'No videos yet. Make sure «Collect videos too» is on in Settings, then collect.':'Δεν υπάρχουν ακόμα βίντεο. Βεβαιώσου ότι στις Ρυθμίσεις είναι ανοιχτό το «Μάζεψε και βίντεο» και κάνε Μάζεμα.'));
   const ys=list.filter(p=>p.date).map(p=>p.date.slice(0,4));
   m.append(el('p',{class:'muted'},(EN?`${fmtN(list.length)} videos${ys.length?` · ${ys[0]}–${ys[ys.length-1]}`:''} · most recent first`:`${fmtN(list.length)} βίντεο${ys.length?` · ${ys[0]}–${ys[ys.length-1]}`:''} · τα πιο πρόσφατα πρώτα`)));
-  const rev=list.slice().reverse(),byY=new Map();for(const p of rev){const k=p.date?p.date.slice(0,4):(EN?'No date':'Χωρίς ημερομηνία');if(!byY.has(k))byY.set(k,[]);byY.get(k).push(p);}
+  const rev=list.toReversed(),byY=new Map();for(const p of rev){const k=p.date?p.date.slice(0,4):(EN?'No date':'Χωρίς ημερομηνία');if(!byY.has(k))byY.set(k,[]);byY.get(k).push(p);}
   let off=0;for(const [k,l] of byY){m.append(el('h3',{class:'sec'},(EN?`${k} · ${fmtN(l.length)} videos`:`${k} · ${fmtN(l.length)} βίντεο`)));m.append(gallery(l,rev,off));off+=l.length;}}
 
 function viewCalendar(m,y,mo,d){
@@ -2327,6 +2400,80 @@ function viewDups(m){setTitle((EN?'Duplicates':'Διπλότυπα'));
   list.slice(0,400).forEach(({p,live})=>{const t=lazy(el('div',{class:'thumb',onclick:()=>openLB([p],0)}),{h:p.h});
     box.append(el('div',{class:'item'},t,el('div',{},el('b',{},(EN?`${live.length} locations · ${fmtSize(p.size)}`:`${live.length} θέσεις · ${fmtSize(p.size)}`)),live.map(s=>el('div',{class:'path'},srcLabel(s))))));});
   if(list.length)m.append(box);}
+/* ---------------- ΠΑΡΟΜΟΙΕΣ ΦΩΤΟΓΡΑΦΙΕΣ (2026-11-25) ----------------
+   «Οπτικό αποτύπωμα» (dHash 64 bit) από τη μικρογραφία: η φωτογραφία μικραίνει σε 9×8 γκρι κουκκίδες και κάθε bit λέει
+   «είναι η επόμενη κουκκίδα πιο φωτεινή;». Ίδια φωτογραφία σε άλλο μέγεθος/συμπίεση → σχεδόν ίδια 64 bit.
+   Ταίριασμα: τα 64 bit χωρίζονται σε 8 λωρίδες των 8 bit — δύο αποτυπώματα με ≤5 διαφορές έχουν ΣΙΓΟΥΡΑ μία λωρίδα ίδια (αρχή του περιστεριώνα),
+   οπότε συγκρίνουμε μόνο όσες μοιράζονται λωρίδα, όχι όλες με όλες. Υπολογισμός σε βοηθό παρασκηνίου· αποθηκεύεται (p.dh) για την επόμενη φορά.
+   ΠΟΤΕ αυτόματο σβήσιμο: δείχνει τις ομάδες, εσύ σημειώνεις, και πάνε στον Κάδο (με επαναφορά) μέσω trashPhotos. */
+const SIM_MAX=5,SIM_FLAT=6; // μέγιστη διαφορά bit · κάτω από αυτή την «αντίθεση» (π.χ. μαύρη/λευκή εικόνα) δεν συγκρίνεται
+let DW=null;const DWwait=new Map();let DWid=0;
+function dhashCore(g){let hi=0,lo=0,k=0;for(let y=0;y<8;y++)for(let x=0;x<8;x++,k++){const b=g[y*9+x]<g[y*9+x+1]?1:0;if(k<32)hi=(hi<<1|b)>>>0;else lo=(lo<<1|b)>>>0;}
+  let s=0,s2=0;for(const v of g){s+=v;s2+=v*v;}const sd=Math.sqrt(Math.max(0,s2/g.length-(s/g.length)**2));
+  return {dh:hi.toString(16).padStart(8,'0')+lo.toString(16).padStart(8,'0'),sd:Math.round(sd)};}
+function grayOf(d){const g=new Float32Array(72);for(let i=0;i<72;i++)g[i]=d[i*4]*0.299+d[i*4+1]*0.587+d[i*4+2]*0.114;return g;}
+function dhWorker(){if(DW!==null)return DW;try{if(typeof OffscreenCanvas==='undefined')throw 0;
+  const src=dhashCore.toString()+grayOf.toString()+';const c=new OffscreenCanvas(9,8),x=c.getContext("2d",{willReadFrequently:true});'+
+    'onmessage=async e=>{const {id,b}=e.data;try{const bm=await createImageBitmap(b,{resizeWidth:9,resizeHeight:8,resizeQuality:"high"});x.clearRect(0,0,9,8);x.drawImage(bm,0,0);bm.close();'+
+    'postMessage({id,r:dhashCore(grayOf(x.getImageData(0,0,9,8).data))});}catch(z){postMessage({id,err:1});}};';
+  DW=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));
+  DW.onmessage=e=>{const w=DWwait.get(e.data.id);if(!w)return;DWwait.delete(e.data.id);w(e.data.err?null:e.data.r);};
+  DW.onerror=()=>{DW=false;for(const w of DWwait.values())w(null);DWwait.clear();};}catch{DW=false;}return DW;}
+async function dhashHere(b){try{const bm=await createImageBitmap(b,{resizeWidth:9,resizeHeight:8,resizeQuality:'high'});const c=document.createElement('canvas');c.width=9;c.height=8;
+  const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(bm,0,0);bm.close&&bm.close();return dhashCore(grayOf(x.getImageData(0,0,9,8).data));}catch{return null;}}
+function dhashOf(b){const w=dhWorker();if(!w)return dhashHere(b);return new Promise(ok=>{const id=++DWid;DWwait.set(id,ok);w.postMessage({id,b});});}
+const popc=v=>{v=v-((v>>>1)&0x55555555);v=(v&0x33333333)+((v>>>2)&0x33333333);return (((v+(v>>>4))&0x0F0F0F0F)*0x01010101)>>>24;};
+function simGroups(list){ // list: [{p,hi,lo}] → ομάδες (union-find)
+  const par=list.map((_,i)=>i),find=i=>{while(par[i]!==i)i=par[i]=par[par[i]];return i;},dist=new Map();
+  for(let band=0;band<8;band++){const B=new Map();
+    for(let i=0;i<list.length;i++){const w=band<4?list[i].hi:list[i].lo,key=(w>>>((3-band%4)*8))&255;let a=B.get(key);if(!a)B.set(key,a=[]);a.push(i);}
+    for(const a of B.values()){if(a.length<2||a.length>4000)continue;
+      for(let x=0;x<a.length;x++){const A=list[a[x]];for(let y=x+1;y<a.length;y++){const C=list[a[y]];
+        const d=popc((A.hi^C.hi)>>>0)+popc((A.lo^C.lo)>>>0);if(d<=SIM_MAX){const ra=find(a[x]),rc=find(a[y]);if(ra!==rc)par[ra]=rc;}}}}}
+  const G=new Map();for(let i=0;i<list.length;i++){const r=find(i);if(!G.has(r))G.set(r,[]);G.get(r).push(list[i]);}
+  return [...G.values()].filter(g=>g.length>1);}
+const simScore=p=>(p.w||0)*(p.hgt||0)*10+(p.size||0)/1e6; // ⭐ = μεγαλύτερη ανάλυση, μετά μεγαλύτερο αρχείο
+let SIM=null; // {groups, done, i, total, mark:Set}
+async function findSimilar(){if(SIM&&!SIM.done)return;
+  const all=[...S.photos.values()].filter(p=>!p.trashed&&!p.video);SIM={groups:[],done:false,i:0,total:all.length,mark:new Set()};render();
+  let changed=0,last=performance.now();
+  for(const p of all){SIM.i++;
+    if(!p.dh){const b=await getBin('thumbs',p.h);const r=b?await dhashOf(b):null;if(r){p.dh=r.dh;p.dsd=r.sd;await savePhoto(p);changed++;}else p.dh='';}
+    if(performance.now()-last>400){last=performance.now();const pr=$('#simProg');if(pr){pr.value=SIM.i;pr.max=SIM.total;}const t=$('#simTxt');if(t)t.textContent=`${fmtN(SIM.i)} / ${fmtN(SIM.total)}`;
+      if(self.scheduler&&scheduler.yield)await scheduler.yield();}}
+  const L=all.filter(p=>p.dh&&p.dh.length===16&&(p.dsd??99)>=SIM_FLAT).map(p=>({p,hi:parseInt(p.dh.slice(0,8),16)>>>0,lo:parseInt(p.dh.slice(8),16)>>>0}));
+  SIM.groups=simGroups(L).map(g=>g.map(x=>x.p).sort((a,b)=>simScore(b)-simScore(a))).sort((a,b)=>b.length-a.length);
+  SIM.done=true;SIM.at=Date.now();if(location.hash.includes('similar'))render();else toast((EN?`🔎 Similar photos: ${fmtN(SIM.groups.length)} sets found.`:`🔎 Παρόμοιες: βρέθηκαν ${fmtN(SIM.groups.length)} ομάδες.`));}
+function viewSimilar(m){setTitle(EN?'Similar photos':'Παρόμοιες φωτογραφίες');
+  m.append(card(el('h3',{},EN?'🔎 Photos that look the same':'🔎 Φωτογραφίες που μοιάζουν ίδιες'),
+    el('p',{class:'muted'},EN?'Finds the same photo in another size or quality (e.g. one sent by Viber) and bursts of the same moment — even though the files are not identical. The work is done here, on your computer: nothing is sent anywhere.':'Βρίσκει την ίδια φωτογραφία σε άλλο μέγεθος ή ποιότητα (π.χ. αυτή που ήρθε από Viber) και τις ριπές της ίδιας στιγμής — ακόμα κι αν τα αρχεία δεν είναι ίδια. Η δουλειά γίνεται εδώ, στον υπολογιστή σου: δεν στέλνεται τίποτα πουθενά.'),
+    el('p',{class:'small muted'},EN?'Nothing is deleted by itself. You look, you tick what you don’t want, and it goes to the 🗑️ Trash — from where you can bring it back.':'Τίποτα δεν σβήνεται μόνο του. Εσύ κοιτάς, σημειώνεις ό,τι δεν θέλεις, και πάει στον 🗑️ Κάδο — από όπου το ξαναφέρνεις.'),
+    !SIM||SIM.done?el('button',{class:'btn primary big',style:'width:100%',onclick:findSimilar},icon('search'),SIM?(EN?'Look again':'Ξαναψάξε'):(EN?'Find similar photos':'Βρες παρόμοιες φωτογραφίες'))
+      :el('div',{},el('progress',{id:'simProg',max:SIM.total,value:SIM.i,style:'width:100%'}),el('p',{class:'small muted',id:'simTxt'},`${fmtN(SIM.i)} / ${fmtN(SIM.total)}`),
+        el('p',{class:'small muted'},EN?'The first time takes a while (a few minutes for many thousands); then it remembers and is quick.':'Την πρώτη φορά θέλει λίγη ώρα (λίγα λεπτά για πολλές χιλιάδες)· μετά τα θυμάται και είναι γρήγορο.'))));
+  if(!SIM||!SIM.done)return;
+  if(!SIM.groups.length)return m.append(card(el('p',{},EN?'✅ No similar photos found. Your library is clean!':'✅ Δεν βρέθηκαν παρόμοιες φωτογραφίες. Η βιβλιοθήκη σου είναι καθαρή!')));
+  const extra=SIM.groups.reduce((a,g)=>a+g.length-1,0),bytes=SIM.groups.reduce((a,g)=>a+g.slice(1).reduce((b,p)=>b+(p.size||0),0),0);
+  const bar=el('div',{class:'card simbar'});const upd=()=>{bar.replaceChildren(el('b',{},EN?`${fmtN(SIM.groups.length)} sets · ${fmtN(extra)} extra photos (${fmtSize(bytes)})`:`${fmtN(SIM.groups.length)} ομάδες · ${fmtN(extra)} επιπλέον φωτογραφίες (${fmtSize(bytes)})`),
+    el('div',{class:'row',style:'margin-top:8px'},el('button',{class:'btn danger',disabled:!SIM.mark.size,onclick:async()=>{const l=[...SIM.mark].map(h=>S.photos.get(h)).filter(Boolean);await trashPhotos(l);
+      const gone=new Set(l.filter(p=>p.trashed).map(p=>p.h));if(gone.size){SIM.groups=SIM.groups.map(g=>g.filter(p=>!gone.has(p.h))).filter(g=>g.length>1);for(const h of gone)SIM.mark.delete(h);render();}}},
+      icon('trash-2'),EN?`Ticked to the Trash (${fmtN(SIM.mark.size)})`:`Τα σημειωμένα στον Κάδο (${fmtN(SIM.mark.size)})`),
+      SIM.mark.size?el('button',{class:'btn ghost',onclick:()=>{SIM.mark.clear();render();}},EN?'Untick all':'Ξεσημείωσε όλα'):''));};upd();m.append(bar);
+  const info=p=>[p.w?`${p.w}×${p.hgt}`:'',fmtSize(p.size),p.date?fmtDate(p.date):''].filter(Boolean).join(' · ');
+  for(const g of SIM.groups.slice(0,300)){const box=el('div',{class:'card simg'});const ds=[...new Set(g.map(p=>p.date&&fmtDate(p.date)).filter(Boolean))];
+    box.append(el('h4',{class:'simh'},EN?`${g.length} similar`:`${g.length} παρόμοιες`,ds.length?el('span',{class:'muted'},' · '+ds.slice(0,2).join(', ')):''));
+    const row=el('div',{class:'simrow'});
+    g.forEach((p,k)=>{const t=lazy(el('div',{class:'thumb'}),{h:p.h});
+      t.append(el('button',{class:'simlook','aria-label':EN?'Look at it big':'Δες τη μεγάλη',title:EN?'Look at it big':'Δες τη μεγάλη',onclick:()=>openLB(g,k)},icon('search')));
+      const fig=el('figure',{class:'simf'},t,el('figcaption',{},el('b',{class:'simstar'},k===0?(EN?'⭐ Best quality':'⭐ Καλύτερη ποιότητα'):'\u00a0'),el('span',{class:'small muted'},info(p))),
+        el('button',{class:'btn simt',onclick:()=>{SIM.mark.has(p.h)?SIM.mark.delete(p.h):SIM.mark.add(p.h);paint();}}));
+      row.append(fig);});
+    // no full re-render on a tick: the page stays where you are
+    const paint=()=>{[...row.children].forEach((f,k)=>{const on=SIM.mark.has(g[k].h),b=f.querySelector('.simt');f.classList.toggle('off',on);b.classList.toggle('danger',on);
+      b.setAttribute('aria-pressed',String(on));b.textContent=on?(EN?'✕ To the Trash':'✕ Στον Κάδο'):(EN?'Keep':'Κράτα');});upd();};
+    box.append(row,el('button',{class:'link small',onclick:()=>{g.slice(1).forEach(p=>SIM.mark.add(p.h));SIM.mark.delete(g[0].h);paint();}},EN?'Keep only the ⭐ in this set':'Κράτα μόνο το ⭐ σε αυτή την ομάδα'));paint();
+    m.append(box);}
+  if(SIM.groups.length>300)m.append(el('p',{class:'small muted'},EN?`…and ${fmtN(SIM.groups.length-300)} more sets (they appear after you clear these).`:`…και ακόμα ${fmtN(SIM.groups.length-300)} ομάδες (φαίνονται όταν καθαρίσεις αυτές).`));}
 function viewSearch(m,q){setTitle((EN?'Search: ':'Αναζήτηση: ')+q);$('#q').value=q;const nq=norm(q),I=getIdx();let any=false;
   const pls=[...I.places.values()].filter(pl=>norm(pl.name).includes(nq));
   if(pls.length){any=true;m.append(el('h3',{class:'sec'},(EN?'📍 Places':'📍 Μέρη')),el('div',{class:'tiles cover'},pls.map(pl=>coverTile(pl.name,fmtN(pl.list.length)+(EN?' photos':' φωτο'),mid(pl.list),()=>navTo('place',pl.key)))));}
@@ -2459,7 +2606,7 @@ function viewClean(m){setTitle((EN?'Delete originals':'Σβήσιμο αρχικ
       el('p',{},(EN?'If you delete them here, they are ALSO deleted from the cloud and from all your devices!':'Αν τα σβήσεις εδώ, σβήνονται ΚΑΙ από το cloud και από όλες τις συσκευές σου!')),el('label',{class:'chk'},cloudChk,el('span',{},(EN?'I understand — delete these too. (Otherwise they are skipped.)':'Καταλαβαίνω — να σβηστούν κι αυτά. (Αλλιώς παραλείπονται.)')))));}
 
     const n=safe.length,go=el('button',{class:'btn danger big',disabled:true,style:'width:100%;font-size:20px;padding:18px'},icon('trash-2'),(EN?`Delete ${fmtN(n)} originals`:`Διαγραφή ${fmtN(n)} αρχικών`)),hint=el('p',{class:'small muted'});
-    const upd=async()=>{let allp=true;permRow.innerHTML='';for(const s of involved){const ok=await permState(s.handle,'readwrite')==='granted';if(!ok)allp=false;
+    const upd=async()=>{let allp=true;permRow.replaceChildren();for(const s of involved){const ok=await permState(s.handle,'readwrite')==='granted';if(!ok)allp=false;
         permRow.append(el('button',{class:'btn'+(ok?' ghost':''),disabled:ok,onclick:async()=>{await ensurePerm(s.handle,'readwrite');upd();}},(ok?'✅ ':'🔓 ')+s.name));}
       go.disabled=!(allp&&(safe.length||(cloudChk&&cloudChk.checked)));
       hint.textContent=allp?'':(EN?'👆 First give permission for each folder (buttons above), then press Delete.':'👆 Δώσε πρώτα άδεια για κάθε φάκελο (κουμπιά από πάνω) και μετά πάτα Διαγραφή.');};
@@ -2584,6 +2731,7 @@ const TERMS=EN?[
  ['What it is','Mnimes for Life (Mnimes) is a free app that copies your photos and videos from the folders and drives you choose into one library folder, sorted by year, month and place, and shows them in a calendar and a map. It runs entirely in your browser, on your own computer.'],
  ['Your data stays with you','Your photos and videos never leave your computer and the creator never sees or collects them. The app’s index stays in this browser (IndexedDB) and in the «Μνήμες/_PhotoApp» folder of your library. There is no account, no ads and no tracking.'],
  ['What is sent over the internet','• Place names: only coordinates rounded to 2 decimals (about 1 km) go to BigDataCloud and, if needed, to OpenStreetMap Nominatim. You can turn this off in Settings.\n• Map: map pieces come from Esri’s servers, which see your IP address and the area you look at.\n• Font and libraries: the Inter font comes from Google Fonts and the exifr and Leaflet libraries from jsDelivr and cdnjs, which see your IP address.\n• «From the phone» (Wi-Fi): so that the phone can find the computer, two short connection notes pass through the meeting point mnimes-pair (Cloudflare), encrypted with a key that exists only inside the QR code; they are deleted after 15 minutes. A Cloudflare STUN server sees your IP address to open the connection. The photos go directly from the phone to the computer, encrypted (WebRTC), and do not pass through any server. Nothing is deleted on the phone.\n• New version: the downloaded app asks, at most once a day, for one small file (version.json) from the Mnimes page on GitHub, to tell you if a new version is out. GitHub sees your IP address.\nNo photo, file name or folder name is ever sent to a server.'],
+ ['New in 3.2 — what they do','• «Similar photos» (Settings & more): finds the same photo in another size or quality and bursts of the same moment, with a visual fingerprint made on your computer from the small preview. It suggests; you choose; whatever you remove goes to the Trash.\n• The «Drop it all here» folder is watched live: new files are noticed within seconds.\n• Big videos are checked by a helper in the background, so the page never freezes. On slow computers it works more gently.\n• A small progress window that stays on top of other windows (Chrome).\n• JPEG XL photos are recognised.\n• The browser is asked to keep the app’s index safe (persistent storage).'],
  ['New in 3.0 — what they do',"• «Drop it all here» (the folder «Ρίξ' τα όλα εδώ» inside your library): whatever you put in it is MOVED into Year/Month/Place on the same drive (not copied: the bytes stay the same and no extra space is used). After that the files are no longer in that folder, and if you moved them there from the same drive, the library is their ONLY copy — keep a 2nd copy on another drive. Files that are not photos/videos, or cannot be read, stay where they are. A copy made with File Explorer is not checked against its original; for old or suspicious drives use «Take & sort» (Advanced).\n• «Find duplicates»: only files identical byte for byte; one always stays; the others are moved into a «Κάδος διπλοτύπων» folder on the same drive and are deleted for good only when you press «Empty».\n• «Look at the library again»: only reads the drive and corrects the list; it changes nothing on the drive.\n• «Only check» / «Are they all on the computer?»: the phone sends to the computer ONLY the SHA-256 fingerprints of its photos (directly, encrypted, like the photos), not the photos. Before deleting from a phone that backs up to Google Photos or another cloud: deleting on the phone may delete them from that cloud too.\n• If the phone changes Wi-Fi, the connection is opened again by itself with new sealed notes through the same meeting point (mnimes-pair).\n• «Put Mnimes on the drive» / «Update»: the official file is downloaded from ktsiminakis.github.io (GitHub, which sees your IP address), checked, and written into your «Μνήμες» folder. Each copy of the app keeps its own memory in the browser.\n• «🙋 Helper»: questions and answers written by the creator, inside the app; it uses no AI and no internet, and sends nothing."],
  ['Your rights (GDPR)','The creator holds no personal data of yours. You can delete the app’s memory at any time from Settings → «Start over» (your photos are not touched). Questions: ktsiminakis@gmail.com. You may complain to the Hellenic Data Protection Authority (www.dpa.gr).'],
  ['Liability','The app is provided «as is», free of charge, without any warranty. The SHA-256 checks greatly reduce the risk but cannot remove it: drives fail, cables come loose, cloud folders sync. Before deleting originals, always keep a second copy on another drive. Deleting originals happens only after the double check and after the user types the word DELETE; it cannot be undone. Deleting from a cloud folder (OneDrive, Google Drive, iCloud, Dropbox) also deletes from your other devices. The creator is not liable for any loss or damage from its use. Dates, places and duplicates are detected automatically and may be wrong.'],
@@ -2596,6 +2744,7 @@ const TERMS=EN?[
  ['Τι είναι','Οι Μνήμες για Πάντα (Μνήμες) είναι δωρεάν εφαρμογή που αντιγράφει τις φωτογραφίες και τα βίντεό σου από τους φακέλους και τους δίσκους που διαλέγεις σε έναν φάκελο-βιβλιοθήκη, τακτοποιημένα ανά χρονιά, μήνα και μέρος, και τα δείχνει σε ημερολόγιο και χάρτη. Τρέχει ολόκληρη μέσα στον browser, στον δικό σου υπολογιστή.'],
  ['Τα δεδομένα σου μένουν σε σένα','Οι φωτογραφίες και τα βίντεό σου δεν φεύγουν ποτέ από τον υπολογιστή σου και ο δημιουργός δεν τα βλέπει ούτε τα συλλέγει. Το ευρετήριο της εφαρμογής μένει σε αυτόν τον browser (IndexedDB) και στον φάκελο «Μνήμες/_PhotoApp» της βιβλιοθήκης σου. Δεν υπάρχει λογαριασμός, διαφημίσεις ή παρακολούθηση.'],
  ['Τι στέλνεται στο ίντερνετ','• Ονόματα μερών: μόνο συντεταγμένες στρογγυλεμένες σε 2 δεκαδικά (περίπου 1 χλμ.) πάνε στο BigDataCloud και, αν χρειαστεί, στο OpenStreetMap Nominatim. Το κλείνεις από τις Ρυθμίσεις.\n• Χάρτης: τα κομμάτια του χάρτη έρχονται από τους servers της Esri, που βλέπουν τη διεύθυνση IP και την περιοχή που κοιτάς.\n• Γραμματοσειρά και βιβλιοθήκες: η γραμματοσειρά Inter έρχεται από το Google Fonts και οι βιβλιοθήκες exifr και Leaflet από τα jsDelivr και cdnjs, που βλέπουν τη διεύθυνση IP.\n• «Από κινητό» (Wi-Fi): για να βρει το κινητό τον υπολογιστή, περνούν από το σημείο συνάντησης mnimes-pair (Cloudflare) δύο μικρά σημειώματα σύνδεσης, κρυπτογραφημένα με κλειδί που υπάρχει μόνο μέσα στο QR· σβήνονται σε 15 λεπτά. Ένας server STUN της Cloudflare βλέπει τη διεύθυνση IP για να ανοίξει η σύνδεση. Οι φωτογραφίες πάνε απευθείας από το κινητό στον υπολογιστή, κρυπτογραφημένες (WebRTC), και δεν περνούν από κανέναν server. Στο κινητό δεν σβήνεται τίποτα.\n• Νέα έκδοση: η κατεβασμένη εφαρμογή ζητά το πολύ μία φορά τη μέρα ένα μικρό αρχείο (version.json) από τη σελίδα των Μνημών στο GitHub, για να σου πει αν βγήκε νέα έκδοση. Το GitHub βλέπει τη διεύθυνση IP.\nΚαμία φωτογραφία, όνομα αρχείου ή φακέλου δεν στέλνεται ποτέ σε server.'],
+ ['Νέα στην 3.2 — τι κάνουν','• «Παρόμοιες φωτογραφίες» (Ρυθμίσεις & άλλα): βρίσκει την ίδια φωτογραφία σε άλλο μέγεθος ή ποιότητα και τις ριπές της ίδιας στιγμής, με «οπτικό αποτύπωμα» που φτιάχνεται στον υπολογιστή σου από τη μικρογραφία. Προτείνει· εσύ διαλέγεις· ό,τι βγάζεις πάει στον Κάδο.\n• Ο φάκελος «Ρίξ\' τα όλα εδώ» παρακολουθείται ζωντανά: τα νέα αρχεία φαίνονται σε λίγα δευτερόλεπτα.\n• Τα μεγάλα βίντεο ελέγχονται από βοηθό στο παρασκήνιο, οπότε η σελίδα δεν παγώνει. Σε αργούς υπολογιστές δουλεύει πιο ήπια.\n• Μικρό παράθυρο προόδου που μένει πάνω από τα άλλα παράθυρα (Chrome).\n• Αναγνωρίζονται οι φωτογραφίες JPEG XL.\n• Ζητείται από τον browser να κρατάει ασφαλές το ευρετήριο της εφαρμογής (μόνιμη αποθήκευση).'],
  ['Νέα στην 3.0 — τι κάνουν',"• «Ρίξ' τα όλα εδώ» (ο φάκελος μέσα στη βιβλιοθήκη σου): ό,τι βάζεις εκεί ΜΕΤΑΚΙΝΕΙΤΑΙ σε Χρονιά/Μήνα/Μέρος στον ίδιο δίσκο (δεν αντιγράφεται: τα bytes μένουν ίδια και δεν πιάνεται επιπλέον χώρος). Μετά τα αρχεία δεν είναι πια σε εκείνον τον φάκελο, και αν τα μετακίνησες εκεί από τον ίδιο δίσκο, η βιβλιοθήκη είναι το ΜΟΝΑΔΙΚΟ αντίγραφό τους — κράτα 2ο αντίγραφο σε άλλον δίσκο. Όσα δεν είναι φωτογραφίες/βίντεο ή δεν διαβάζονται μένουν εκεί που είναι. Η αντιγραφή με την Εξερεύνηση αρχείων δεν ελέγχεται με το αρχικό· για παλιούς ή ύποπτους δίσκους χρησιμοποίησε το «Πάρε & μοίρασε» (Προχωρημένες).\n• «Βρες διπλότυπα»: μόνο αρχεία ίδια byte-προς-byte· ένα μένει πάντα· τα άλλα μετακινούνται σε φάκελο «Κάδος διπλοτύπων» στον ίδιο δίσκο και σβήνονται οριστικά μόνο όταν πατήσεις «Άδειασμα».\n• «Ξανακοίτα τη βιβλιοθήκη»: μόνο διαβάζει τον δίσκο και διορθώνει τη λίστα· στον δίσκο δεν αλλάζει τίποτα.\n• «Μόνο έλεγχος» / «Είναι όλες στον υπολογιστή;»: το κινητό στέλνει στον υπολογιστή ΜΟΝΟ τα αποτυπώματα SHA-256 των φωτογραφιών του (απευθείας, κρυπτογραφημένα, όπως και τις φωτογραφίες), όχι τις φωτογραφίες. Πριν σβήσεις από κινητό που κάνει αντίγραφο στο Google Photos ή σε άλλο cloud: το σβήσιμο στο κινητό μπορεί να τις σβήσει και από εκεί.\n• Αν το κινητό αλλάξει Wi-Fi, η σύνδεση ξανανοίγει μόνη της με νέα σφραγισμένα σημειώματα μέσω του ίδιου σημείου συνάντησης (mnimes-pair).\n• «Βάλε τις Μνήμες στον δίσκο» / «Ενημέρωση»: το επίσημο αρχείο κατεβαίνει από το ktsiminakis.github.io (GitHub, που βλέπει τη διεύθυνση IP), ελέγχεται και γράφεται στον φάκελο «Μνήμες» σου. Κάθε αντίγραφο της εφαρμογής κρατά δική του μνήμη στον browser.\n• «🙋 Βοηθός»: ερωτήσεις και απαντήσεις γραμμένες από τον δημιουργό, μέσα στην εφαρμογή· δεν χρησιμοποιεί AI ούτε ίντερνετ και δεν στέλνει τίποτα."],
  ['Τα δικαιώματά σου (GDPR)','Ο δημιουργός δεν κρατά κανένα προσωπικό σου δεδομένο. Σβήνεις τη μνήμη της εφαρμογής όποτε θέλεις από Ρυθμίσεις → «Ξεκίνα από την αρχή» (οι φωτογραφίες σου δεν αγγίζονται). Για ερωτήσεις: ktsiminakis@gmail.com. Έχεις δικαίωμα καταγγελίας στην Αρχή Προστασίας Δεδομένων Προσωπικού Χαρακτήρα (www.dpa.gr).'],
  ['Ευθύνη','Η εφαρμογή δίνεται «ως έχει», δωρεάν, χωρίς καμία εγγύηση. Οι έλεγχοι SHA-256 μειώνουν πολύ τον κίνδυνο αλλά δεν τον μηδενίζουν: δίσκοι χαλάνε, καλώδια βγαίνουν, φάκελοι cloud συγχρονίζονται. Πριν σβήσεις αρχικά, κράτα πάντα δεύτερο αντίγραφο σε άλλον δίσκο. Το σβήσιμο των αρχικών γίνεται μόνο μετά τον διπλό έλεγχο και αφού ο χρήστης γράψει τη λέξη ΔΙΑΓΡΑΦΗ· δεν αναιρείται. Το σβήσιμο από φάκελο cloud (OneDrive, Google Drive, iCloud, Dropbox) σβήνει και από τις άλλες συσκευές σου. Ο δημιουργός δεν ευθύνεται για απώλεια ή ζημιά από τη χρήση της. Ημερομηνίες, μέρη και διπλότυπα βρίσκονται αυτόματα και μπορεί να είναι λάθος.'],
@@ -2641,10 +2790,10 @@ function viewOpenFiles(m){setTitle((EN?'Open photos':'Άνοιγμα φωτογ�
 /* ---------------- Προβολή φωτογραφίας (lightbox) ---------------- */
 let LB=null;
 function openLB(list,idx){LB={list,idx,tok:null,url:null};$('#lb').hidden=false;document.body.style.overflow='hidden';showLB();}
-function closeLB(silent){if(!LB)return;if(LB.url)URL.revokeObjectURL(LB.url);LB=null;$('#lb').hidden=true;$('#lbMedia').innerHTML='';document.body.style.overflow='';}
+function closeLB(silent){if(!LB)return;if(LB.url)URL.revokeObjectURL(LB.url);LB=null;$('#lb').hidden=true;$('#lbMedia').replaceChildren();document.body.style.overflow='';}
 function stepLB(d){if(!LB)return;LB.idx=(LB.idx+d+LB.list.length)%LB.list.length;showLB();}
 async function showLB(){const {list,idx}=LB,p=list[idx],tok=LB.tok={};$('#lbCount').textContent=`${idx+1} / ${list.length}`;
-  const media=$('#lbMedia');media.innerHTML='';if(LB.url){URL.revokeObjectURL(LB.url);LB.url=null;}
+  const media=$('#lbMedia');media.replaceChildren();if(LB.url){URL.revokeObjectURL(LB.url);LB.url=null;}
   $('#lbPrev').style.visibility=$('#lbNext').style.visibility=list.length>1?'visible':'hidden';renderLBInfo(p);
   $('#lbTrash').hidden=!FS_OK||!!p.viewOnly||!S.dests.length;$('#lbTrash').replaceChildren(icon(p.trashed?'undo-2':'trash-2'));$('#lbTrash').title=p.trashed?(EN?'Restore from Trash':'Επαναφορά από τον Κάδο'):(EN?'Delete from everywhere (goes to the Trash)':'Σβήσιμο από παντού (πάει στον Κάδο)');
   const tu=await thumbURL(p.h);if(!LB||tok!==LB.tok)return;
@@ -2652,7 +2801,7 @@ async function showLB(){const {list,idx}=LB,p=list[idx],tok=LB.tok={};$('#lbCoun
   const img=el('img',{src:tu||'',alt:''});media.append(img);
   const b=await photoBlob(p);if(!LB||tok!==LB.tok||!b)return;const u=URL.createObjectURL(b);const t=new Image();
   t.onload=()=>{if(LB&&tok===LB.tok){img.src=u;LB.url=u;}else URL.revokeObjectURL(u);};t.onerror=()=>URL.revokeObjectURL(u);t.src=u;}
-function renderLBInfo(p){const info=$('#lbInfo');info.innerHTML='';
+function renderLBInfo(p){const info=$('#lbInfo');info.replaceChildren();
   const go=h=>()=>{closeLB();nav(h);};
   info.append(el('div',{class:'row'},el('b',{style:'font-size:18px'},(p.ds==='file'?'≈ ':'')+fmtDate(p.date,true)),
     p.date?el('button',{class:'link row',style:'gap:5px',onclick:go(`cal/${+p.date.slice(0,4)}/${+p.date.slice(5,7)}/${+p.date.slice(8,10)}`)},icon('calendar-days'),(EN?'whole day':'όλη η μέρα')):null,
@@ -2674,7 +2823,7 @@ $('#lbMedia').addEventListener('touchend',e=>{if(tx0==null)return;const dx=e.cha
 (async()=>{
   if(!window.crypto||!crypto.subtle){$('#main').append(el('div',{class:'card bad'},(EN?'This browser lacks what is needed (Web Crypto). Use a recent Chrome, Edge or Safari.':'Ο browser δεν υποστηρίζει τα απαραίτητα (Web Crypto). Χρησιμοποίησε νέα έκδοση Chrome, Edge ή Safari.')));return;}
   if(!window.exifr)toast((EN?'⚠️ No internet: dates will come only from the file name/date. Open the app with a connection.':'⚠️ Χωρίς ίντερνετ: οι ημερομηνίες θα βγουν μόνο από το όνομα/ημερομηνία αρχείου. Άνοιξε την εφαρμογή με σύνδεση.'),8000);
-  const shaOk=await selfTestSha();console.info('SHA256-selftest:'+shaOk);if(!shaOk)console.warn('SHA-256 self-test failed — μεγάλα αρχεία θα διαβάζονται ολόκληρα');
+  const shaOk=await selfTestSha();console.info('SHA256-selftest:'+shaOk);if(shaOk)selfTestWorker().then(v=>console.info('SHA256-worker:'+v));if(!shaOk)console.warn('SHA-256 self-test failed — μεγάλα αρχεία θα διαβάζονται ολόκληρα');
   await oneTab();await loadAll();render();
   try{if(localStorage.getItem(LSK('mnimes.afterSwitch'))){localStorage.removeItem(LSK('mnimes.afterSwitch'));toast(EN?'Now choose the other library in «② Where to?».':'Τώρα διάλεξε την άλλη βιβλιοθήκη στο «② Πού;».',8000);}}catch{}
   maybeInbox();
