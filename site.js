@@ -62,9 +62,28 @@ const EN={
  g8h:'On another computer', g8:'<li><span>Connect the drive to the other computer.</span></li><li><span>Open the file <b>«Μνήμες › Μνήμες για Πάντα.html»</b> on the drive, with Chrome or Edge.</span></li><li><span>The first time press <b>«Choose the Μνήμες folder of this drive»</b>. After that everything loads by itself.</span></li>',
  g8t:'💡 Two computers with the same drive never spoil each other: the lists are merged.',
  g9h:'Something is not right', g9:'<li><span><b>Not sorting?</b> If the top says «🔓 … asks for permission again», press the button and choose «Allow on every visit».</span></li><li><span><b>Black squares or missing photos?</b> «Settings & more» → «For experts» → «Look at the library again».</span></li><li><span><b>«Already open in another tab»?</b> Close the second tab. Mnimes works in one at a time.</span></li><li><span><b>The drive shows errors?</b> Press «⛔ Stop». For precious photos, take the drive to a data recovery lab.</span></li><li><span><b>Wrong date?</b> It comes from inside the photo or from its name. If the camera had the wrong time, it goes in with that.</span></li>',
+
+ nav1:'See it', nav2:'How it works inside', nav3:'Guide', nav4:'Helper',
+ dk1:'See it from the inside', dh1:'The app, as you will see it',
+ tb1:'Home', tb2:'Photos', tb3:'Calendar', tb4:'Map', tb5:'Similar', tb6:'Viewer', tb7:'Step by step',
+ cp_home:'Home: how many photos you have, whether they are all safe, and the 5 buttons you need.',
+ cp_all:'All photos and videos, newest first, by month.',
+ cp_cal:'Calendar: year → month → day. Each year with one of its photos.',
+ cp_map:'Map: where they were taken, from the location each photo carries inside it.',
+ cp_similar:'Similar: the same photo in another size, or bursts. The ⭐ is the best one; you choose.',
+ cp_photo:'Big view, with date and place. With the arrows you go to the next one.',
+ cp_start2:'Step by step: «Where are the photos now?» and the app tells you exactly what to do.',
+ demo:'The photos are examples (Pexels, free licence). The app is the real one, version 3.2.',
+ hk:'How it works inside', hh:'What happens «inside», in plain words',
+ h1h:'Everything stays with you', h1p:'Mnimes is one file that runs inside Chrome or Edge and writes straight to your drive, with your permission. There is no server, no account and no «cloud»: your photos never pass through the internet.',
+ h2h:'Digital fingerprint (SHA-256)', h2b:'Change 1 byte', h2p:'Every file gives a «code» of 64 characters. If even one byte changes, the code changes completely (try it, live). This is how every copy is checked three times.',
+ h3h:'Visual fingerprint (for Similar photos)', h3p:'The photo shrinks to 9×8 grey dots, and for each pair of neighbours it writes 1 if the second is brighter. That gives 64 «yes/no». The same photo from Viber differs in 2 of the 64, so it is the same. Another sunset differs in 7 and is another day, so it stays apart.',
+ h4h:'A helper in the background', h4a:'Page', h4b:'Helper', h4p:'Big videos are checked by a «helper» (Web Worker) next to the page, so the screen always answers at once. On a slow computer it works more gently, so it does not overheat.',
+ vk:'Helper', vh:'Have a question?', vs:'The same Helper the app has: you choose a question and see the answer step by step. No account, nothing is sent.',
+ q1:'How do I bring the phone’s photos?', q2:'I have an iPhone. What do I do?', q3:'Is it safe? Is anything uploaded?', q4:'How do I make a 2nd copy?', vopen:'All the questions',
  ch:'Found it useful?', cp:'Mnimes is free and will stay free. If you like, buy me a coffee.', cb:'Buy me a coffee',
  dh:'Thank you! ☕', dp:'Open your bank app → <b>IRIS</b> → send to mobile number, and enter:', cpy:'Copy', copied:'Copied ✓', dq:'Or scan the QR with your camera to get the number. (IRIS works with Greek banks.)', dc:'Close',
- foot:'Mnimes for Life 3.2.1 · The photos in the pictures are examples.', copy:'© 2026 Konstantinos Tsiminakis · All rights reserved', credit:'Created by Konstantinos Tsiminakis, son of Alexandros', terms:'Terms of use and licences',
+ foot:'Mnimes for Life 3.2.2 · The photos in the pictures are examples.', copy:'© 2026 Konstantinos Tsiminakis · All rights reserved', credit:'Created by Konstantinos Tsiminakis, son of Alexandros', terms:'Terms of use and licences',
  shot:'The Mnimes home screen with tiles for Photos, Videos, Calendar and Map'
 };
 const EL={};document.querySelectorAll('[data-t]').forEach(e=>EL[e.dataset.t]=e.innerHTML);
@@ -77,28 +96,11 @@ function setLang(l){const D=l==='en'?EN:EL;
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===l));
   document.querySelectorAll('a[href^="Mnimes.html"]').forEach(a=>{if(!a.hasAttribute('download'))a.href='Mnimes.html?lang='+l;});
   document.querySelectorAll('img[data-en]').forEach(im=>{if(!im.dataset.el)im.dataset.el=im.getAttribute('src');im.src=l==='en'?im.dataset.en:im.dataset.el;});
-  window.SLIDE_LANG=l;setSlides();
+  if(window.__ready)updShots();
   try{localStorage.setItem('lang',l);}catch(e){}}
 document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
 let start='el';try{start=new URLSearchParams(location.search).get('lang')||localStorage.getItem('lang')||((navigator.language||'el').toLowerCase().startsWith('el')?'el':'en');}catch(e){}
-if(start==='en')setLang('en');
-/* στο κινητό (στενή οθόνη): κάθετες διαφάνειες, που διαβάζονται άνετα */
-function setSlides(){const l=window.SLIDE_LANG||document.documentElement.lang||'el',t=matchMedia('(max-width: 600px)').matches;document.getElementById('show').classList.toggle('tall',t);
-  document.querySelectorAll('#show .frames img').forEach(im=>{im.src='slides/'+l+'_'+(t?'t':'')+im.dataset.n+'.jpg';im.width=t?720:1600;im.height=t?1280:900;});}
-matchMedia('(max-width: 600px)').addEventListener('change',setSlides);
-setSlides();
-/* slideshow: αλλάζει μόνο του κάθε 3,5″ (όχι αν ο επισκέπτης έχει ζητήσει λιγότερη κίνηση) */
-(()=>{const box=document.getElementById('show'),ims=[...box.querySelectorAll('.frames img')],dots=[...box.querySelectorAll('.sdots button')];
-  let i=0,t=null,hover=false;const calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const go=k=>{i=(k+ims.length)%ims.length;ims.forEach((im,j)=>im.classList.toggle('on',j===i));dots.forEach((d,j)=>{d.classList.toggle('on',j===i);d.setAttribute('aria-current',j===i);});
-    const nx=ims[(i+1)%ims.length];if(nx.loading==='lazy')nx.loading='eager';};
-  const play=()=>{clearInterval(t);if(!calm)t=setInterval(()=>{if(!hover&&!document.hidden)go(i+1);},3500);};
-  box.querySelector('.prev').onclick=()=>{go(i-1);play();};box.querySelector('.next').onclick=()=>{go(i+1);play();};
-  dots.forEach((d,j)=>d.onclick=()=>{go(j);play();});
-  box.addEventListener('mouseenter',()=>hover=true);box.addEventListener('mouseleave',()=>hover=false);
-  let x0=null;box.addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
-  box.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>40){go(i+(dx<0?1:-1));play();}});
-  go(0);play();})();
+/* (η γλώσσα εφαρμόζεται στο τέλος του αρχείου, αφού οριστούν όλα) */
 const dlg=document.getElementById('coffee');
 document.getElementById('coffeeBtn').addEventListener('click',()=>{if(dlg.showModal)dlg.showModal();else dlg.setAttribute('open','');});
 dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close();});
@@ -111,3 +113,72 @@ let instEv=null;const ib=document.getElementById('installBtn');
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEv=e;ib.hidden=false;});
 addEventListener('appinstalled',()=>{ib.hidden=true;instEv=null;});
 ib.addEventListener('click',async()=>{if(!instEv)return;const e=instEv;instEv=null;ib.hidden=true;try{await e.prompt();}catch(x){}});
+
+/* ---------- 3.3: αληθινές εικόνες της εφαρμογής (ελληνικά/αγγλικά, υπολογιστής/κινητό) ---------- */
+const narrow=matchMedia('(max-width: 600px)');let TAB='home';
+const CAP={el:{},en:{}};
+function lang(){return document.documentElement.lang==='en'?'en':'el';}
+const darkQ=matchMedia('(prefers-color-scheme: dark)');
+function dk(){return darkQ.matches&&document.documentElement.dataset.theme!=='light'?'d-':'';}
+function updShots(){const l=lang(),D=dk();
+  document.querySelectorAll('img[data-shot]').forEach(im=>{const m=im.dataset.m==='1';im.src='shots/'+D+(m?'m-':'')+l+'-'+im.dataset.shot+'.webp';});
+  const ti=document.getElementById('tabImg');if(!ti)return;const m=narrow.matches;
+  ti.src='shots/'+D+(m?'m-':'')+l+'-'+TAB+'.webp';ti.width=m?430:1440;ti.height=m?932:900;ti.closest('.stagebox').classList.toggle('m',m);
+  const cap=document.getElementById('tabCap');const key='cp_'+TAB;cap.dataset.t=key;cap.textContent=(l==='en'?EN[key]:CAPEL[key])||'';
+  ti.alt=cap.textContent;}
+const CAPEL={cp_home:'Η αρχική: πόσες φωτογραφίες έχεις, αν είναι όλες ασφαλείς, και τα 5 κουμπιά που χρειάζεσαι.',
+ cp_all:'Όλες οι φωτογραφίες και τα βίντεο, οι πιο πρόσφατες πρώτα, ανά μήνα.',
+ cp_cal:'Ημερολόγιο: χρονιά → μήνας → μέρα. Κάθε χρονιά με μια φωτογραφία της.',
+ cp_map:'Χάρτης: πού τραβήχτηκαν, από την τοποθεσία που έχει μέσα της κάθε φωτογραφία.',
+ cp_similar:'Παρόμοιες: ίδια φωτογραφία σε άλλο μέγεθος ή ριπές. Η ⭐ είναι η καλύτερη· διαλέγεις εσύ.',
+ cp_photo:'Μεγάλη προβολή, με ημερομηνία και μέρος. Με τα βελάκια πας στην επόμενη.',
+ cp_start2:'Βήμα βήμα: «Πού είναι τώρα οι φωτογραφίες;» και η εφαρμογή σού λέει ακριβώς τι να κάνεις.'};
+document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.addEventListener('click',()=>{TAB=b.dataset.k;
+  document.querySelectorAll('.tabs [role=tab]').forEach(x=>x.setAttribute('aria-selected',x===b));updShots();}));
+document.querySelector('.tabs')?.addEventListener('keydown',e=>{if(!/Arrow(Left|Right)/.test(e.key))return;const bs=[...document.querySelectorAll('.tabs [role=tab]')];
+  let i=bs.findIndex(x=>x.getAttribute('aria-selected')==='true');i=(i+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[i].focus();bs[i].click();});
+document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.tabIndex=b.getAttribute('aria-selected')==='true'?0:-1);
+document.querySelector('.tabs')?.addEventListener('click',()=>document.querySelectorAll('.tabs [role=tab]').forEach(b=>b.tabIndex=b.getAttribute('aria-selected')==='true'?0:-1));
+narrow.addEventListener('change',updShots);darkQ.addEventListener('change',()=>{updShots();turtle();});window.__ready=1;updShots();
+
+/* ---------- ζωντανό: ψηφιακό αποτύπωμα (SHA-256) — αλλάζεις 1 byte, αλλάζει όλος ο κωδικός ---------- */
+(async()=>{const out=document.getElementById('shaOut'),btn=document.getElementById('shaBtn');if(!out||!crypto.subtle)return;
+  const data=new Uint8Array(4096);for(let i=0;i<data.length;i++)data[i]=(i*2654435761>>>13)&255;let prev='',flip=false;
+  const hex=async()=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',data))].map(b=>b.toString(16).padStart(2,'0')).join('');
+  const show=h=>{out.replaceChildren(...[...h].map((c,i)=>{if(prev&&prev[i]!==c){const b=document.createElement('b');b.textContent=c;return b;}return document.createTextNode(c);}));prev=h;};
+  show(await hex());btn.addEventListener('click',async()=>{flip=!flip;data[2048]^=1;show(await hex());});})();
+
+/* ---------- ζωντανό: οπτικό αποτύπωμα από αληθινές φωτογραφίες (img/dhash.json) ---------- */
+(async()=>{const box=document.getElementById('dhash');if(!box)return;let D;try{D=await (await fetch('img/dhash.json')).json();}catch(e){return;}
+  const mk=(tag,cls)=>{const e=document.createElement(tag);if(cls)e.className=cls;return e;};
+  const rows=[['a',null],['b','a'],['c','a']];
+  const draw=()=>{const en=lang()==='en';box.replaceChildren();
+    const T={a:[en?'Original photo':'Αρχική φωτογραφία','1600×1067'],b:[en?'Same, from Viber':'Η ίδια, από Viber','800×533 · '+(en?'smaller':'μικρότερη')],c:[en?'Another sunset':'Άλλο ηλιοβασίλεμα',en?'another day (2021)':'άλλη μέρα (2021)']};
+    for(const [k,ref] of rows){const r=mk('div','dhrow'),im=mk('img');im.src='img/dh-'+k+'.webp';im.alt='';im.loading='lazy';
+      const g=mk('div','dgrid');for(const v of D[k].g){const i=mk('i');i.style.background='rgb('+v+','+v+','+v+')';g.append(i);}
+      const bg=mk('div','bgrid');let diff=0;[...D[k].bits].forEach((b,i)=>{const x=mk('i');const d=ref&&b!==D[ref].bits[i];if(d)diff++;x.className=d?'x':(b==='1'?'on':'');bg.append(x);});
+      const t=mk('div'),b=mk('b'),s=mk('span');b.textContent=T[k][0];s.textContent=T[k][1];t.append(b,s);
+      if(ref){const v=mk('span',k==='b'?'ok':'no');v.style.display='block';v.style.fontWeight='700';
+        v.textContent=k==='b'?(en?`✓ ${diff} of 64 differ → the same photo`:`✓ διαφέρουν ${diff} από τα 64 → η ίδια φωτογραφία`):(en?`✕ ${diff} of 64 differ + another day → kept apart`:`✕ διαφέρουν ${diff} από τα 64 + άλλη μέρα → μένει χωριστά`);t.append(v);}
+      r.append(im,g,bg,t);box.append(r);}};
+  draw();document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setTimeout(draw)));})();
+
+/* ---------- «χελώνα» (Logo turtle graphics): η υπογραφή των Μνημών, ζωγραφίζεται ΜΙΑ φορά ---------- */
+function turtle(){const c=document.getElementById('turtle');if(!c)return;const r=c.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);
+  if(!r.width)return;c.width=r.width*dpr;c.height=r.height*dpr;const g=c.getContext('2d');g.scale(dpr,dpr);g.clearRect(0,0,r.width,r.height);
+  const dark=matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.dataset.theme!=='light';
+  // REPEAT 180 [FORWARD :n RIGHT 121 ; :n ← :n + 2.2] — η κλασική σπείρα της Logo, με το χρώμα να «κυλάει» από μωβ σε ροζ
+  let x=r.width*.62,y=r.height*.5,a=0,n=4;const N=200,cols=[[99,102,241],[139,92,246],[236,72,153]];g.lineWidth=1.1;g.lineCap='round';
+  for(let i=0;i<N;i++){const t=i/N,k=t<.5?0:1,u=t<.5?t*2:(t-.5)*2,cA=cols[k],cB=cols[k+1],col=cA.map((v,j)=>Math.round(v+(cB[j]-v)*u));
+    const nx=x+Math.cos(a)*n,ny=y+Math.sin(a)*n;g.strokeStyle=`rgba(${col},${(dark?.34:.26)*(1-t*.55)})`;g.beginPath();g.moveTo(x,y);g.lineTo(nx,ny);g.stroke();
+    x=nx;y=ny;a+=121*Math.PI/180;n+=2.2;}}
+let tt;addEventListener('resize',()=>{clearTimeout(tt);tt=setTimeout(turtle,200);});turtle();
+
+/* ---------- ο Βοηθός μέσα στη σελίδα (ίδιες ερωτήσεις με την εφαρμογή) ---------- */
+function openHelp(q){if(!window.Voithos||!window.VOITHOS_ITEMS)return;const en=lang()==='en';
+  const h=Voithos.open({lang:en?'en':'el',app:en?'Mnimes for Life':'Μνήμες για Πάντα',ph:{el:'Γράψε τι χρειάζεσαι, π.χ. «πώς φέρνω φωτογραφίες από το κινητό»',en:'Write what you need, e.g. «how do I bring photos from the phone»'},
+    email:'ktsiminakis@gmail.com',items:VOITHOS_ITEMS.map(it=>it.go?Object.assign({},it,{go:Object.assign({},it.go,{fn:()=>{location.href='Mnimes.html?lang='+(en?'en':'el')+'#'+it.go.r;}})}):it)});
+  if(q&&h&&h.search)h.search(q);return h;}
+['helpOpen','helpOpen2'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>openHelp()));
+document.querySelectorAll('.q[data-q]').forEach(b=>b.addEventListener('click',()=>openHelp(lang()==='en'?b.dataset.qen:b.dataset.q)));
+if(start==='en')setLang('en');
