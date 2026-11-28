@@ -154,7 +154,7 @@ narrow.addEventListener('change',updShots);darkQ.addEventListener('change',()=>{
   const rows=[['a',null],['b','a'],['c','a']];
   const draw=()=>{const en=lang()==='en';box.replaceChildren();
     const T={a:[en?'Original photo':'Αρχική φωτογραφία','1600×1067'],b:[en?'Same, from Viber':'Η ίδια, από Viber','800×533 · '+(en?'smaller':'μικρότερη')],c:[en?'Another sunset':'Άλλο ηλιοβασίλεμα',en?'another day (2021)':'άλλη μέρα (2021)']};
-    for(const [k,ref] of rows){const r=mk('div','dhrow'),im=mk('img');im.src='img/dh-'+k+'.webp';im.alt='';im.loading='lazy';
+    for(const [k,ref] of rows){const r=mk('div','dhrow'),im=mk('img');im.src='img/dh-'+k+'.webp';im.alt='';im.loading='lazy';im.width=120;im.height=80;
       const g=mk('div','dgrid');for(const v of D[k].g){const i=mk('i');i.style.background='rgb('+v+','+v+','+v+')';g.append(i);}
       const bg=mk('div','bgrid');let diff=0;[...D[k].bits].forEach((b,i)=>{const x=mk('i');const d=ref&&b!==D[ref].bits[i];if(d)diff++;x.className=d?'x':(b==='1'?'on':'');bg.append(x);});
       const t=mk('div'),b=mk('b'),s=mk('span');b.textContent=T[k][0];s.textContent=T[k][1];t.append(b,s);
